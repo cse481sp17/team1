@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import rospy
+import fetch_api
 
 
 def print_usage():
@@ -24,6 +25,8 @@ def main():
         return
     height = float(argv[1])
 
+    torso = fetch_api.Torso()
+    torso.set_height(height)
 
 if __name__ == '__main__':
     main()
