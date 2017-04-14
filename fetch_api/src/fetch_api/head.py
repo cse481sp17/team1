@@ -28,10 +28,10 @@ class Head(object):
         head.look_at('base_link', 1, 0, 0.3)
         head.pan_tilt(0, math.pi/4)
     """
-    MIN_PAN = 1.5708  # TODO: Minimum pan angle, in radians.
-    MAX_PAN = 1.5708  # TODO: Maximum pan angle, in radians.
-    MIN_TILT = 0.785398  # TODO: Minimum tilt angle, in radians.
-    MAX_TILT = 1.5708  # TODO: Maximum tilt angle, in radians.
+    MIN_PAN = -1.5708  # TODO: Minimum pan angle, in radians. pi/2
+    MAX_PAN = 1.5708  # TODO: Maximum pan angle, in radians. pi/2
+    MIN_TILT = -0.785398  # TODO: Minimum tilt angle, in radians. pi/4
+    MAX_TILT = 1.5708  # TODO: Maximum tilt angle, in radians. pi/2
 
     def __init__(self):
         # TODO: Create actionlib clients
@@ -74,16 +74,35 @@ class Head(object):
             pan: The pan angle, in radians. A positive value is clockwise.
             tilt: The tilt angle, in radians. A positive value is downwards.
         """
+
         # TODO: Check that the pan/tilt angles are within joint limits
+	if not (Head.MIN_PAN <= pan <= Head.MAX_PAN and Head.MIN_TILT <= tilt <= Head.MAX_TILT):
+		return
+
         # TODO: Create a trajectory point
+	point = JointTrajectoryPoint()
+
         # TODO: Set positions of the two joints in the trajectory point
+        point.positions.append(pan)
+	point.positions.append(tilt)	
+
         # TODO: Set time of the trajectory point
+        point.time_from_start = rospy.Duration(PAN_TILT_TIME)
 
         # TODO: Create goal
+	goal = FollowJointTrajectoryGoal()
+
         # TODO: Add joint names to the list
+	goal.trajectory.joint_names.append(PAN_JOINT)
+	goal.trajectory.joint_names.append(TILT_JOINT)
+
         # TODO: Add trajectory point created above to trajectory
+	goal.trajectory.points.append(point)
 
         # TODO: Send the goal
-        # TODO: Wait for result
+        self.client2.send_goal(goal)
 
-        rospy.logerr('Not implemented.')
+        # TODO: Wait for result
+        self.client2.wait_for_result()
+        print(self.client2.get_result())
+
