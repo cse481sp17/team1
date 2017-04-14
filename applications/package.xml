@@ -9,6 +9,7 @@
   <depend>fetch_api</depend>
   <depend>roscpp</depend>
   <depend>rospy</depend>
+  <depend>joint_state_reader</depend>
   <export>
   </export>
 </package>

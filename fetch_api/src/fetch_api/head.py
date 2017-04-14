@@ -13,7 +13,7 @@ LOOK_AT_ACTION_NAME = 'head_controller/point_head'  # TODO: Get the name of the 
 PAN_TILT_ACTION_NAME = 'head_controller/follow_joint_trajectory'  # TODO: Get the name of the pan/tilt action
 PAN_JOINT = 'head_pan_joint'  # TODO: Get the name of the head pan joint
 TILT_JOINT = 'head_tilt_joint'  # TODO: Get the name of the head tilt joint
-PAN_TILT_TIME = 2.5  # How many seconds it should take to move the head.
+PAN_TILT_TIME = 5  # How many seconds it should take to move the head.
 
 
 class Head(object):
@@ -55,9 +55,6 @@ class Head(object):
         # TODO: Fill out the goal (we recommend setting min_duration to 1 second)
         goal.min_duration = rospy.Duration(1)
         goal.target.header.frame_id = frame_id
-#         goal.target.point.x = x
-#         goal.target.point.y = y
-#         goal.target.point.z = z
         goal.target.point.x = x
         goal.target.point.y = y
         goal.target.point.z = z
@@ -98,7 +95,6 @@ class Head(object):
 
         # TODO: Add trajectory point created above to trajectory
 	goal.trajectory.points.append(point)
-
         # TODO: Send the goal
         self.client2.send_goal(goal)
 
