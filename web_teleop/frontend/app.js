@@ -32,6 +32,8 @@ App = function() {
       that.base = new Base(that.ros);
       that.torso = new Torso(that.ros);
       that.gripper = new Gripper(that.ros);
+      that.head = new Head(that.ros);
+      that.arm = new Arm(that.ros);
     });
     this.ros.on('error', function(error) {
       websocketStatus.textContent = 'Error connecting to websocket server.';

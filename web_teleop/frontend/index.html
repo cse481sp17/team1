@@ -8,6 +8,8 @@
     <script src="base.js"></script>
     <script src="torso.js"></script>
     <script src="gripper.js"></script>
+    <script src="head.js"></script>
+    <script src="arm.js"></script>
     <script src="app.js"></script>
   </head>
   <body onload="init()">
@@ -42,10 +44,38 @@
       <span id="desiredTorsoHeight"></span>
       <input id="torsoButton" type="button" value="Set"></input>
     </div>
+    <div id="head">
+      <h2>Head control</h2>
+      <label for="headLookAtControls">Head look at:</label>
+      <div id="headLookAtControls">
+        <label for="headLookAtFrame">frame_id:</label>
+        <input id="headLookAtFrame" size=12>
+        <label for="headLookAtX">x:</label>
+        <input id="headLookAtX" size=4>
+        <label for="headLookAtX">y:</label>
+        <input id="headLookAtY" size=4>
+        <label for="headLookAtX">z:</label>
+        <input id="headLookAtZ" size=4>
+        <input id="headLookAtButton" type="button" value="Set"></input>
+      </div>
+      <br />
+      <label for="headPanTiltControls">Head pan tilt:</label>
+      <div id="headPanTiltControls">
+        <label for="headPan">pan:</label>
+        <input id="headPan" size=6>
+        <label for="headTilt">tilt:</label>
+        <input id="headTilt" size=6>
+        <input id="headPanTiltButton" type="button" value="Set"></input>
+      </div>
+    </div>
     <div id="gripper">
       <h2>Gripper control</h2>
       <input id="gripOpenButton" type="button" value="Open"></input>
       <input id="gripCloseButton" type="button" value="Close"></input>
+    </div>
+    <div id="arm">
+      <h2>Arm control</h2>
+      <input id="armStrikePoseButton" type="button" value="Strike pose"></input>
     </div>
   </body>
 </html>

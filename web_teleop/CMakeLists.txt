@@ -60,6 +60,9 @@ add_service_files(
   FILES
   SetTorso.srv
   SetGripper.srv
+  SetHeadLookAt.srv
+  SetHeadPanTilt.srv
+  SetArmStrikePose.srv
 #  Service1.srv
 #  Service2.srv
 )
