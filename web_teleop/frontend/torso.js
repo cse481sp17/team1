@@ -47,7 +47,6 @@ Torso = function(ros) {
 
   // Method to set the height.
   this.setHeight = function(height) {
-    console.log(height);
     var height = Math.min(Math.max(0.0, height), 0.4);
     var request = new ROSLIB.ServiceRequest({
       height: height

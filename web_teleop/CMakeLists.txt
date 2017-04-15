@@ -59,6 +59,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   SetTorso.srv
+  SetGripper.srv
 #  Service1.srv
 #  Service2.srv
 )
