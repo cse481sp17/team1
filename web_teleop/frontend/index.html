@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Fetch teleop</title>
+    <link rel="stylesheet" type="text/css" href="teleop.css" />
+    <script src="eventemitter2.js"></script>
+    <script src="roslib.js"></script>
+    <script src="base.js"></script>
+    <script src="torso.js"></script>
+    <script src="app.js"></script>
+  </head>
+  <body onload="init()">
+    <h1>Fetch teleop</h1>
+    <div id="websocket">
+      <span id="websocketStatus"></span><br />
+      <label for="websocketUrl">Websocket URL:</label>
+      <input id="websocketUrl" type="text"></input>
+      <input id="websocketButton" type="button" value="Reconnect"></input>
+    </div>
+    <div id="base">
+      <h2>Base control</h2>
+      <table class="base-arrows">
+        <tr>
+          <td></td><td><span class="arrow-up" id="baseForward">&#8598;</span></td><td></td>
+        </tr>
+        <tr>
+          <td><span class="circle-ccw" id="baseLeft"> &#8634;</span></td>
+          <td><span class="arrow-down" id="baseBackward">&#8598;</span></td>
+          <td><span class="circle-cw" id="baseRight">&#8635;</span></td>
+        </tr>
+      </table>
+    </div>
+    <div id="torso">
+      <h2>Torso control</h2>
+      Current torso height: <span id="torsoHeight"></span><br />
+      <label for="torsoSlider">Set torso height:</label>
+      <input id="torsoSlider" type="range" min="0.0" max="0.4" step="0.05"></input>
+      <span id="desiredTorsoHeight"></span>
+      <input id="torsoButton" type="button" value="Set"></input>
+    </div>
+  </body>
+</html>

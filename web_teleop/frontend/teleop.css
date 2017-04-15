@@ -1,0 +1,38 @@
+/* Base control */
+.base-arrows {
+  font-size: 2em;
+}
+.base-arrows td {
+  cursor: pointer;
+}
+.base-arrows td:hover {
+  background-color: #ddd;
+}
+.base-arrows span {
+  display: block;
+}
+.arrow-down {
+  -ms-transform: rotate(225deg);
+  -webkit-transform: rotate(225deg);
+  transform: rotate(225deg);
+}
+.arrow-up {
+  -ms-transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+.circle-ccw {
+  -ms-transform: rotate(-90deg);
+  -webkit-transform: rotate(-90deg);
+  transform: rotate(-90deg);
+}
+.circle-cw {
+  -ms-transform: rotate(90deg);
+  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+
+/* Torso */
+#desiredTorsoHeight {
+  font-weight: bold;
+}
