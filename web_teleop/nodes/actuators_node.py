@@ -12,6 +12,7 @@ DISCO_POSES = [[1.5, -0.6, 3.0, 1.0, 3.0, 1.0, 3.0],
                [-0.8, 0.0, 0.0, 2.0, 0.0, -2.0, 0.0],
                [0.8, 0.75, 0.0, -2.0, 0.0, 2.0, 0.0],
                [1.5, -0.6, 3.0, 1.0, 3.0, 1.0, 3.0]]
+SET_STRAIGHT_ARM = [-0.522, -1.124, 0.856, 1.235, 2.788, -1.590, -1.402]
 
 def wait_for_time():
     """Wait for simulated time to begin.
@@ -48,8 +49,9 @@ class ActuatorServer(object):
         return SetHeadPanTiltResponse()
 
     def handle_set_arm_strike_pose(self, request):
-        joints = DISCO_POSES[self._current_pose]
-        self._current_pose = (self._current_pose + 1) % len(DISCO_POSES)
+        # joints = DISCO_POSES[self._current_pose]
+	joints = SET_STRAIGHT_ARM        
+	# self._current_pose = (self._current_pose + 1) % len(DISCO_POSES)
         arm_joints = fetch_api.ArmJoints.from_list(joints)
         self._arm.move_to_joints(arm_joints)
         return SetArmStrikePoseResponse()
