@@ -45,24 +45,28 @@ Base = function(ros) {
   // At the top of the file we set "var that = this" to ensure that the
   // local variable "that" always refers to this Base instance.
   this.moveForward = function() {
+    that.stop();
     that._timer = setInterval(function() {
       move(that.linearSpeed, 0)
     }, 50);
   }
 
   this.moveBackward = function() {
+    that.stop();
     that._timer = setInterval(function() {
       move(-that.linearSpeed, 0)
     }, 50);
   }
 
   this.turnLeft = function() {
+    that.stop();
     that._timer = setInterval(function() {
       move(0, that.angularSpeed)
     }, 50);
   }
 
   this.turnRight = function() {
+    that.stop();
     that._timer = setInterval(function() {
       move(0, -that.angularSpeed)
     }, 50);
@@ -80,7 +84,14 @@ Base = function(ros) {
   baseBackward.addEventListener('mousedown', that.moveBackward);
   baseLeft.addEventListener('mousedown', that.turnLeft);
   baseRight.addEventListener('mousedown', that.turnRight);
-  
+  document.addEventListener('keydown', function(e) {
+    var key = e.which || e.keyCode;
+    if (key === 87) move(that.linearSpeed, 0);
+    else if (key === 83) move(-that.linearSpeed, 0);
+    else if (key === 65) move(0, that.angularSpeed);
+    else if (key === 68) move(0, -that.angularSpeed);
+  });
+
   // We bind stop() to whenever the mouse is lifted up anywhere on the webpage
   // for safety reasons. We want to be conservative about sending movement commands.
   document.addEventListener('mouseup', that.stop);
