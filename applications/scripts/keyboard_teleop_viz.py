@@ -8,6 +8,9 @@ from geometry_msgs.msg import Quaternion, Pose, Point, Vector3
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Header, ColorRGBA
 
+from interactive_markers.interactive_marker_server import *
+from visualization_msgs.msg import *
+
 import sys, select, termios, tty
 
 msg = """
@@ -56,6 +59,33 @@ turn = 1
 def vels(speed, turn):
     return "currently:\tspeed %s\tturn %s " % (speed, turn)
 
+def handle_viz_input(input):
+    if (input.event_type == InteractiveMarkerFeedback.BUTTON_CLICK):
+        rospy.loginfo(input.marker_name + ' was clicked')
+
+def setup_interactive_marker():
+    server = InteractiveMarkerServer("simple_server")
+    int_marker = InteractiveMarker(name="my_marker", description="Simple Click Control")
+    int_marker.header.frame_id = "base_link"
+
+    box_marker = Marker(type = Marker.CUBE)
+    box_marker.scale.x = 0.45
+    box_marker.scale.y = 0.45
+    box_marker.scale.z = 0.45
+    box_marker.color.r = 0.0
+    box_marker.color.g = 0.5
+    box_marker.color.b = 0.5
+    box_marker.color.a = 1.0
+
+    button_control = InteractiveMarkerControl()
+    button_control.interaction_mode = InteractiveMarkerControl.BUTTON
+    button_control.always_visible = True
+    button_control.markers.append( box_marker )
+    int_marker.controls.append( button_control )
+    
+    server.insert(int_marker, handle_viz_input)
+    server.applyChanges()
+
 def show_text_in_rviz(text, marker_publisher):
     marker = Marker(
                 type=Marker.TEXT_VIEW_FACING,
@@ -90,7 +120,7 @@ if __name__ == "__main__":
 
     rospy.init_node('fetch_teleop_key')
     base = fetch_api.Base()
-
+    setup_interactive_marker()
     x = 0
     th = 0
     status = 0
