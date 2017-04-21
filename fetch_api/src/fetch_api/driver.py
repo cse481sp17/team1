@@ -48,15 +48,16 @@ class Driver(object):
             current_position = current_pose.position
             current_orientation = current_pose.orientation
             if state == 'turn':
-                # TODO: Compute how much we need to turn to face the goal
+                # TODO: Compute how much we need to turn to face the goal 
+                remaining_angle = math.fabs(desired_angular_distance) - math.fabs(util.quaternion_to_yaw(current_orientation)[0] - start_yaw_rads)
 
-                if math.fabs(util.quaternion_to_yaw(current_orientation)[0] - start_yaw_rads) < math.fabs(desired_angular_distance):
+                angular_speed = max(0.25, min(1, remaining_angle)) 
+                if remaining_angle > 0:
                     direction = -1 if desired_angular_distance < 0 else 1
-                    self._base.move(0, direction * 0.5)
+                    self._base.move(0, direction * remaining_angle)
                 else:
                     state = 'move'
                     self._base.stop()
-                    rospy.sleep(2.9)
 
             if state == 'move':
                 # TODO: Compute how far we have moved and compare that to desired_distance
