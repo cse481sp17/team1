@@ -47,6 +47,10 @@ class Driver(object):
             current_pose = self._base.get_current_pose()
             current_position = current_pose.position
             current_orientation = current_pose.orientation
+            curr_distance = util.distance(start_position.x, start_position.y, current_position.x, current_position.y)
+            changing_dist = math.fabs(desired_distance - curr_distance)
+            linear_speed = max(0.05, min(0.5,  changing_dist))
+            angular_speed = max(0.25, min(1,  changing_dist))
             if state == 'turn':
                 # TODO: Compute how much we need to turn to face the goal
 
@@ -61,17 +65,10 @@ class Driver(object):
             if state == 'move':
                 # TODO: Compute how far we have moved and compare that to desired_distance
                 # Make sure that the robot has the ability to drive backwards if it overshoots
-                curr_distance = util.distance(start_position.x, start_position.y, current_position.x, current_position.y)
+               
                 if  curr_distance < math.fabs(desired_distance):
                     # TODO: possibly adjust speed to slow down when close to the goal
-                    threshold_distance = 1.2 #when we should start slowing down
-                    faster_speed = 0.1
-                    slower_speed = 0.05
                     direction = -1 if desired_distance < 0 else 1
-                    changing_dist = math.fabs(desired_distance - curr_distance)
-                    if changing_dist >= threshold_distance:
-                    	self._base.move(direction * faster_speed, 0)
-                    else:
-                    	self._base.move(direction * slower_speed, 0)
-                    print changing_dist
+                    self._base.move(direction * linear_speed, 0)
+                    print linear_speed
             rospy.sleep(0.1)
