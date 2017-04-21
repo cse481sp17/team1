@@ -50,11 +50,11 @@ class Driver(object):
             if state == 'turn':
                 # TODO: Compute how much we need to turn to face the goal 
                 remaining_angle = math.fabs(desired_angular_distance) - math.fabs(util.quaternion_to_yaw(current_orientation)[0] - start_yaw_rads)
-
+                print remaining_angle
                 angular_speed = max(0.25, min(1, remaining_angle)) 
                 if remaining_angle > 0:
                     direction = -1 if desired_angular_distance < 0 else 1
-                    self._base.move(0, direction * remaining_angle)
+                    self._base.move(0, direction * angular_speed)
                 else:
                     state = 'move'
                     self._base.stop()
@@ -62,17 +62,11 @@ class Driver(object):
             if state == 'move':
                 # TODO: Compute how far we have moved and compare that to desired_distance
                 # Make sure that the robot has the ability to drive backwards if it overshoots
+                
                 curr_distance = util.distance(start_position.x, start_position.y, current_position.x, current_position.y)
-                if  curr_distance < math.fabs(desired_distance):
+                remaining_distance = desired_distance - curr_distance              
+                if remaining_distance > 0:
                     # TODO: possibly adjust speed to slow down when close to the goal
-                    threshold_distance = 1.2 #when we should start slowing down
-                    faster_speed = 0.1
-                    slower_speed = 0.05
                     direction = -1 if desired_distance < 0 else 1
-                    changing_dist = math.fabs(desired_distance - curr_distance)
-                    if changing_dist >= threshold_distance:
-                    	self._base.move(direction * faster_speed, 0)
-                    else:
-                    	self._base.move(direction * slower_speed, 0)
-                    print changing_dist
+                    self._base.move(direction * max(0.05, min(0.5, remaining_distance)), 0)
             rospy.sleep(0.1)
