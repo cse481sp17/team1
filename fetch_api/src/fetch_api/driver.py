@@ -3,13 +3,6 @@ import math
 import util
 import rospy
 
-def convert_angle_smallest(angle):
-    if angle > math.pi:
-        angle = angle - 2 * math.pi
-    elif angle < -math.pi:
-        angle = angle + 2 * math.pi
-    return angle
-
 class Driver(object):
     def __init__(self, base):
          self.goal = None # position
@@ -47,7 +40,7 @@ class Driver(object):
             
             # calculate the remaining distance to cover in radians
             # by using the desired_yaw and current_yaw
-            remaining_angle = convert_angle_smallest(desired_yaw_rads - current_yaw)
+            remaining_angle = util.convert_angle_smallest(desired_yaw_rads - current_yaw)
 
             # if we are not pointing at the goalwithin a tolerance of 0.05 radians
             # adjust

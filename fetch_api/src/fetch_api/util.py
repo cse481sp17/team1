@@ -3,6 +3,13 @@ import tf.transformations as tft
 import numpy as np
 from geometry_msgs.msg import Quaternion
 
+def convert_angle_smallest(angle):
+    if angle > math.pi:
+        angle = angle - 2 * math.pi
+    elif angle < -math.pi:
+        angle = angle + 2 * math.pi
+    return angle
+
 def quaternion_to_yaw(q):
     m = tft.quaternion_matrix([q.x, q.y, q.z, q.w])
     x = m[0, 0] 
