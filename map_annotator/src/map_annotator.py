@@ -14,6 +14,7 @@ def help():
 	print "\tlist: List saved poses."
 	print "\tsave <name>: Save the robot's current pose as <name>. Overwrites if <name> already exists."
 	print "\tdelete <name>: Delete the pose given by <name>."
+	print "\trename <old_name> <new_name>: Rename pose with <old_name> to <new_name>."
 	print "\tgoto <name>: Sends the robot to the pose given by <name>."
 	print "\tquit: Exits the program."
 	print "\thelp: Show this list of commands"
@@ -65,6 +66,15 @@ class PoseController(object):
 		else:
 			print "Pose name {} does not exist".format(pose_name)
 
+	def rename_pose(self, pose_name, pose_name_new):
+		if pose_name in self._poses:
+			self._poses[pose_name_new] = self._poses[pose_name]
+			del self._poses[pose_name]
+			print "Pose {} renamed to {}".format(pose_name, pose_name_new)
+			self._write_out_poses()
+		else:
+			print "Pose name {} does not exist".format(pose_name)
+
 	def move_to_pose(self, pose_name):
 		if pose_name in self._poses:
 			msg = PoseStamped()
@@ -73,22 +83,28 @@ class PoseController(object):
 			self._pose_pub.publish(msg)
 
 def prompt(pose_ctrl):
-	command = raw_input("> ").strip().split()
-	if not 1 <= len(command) <= 2:
+	command_args = raw_input("> ").strip().split()
+	if not command_args:
 		print "Invalid command"
 		return
-	if len(command) == 1:
-		command = command[0]
-	if len(command) == 2:
-		command, pose_name = command
+
+	pose_name, pose_name_new = None, None
+	if len(command_args) == 1:
+		command = command_args[0]
+	if len(command_args) == 2:
+		command, pose_name = command_args
+	if len(command_args) == 3:
+		command, pose_name, pose_name_new = command_args
 
 	if command == "list":
 		print str(pose_ctrl)
-	elif command == "save":
+	elif command == "save" and pose_name:
 		pose_ctrl.save_pose(pose_name)
-	elif command == "delete":
+	elif command == "delete" and pose_name:
 		pose_ctrl.delete_pose(pose_name)
-	elif command == "goto":
+	elif command == "rename" and pose_name and pose_name_new:
+		pose_ctrl.rename_pose(pose_name, pose_name_new)
+	elif command == "goto" and pose_name:
 		pose_ctrl.move_to_pose(pose_name)
 	elif command == "quit" or command == "q":
 		exit(0)
