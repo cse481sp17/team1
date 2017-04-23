@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Map annotator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" type="text/css" href="annotator.css" />
+    <script src="eventemitter2.js"></script>
+    <script src="roslib.js"></script>
+    <script src="pose.js"></script>
+    <script src="pose_list.js"></script>
+    <script src="app.js"></script>
+	</head>
+	<body onload="init()">
+    <h1>Map annotator</h1>
+    <div id="websocket">
+      <span id="websocketStatus"></span><br />
+      <label for="websocketUrl">Websocket URL:</label>
+      <input id="websocketUrl" type="text"></input>
+      <input id="websocketButton" type="button" value="Reconnect"></input>
+    </div>
+    <h2>Poses</h2>
+    <div>
+      <input id="createButton" type="button" value="Create new pose" />
+    </div>
+    <div id="poseList"></div>
+	</body>
+</html>

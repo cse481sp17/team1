@@ -1,0 +1,6 @@
+#poseList > div {
+  margin-top: 5px;
+}
+#poseList input[type=button] {
+  margin-left: 10px;
+}
