@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import pickle
 import rospy
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
@@ -44,7 +42,10 @@ class PoseController(object):
             print "No pose available"
             return
         print "Saving pose {} as current position".format(pose_name)
-        self._poses[pose_name] = self._curr_pose
+        self.set_pose(pose_name, self._curr_pose)
+
+    def set_pose(self, pose_name, pose):
+        self._poses[pose_name] = pose
         self._write_out_poses()
 
     def delete_pose(self, pose_name):
