@@ -31,6 +31,8 @@ class MapAnnotatorMonitor(object):
             self._publish_pose_names()
         elif msg.command == UserAction.GOTO and msg.pose_name:
             self._ctrl.move_to_pose(msg.pose_name)
+        elif msg.command == UserAction.EDIT and msg.pose_name and msg.pose:
+            self._ctrl.edit_pose(msg.pose_name, msg.pose)
         else:
             print("Invalid command")
 
