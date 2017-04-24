@@ -60,7 +60,7 @@ Rp27
 (lp28
 F3.8004331588745117
 aF1.112160325050354
-aF0.5000008940696716
+aF0.5
 abag2
 (cgeometry_msgs.msg._Quaternion
 Quaternion

@@ -32,6 +32,7 @@ class MapAnnotatorMonitor(object):
             self._marker_ctrl.erase_marker(msg.pose_name)
             self._publish_pose_names()
         elif msg.command == UserAction.RENAME:
+            self._marker_ctrl.rename_marker(msg.pose_name, msg.pose_name_new)
             self._pose_ctrl.rename_pose(msg.pose_name, msg.pose_name_new)
             self._publish_pose_names()
         elif msg.command == UserAction.GOTO:

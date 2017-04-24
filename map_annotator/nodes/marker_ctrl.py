@@ -62,3 +62,7 @@ class MarkerController(object):
         self._server.applyChanges()
         rospy.logwarn("Erased marker for pose: {}".format(name))
 
+    def rename_marker(self, name, name_new):
+        self.create_marker(name_new, self._pose_ctrl.poses[name].pose.pose)
+        self.erase_marker(name)
+
