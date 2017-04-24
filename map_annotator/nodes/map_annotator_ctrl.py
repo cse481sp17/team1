@@ -64,6 +64,14 @@ class PoseController(object):
         else:
             print "Pose name {} does not exist".format(pose_name)
 
+    @property
+    def poses(self):
+        return self._poses
+
+    @property
+    def curr_pose(self):
+        return self._curr_pose
+
     def move_to_pose(self, pose_name):
         if pose_name in self._poses:
             msg = PoseStamped()

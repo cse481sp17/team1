@@ -1,6 +1,6 @@
 <launch>
   <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
-  <node pkg="map_annotator" type="map_annotator_node.py" name="joint_state_republisher" />
+  <node pkg="map_annotator" type="map_annotator_node.py" name="map_annotator" />
   <node pkg="web_video_server" type="web_video_server" name="web_video_server">
     <param name="port" value="8000" />
   </node>
