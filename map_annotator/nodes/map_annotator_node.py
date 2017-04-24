@@ -25,7 +25,7 @@ class MapAnnotatorMonitor(object):
     def _callback(self, msg):
         if msg.command == UserAction.SAVE:
             self._pose_ctrl.save_pose(msg.pose_name)
-            self._marker_ctrl.create_marker(msg.pose_name)
+            self._marker_ctrl.create_marker(msg.pose_name, self._pose_ctrl.curr_pose.pose.pose)
             self._publish_pose_names()
         elif msg.command == UserAction.DELETE:
             self._pose_ctrl.delete_pose(msg.pose_name)

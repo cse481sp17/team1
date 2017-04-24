@@ -2,7 +2,7 @@ import pickle
 import rospy
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
 
-POSE_FILE = 'poses'
+POSE_FILE = '/home/team1/catkin_ws/src/cse481c/map_annotator/nodes/poses'
 SUB_NAME = 'amcl_pose'
 PUB_NAME = 'move_base_simple/goal'
 
@@ -42,10 +42,13 @@ class PoseController(object):
             print "No pose available"
             return
         print "Saving pose {} as current position".format(pose_name)
-        self.set_pose(pose_name, self._curr_pose)
+        self._poses[pose_name] = self._curr_pose
+        self._write_out_poses()
 
-    def set_pose(self, pose_name, pose):
-        self._poses[pose_name] = pose
+    def update_pose(self, pose_name, pose):
+        if pose_name not in self._poses:
+            return
+        self._poses[pose_name].pose.pose = pose
         self._write_out_poses()
 
     def delete_pose(self, pose_name):

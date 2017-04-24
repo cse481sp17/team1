@@ -10,17 +10,17 @@ class MarkerController(object):
 
     def _marker_callback(self, msg):
         if (msg.event_type == InteractiveMarkerFeedback.POSE_UPDATE):
-            self._marker_server.setPose(msg.marker_name, msg.pose)
-            self._marker_server.applyChanges()
-            self._pose_ctrl.set_pose(msg.marker_name, msg.pose)
-            rospy.logerr("Updated marker for pose: {}".format(msg.marker_name))
+            self._server.setPose(msg.marker_name, msg.pose)
+            self._server.applyChanges()
+            self._pose_ctrl.update_pose(msg.marker_name, msg.pose)
+            rospy.logwarn("Updated marker for pose: {}".format(msg.marker_name))
 
     def create_marker(self, name, pose):
         # Creates interactive marker with metadata, pose
         int_marker = InteractiveMarker()
         int_marker.header.frame_id = "map"
         int_marker.name = name
-        int_marker.description = "Interactive Marker for pose {}".format(name)
+        int_marker.description = "Pose: {}".format(name)
         int_marker.pose = pose
         int_marker.pose.position.z = 0.5
 
@@ -28,8 +28,8 @@ class MarkerController(object):
         arrow_marker = Marker()
         arrow_marker.type = Marker.ARROW
         arrow_marker.scale.x = 0.5    # put it in place
-        arrow_marker.scale.y = 0.5
-        arrow_marker.scale.z = 0.5
+        arrow_marker.scale.y = 0.1
+        arrow_marker.scale.z = 0.1
         arrow_marker.color.r = 0.5    # make it pretty
         arrow_marker.color.g = 0.0
         arrow_marker.color.b = 0.5
@@ -41,7 +41,7 @@ class MarkerController(object):
         arrow_control.markers.append(arrow_marker)
 
         rotate_control = InteractiveMarkerControl()
-        rotate_control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
+        rotate_control.interaction_mode = InteractiveMarkerControl.MOVE_ROTATE
         rotate_control.orientation.w = 1
         rotate_control.orientation.x = 0
         rotate_control.orientation.y = 1
@@ -55,10 +55,10 @@ class MarkerController(object):
         self._server.insert(int_marker, self._marker_callback)
         self._server.applyChanges()
 
-        rospy.logerr("Created marker for pose: {}".format(name))
+        rospy.logwarn("Created marker for pose: {}".format(name))
 
     def erase_marker(self, name):
         self._server.erase(name)
         self._server.applyChanges()
-        rospy.logerr("Erased marker for pose: {}".format(name))
+        rospy.logwarn("Erased marker for pose: {}".format(name))
 
