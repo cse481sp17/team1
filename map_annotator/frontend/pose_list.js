@@ -5,6 +5,12 @@ PoseList = function(ros) {
 
   var that = this;
 
+  var pub = new ROSLIB.Topic({
+    ros: ros,
+    name: '/user_actions',
+    messageType: 'map_annotator/UserAction'
+  });
+
   var sub = new ROSLIB.Topic({
     ros: ros,
     name: '/pose_names',
@@ -25,15 +31,26 @@ PoseList = function(ros) {
   }
 
   sub.subscribe(function(message) {
+    console.log("message", message);
     render(message.names);
   });
   render([]);
+
+  function handleSave(name) {
+    console.log('Creating pose with name' + name);
+    var msg = new ROSLIB.Message({
+      command: "save",
+      pose_name: name,
+      pose_name_new: ""
+    });
+    pub.publish(msg);
+  }
 
   createButton.addEventListener('click', function() {
     var name = prompt('Enter a name for this pose:');
     if (!name) {
       return;
     }
-    console.log('Creating pose with name', name);
+    handleSave(name)
   })
 }
