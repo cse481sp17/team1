@@ -1,3 +1,4 @@
+import rospy
 from visualization_msgs.msg import *
 
 class MarkerController(object):
@@ -12,6 +13,7 @@ class MarkerController(object):
             self._marker_server.setPose(msg.marker_name, msg.pose)
             self._marker_server.applyChanges()
             self._pose_ctrl.set_pose(msg.marker_name, msg.pose)
+            rospy.logerr("Updated marker for pose: {}".format(msg.marker_name))
 
     def create_marker(self, name, pose):
         # Creates interactive marker with metadata, pose
@@ -53,7 +55,10 @@ class MarkerController(object):
         self._server.insert(int_marker, self._marker_callback)
         self._server.applyChanges()
 
+        rospy.logerr("Created marker for pose: {}".format(name))
+
     def erase_marker(self, name):
         self._server.erase(name)
         self._server.applyChanges()
+        rospy.logerr("Erased marker for pose: {}".format(name))
 
