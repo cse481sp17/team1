@@ -1,4 +1,4 @@
-string CREATE=create
+string SAVE=save
 string DELETE=delete
 string GOTO=goto
 string RENAME=rename
