@@ -141,7 +141,7 @@ class Arm(object):
                  plan_only=False,
                  replan=False,
                  replan_attempts=5,
-                 tolerance=0.01):
+                 tolerance=0.05):
         """Moves the end-effector to a pose, using motion planning.
 
         Args:
@@ -187,9 +187,11 @@ class Arm(object):
 
         result = self.move_group_client.get_result()
         if result:
+            if result.error_code.val == MoveItErrorCodes.SUCCESS:
+                return None
             return self.moveit_error_string(result.error_code.val)
-        else:   # success
-            return None
+        else:   
+            return "MoveIt! failure no result returned"
     
     def compute_ik(self, pose_stamped, timeout=rospy.Duration(5)):
         """Computes inverse kinematics for the given pose.
