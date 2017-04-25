@@ -141,7 +141,8 @@ class Arm(object):
                  plan_only=False,
                  replan=False,
                  replan_attempts=5,
-                 tolerance=0.05):
+                 tolerance=0.01,
+                 orientation_constraint=None):
         """Moves the end-effector to a pose, using motion planning.
 
         Args:
@@ -177,6 +178,8 @@ class Arm(object):
         goal_builder.replan = replan
         goal_builder.replan_attempts = replan_attempts
         goal_builder.tolerance = tolerance
+        if orientation_constraint is not None:
+            goal_builder.add_path_orientation_contraint(orientation_constraint)
         goal = goal_builder.build()
 
         # Send goal
