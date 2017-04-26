@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-from map_annotator_ctrl import PoseController
+from pose_ctrl import PoseController
 
 def help():
     print 'Welcome to the map annotator!'
