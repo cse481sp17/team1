@@ -43,13 +43,13 @@ def main():
 
     # Create divider obstacle
     planning_scene.removeCollisionObject('divider')
-    # size_x = 0.3 
-    # size_y = 0.01
-    # size_z = 0.4 
-    # x = table_x - (table_size_x / 2) + (size_x / 2)
-    # y = 0 
-    # z = table_z + (table_size_z / 2) + (size_z / 2)
-    # planning_scene.addBox('divider', size_x, size_y, size_z, x, y, z)
+    size_x = 0.3 
+    size_y = 0.01
+    size_z = 0.4 
+    x = table_x - (table_size_x / 2) + (size_x / 2)
+    y = 0 
+    z = table_z + (table_size_z / 2) + (size_z / 2)
+    planning_scene.addBox('divider', size_x, size_y, size_z, x, y, z)
 
     pose1 = PoseStamped()
     pose1.header.frame_id = 'base_link'
@@ -92,7 +92,9 @@ def main():
 
     gripper = fetch_api.Gripper()
     planning_scene.removeAttachedObject('tray')
-    while True:
+    count = 1
+    while count < 2:
+        count = 2
         # Before moving to the first pose
         error = arm.move_to_pose(pose1, **kwargs1)
         if error is not None:
@@ -114,8 +116,11 @@ def main():
             rospy.logerr('Pose 2 failed: {}'.format(error))
         else:
             rospy.loginfo('Pose 2 succeeded')
-        rospy.sleep(1)
+        
         planning_scene.removeAttachedObject('tray')
+        planning_scene.clear()
+
+        #rospy.sleep(1)
 
 
 if __name__ == '__main__':

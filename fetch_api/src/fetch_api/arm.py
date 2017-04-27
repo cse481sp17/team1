@@ -186,7 +186,7 @@ class Arm(object):
         self.move_group_client.send_goal(goal)
 
         # Set a timeout and wait for result
-        self.move_group_client.wait_for_result(rospy.Duration(10))
+        self.move_group_client.wait_for_result(rospy.Duration(execution_timeout))
 
         result = self.move_group_client.get_result()
         if result:
