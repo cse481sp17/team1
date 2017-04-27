@@ -75,16 +75,16 @@ def main():
     oc.weight = 1.0
 
     kwargs1 = {
-        'allowed_planning_time': 20,
-        'execution_timeout': 15,
+        'allowed_planning_time': 15,
+        'execution_timeout': 10,
         'num_planning_attempts': 5,
         'replan': False,
     }
 
 
     kwargs2 = {
-        'allowed_planning_time': 20,
-        'execution_timeout': 15,
+        'allowed_planning_time': 15,
+        'execution_timeout': 10,
         'num_planning_attempts': 5,
         'replan': False,
         'orientation_constraint': oc
@@ -92,9 +92,7 @@ def main():
 
     gripper = fetch_api.Gripper()
     planning_scene.removeAttachedObject('tray')
-    count = 1
-    while count < 2:
-        count = 2
+    while True:
         # Before moving to the first pose
         error = arm.move_to_pose(pose1, **kwargs1)
         if error is not None:
@@ -118,7 +116,6 @@ def main():
             rospy.loginfo('Pose 2 succeeded')
         
         planning_scene.removeAttachedObject('tray')
-        planning_scene.clear()
 
         #rospy.sleep(1)
 
