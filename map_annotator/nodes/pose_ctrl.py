@@ -68,6 +68,11 @@ class PoseController(object):
         else:
             print "Pose name {} does not exist".format(pose_name)
 
+    def edit_pose(self, pose_name, pose):
+        if pose_name in self._poses:
+            self._poses[pose_name] = pose
+            self._write_out_poses()
+
     @property
     def poses(self):
         return self._poses
