@@ -67,12 +67,33 @@ class GripperTeleop(object):
 
         # Create a which controls the 3 gripper components
         gripper_control = InteractiveMarkerControl()
-        gripper_control.interaction_mode = InteractiveMarkerControl.MOVE_ROTATE
+        gripper_control.interaction_mode = InteractiveMarkerControl.MENU # or InteractiveMarkerControl.MOVE_ROTATE
         gripper_control.always_visible = True
         gripper_control.orientation.w = 1
         gripper_control.orientation.x = 0;
         gripper_control.orientation.y = 1;
         gripper_control.orientation.z = 0;
+
+        # gripper pose Menu Entry
+        menu_entry = MenuEntry()
+        menu_entry.id = 1
+        menu_entry.parent_id = 0
+        menu_entry.command_type = MenuEntry.FEEDBACK
+        menu_entry.title = "go to the gripper pose"
+        gripper_marker.menu_entries.append(copy.deepcopy(menu_entry))
+        # open the gripper menu entry
+        menu_entry.id = 2
+        menu_entry.parent_id = 0
+        menu_entry.command_type = MenuEntry.FEEDBACK
+        menu_entry.title = "open the gripper"
+        gripper_marker.menu_entries.append(copy.deepcopy(menu_entry))
+        # close the gripper menu entry 
+        menu_entry.id = 3
+        menu_entry.parent_id = 0
+        menu_entry.command_type = MenuEntry.FEEDBACK
+        menu_entry.title = "close the gripper"
+        gripper_marker.menu_entries.append(menu_entry) # not deep copy
+
 
         gripper_control.markers.append(base_marker)
         gripper_control.markers.append(left_marker)
@@ -119,7 +140,7 @@ class GripperTeleop(object):
         controls.append(copy.deepcopy(control))
         control.name = "move_y"
         control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
-        controls.append(control)
+        controls.append(control) # not deep copy
         return controls
 
 
