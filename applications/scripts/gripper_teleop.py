@@ -10,6 +10,11 @@ GRIPPER_MESH = 'package://fetch_description/meshes/gripper_link.dae'
 L_FINGER_MESH = 'package://fetch_description/meshes/l_gripper_finger_link.STL'
 R_FINGER_MESH = 'package://fetch_description/meshes/r_gripper_finger_link.STL'
 
+GRIPPER_POSE_ID = 1
+OPEN_GRIPPER_ID = 2
+CLOSE_GRIPPER_ID = 3
+
+
 RED = ColorRGBA()
 RED.r = 1.0
 RED.g = 0.0
@@ -30,7 +35,7 @@ class GripperTeleop(object):
 
     def start(self):
         pose = Pose(orientation=Quaternion(0,0,0,1))
-        print pose
+        print pose # remove this later
         gripper_im = self._create_gripper_marker(pose)
 
         self._im_server.insert(gripper_im, feedback_cb=self.handle_feedback)
@@ -40,8 +45,8 @@ class GripperTeleop(object):
 
         # Creates interactive marker with metadata, pose
         gripper_marker = InteractiveMarker()
-        gripper_marker.header.frame_id = "map" # TODO: change to wrist_roll_link after done
-        gripper_marker.description = "Interactive Marker for Gripper"
+        gripper_marker.header.frame_id = 'map' # TODO: change to wrist_roll_link after done
+        gripper_marker.description = 'Interactive Marker for Gripper'
         gripper_marker.pose = pose
         gripper_marker.pose.position.x += 0.166
 
@@ -76,22 +81,22 @@ class GripperTeleop(object):
 
         # gripper pose Menu Entry
         menu_entry = MenuEntry()
-        menu_entry.id = 1
+        menu_entry.id = GRIPPER_POSE_ID
         menu_entry.parent_id = 0
         menu_entry.command_type = MenuEntry.FEEDBACK
-        menu_entry.title = "go to the gripper pose"
+        menu_entry.title = 'go to the gripper pose' # make constants
         gripper_marker.menu_entries.append(copy.deepcopy(menu_entry))
         # open the gripper menu entry
-        menu_entry.id = 2
+        menu_entry.id = OPEN_GRIPPER_ID
         menu_entry.parent_id = 0
         menu_entry.command_type = MenuEntry.FEEDBACK
-        menu_entry.title = "open the gripper"
+        menu_entry.title = 'open the gripper'
         gripper_marker.menu_entries.append(copy.deepcopy(menu_entry))
         # close the gripper menu entry 
-        menu_entry.id = 3
+        menu_entry.id = CLOSE_GRIPPER_ID
         menu_entry.parent_id = 0
         menu_entry.command_type = MenuEntry.FEEDBACK
-        menu_entry.title = "close the gripper"
+        menu_entry.title = 'close the gripper'
         gripper_marker.menu_entries.append(menu_entry) # not deep copy
 
 
@@ -143,8 +148,21 @@ class GripperTeleop(object):
         controls.append(control) # not deep copy
         return controls
 
-
     def handle_feedback(self, feedback):
+        if feedback.event_type == InteractiveMarkerFeedback.MENU_SELECT:
+            if feedback.menu_entry_id == GRIPPER_POSE_ID:
+                print 'go to the gripper pose'
+            elif feedback.menu_entry_id == OPEN_GRIPPER_ID:
+                print 'open the gripper'
+            elif feedback.menu_entry_id == CLOSE_GRIPPER_ID:
+                print 'close the gripper'
+        elif feedback.event_type == InteractiveMarkerFeedback.POSE_UPDATE:
+            ps = PoseStamped()
+            ps.pose = feedback.pose
+            ps.header.frame_id = 'base_link'
+            if self._arm.compute_ik(ps):
+                print 'TODO: Finish event handler code for POSE_UPDATE'
+
         pass
 
 
