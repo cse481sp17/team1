@@ -35,7 +35,6 @@ class GripperTeleop(object):
 
     def start(self):
         pose = Pose(orientation=Quaternion(0,0,0,1))
-        print pose # remove this later
         gripper_im = self._create_gripper_marker(pose)
 
         self._im_server.insert(gripper_im, feedback_cb=self.handle_feedback)
@@ -45,16 +44,16 @@ class GripperTeleop(object):
 
         # Creates interactive marker with metadata, pose
         gripper_marker = InteractiveMarker()
-        gripper_marker.header.frame_id = 'map' # TODO: change to wrist_roll_link after done
+        gripper_marker.header.frame_id = 'base_link' # TODO: change to wrist_roll_link after done
         gripper_marker.description = 'Interactive Marker for Gripper'
+        gripper_marker.name = 'gripper_im'
         gripper_marker.pose = pose
-        gripper_marker.pose.position.x += 0.166
 
         # Create marker for gripper base
         base_marker = Marker()
         base_marker.type = Marker.MESH_RESOURCE # TODO: if this doesn't work, then set it to 10
         base_marker.mesh_resource = GRIPPER_MESH
-        base_marker.color = RED
+        base_marker.pose.position.x += 0.166
 
         # Create marker for left gripper prong
         left_marker = Marker()
@@ -62,6 +61,7 @@ class GripperTeleop(object):
         left_marker.mesh_resource = L_FINGER_MESH
         left_marker.scale.y = 0.6
         left_marker.color = RED
+        left_marker.pose.position.x += 0.166
 
         # Create marker for right gripper prong
         right_marker = Marker()
@@ -69,15 +69,16 @@ class GripperTeleop(object):
         right_marker.mesh_resource = R_FINGER_MESH
         right_marker.scale.y = 0.6
         right_marker.color = RED
+        right_marker.pose.position.x += 0.166
 
         # Create a which controls the 3 gripper components
         gripper_control = InteractiveMarkerControl()
         gripper_control.interaction_mode = InteractiveMarkerControl.MENU # or InteractiveMarkerControl.MOVE_ROTATE
         gripper_control.always_visible = True
         gripper_control.orientation.w = 1
-        gripper_control.orientation.x = 0;
-        gripper_control.orientation.y = 1;
-        gripper_control.orientation.z = 0;
+        gripper_control.orientation.x = 0
+        gripper_control.orientation.y = 1
+        gripper_control.orientation.z = 0
 
         # gripper pose Menu Entry
         menu_entry = MenuEntry()
@@ -151,20 +152,32 @@ class GripperTeleop(object):
     def handle_feedback(self, feedback):
         if feedback.event_type == InteractiveMarkerFeedback.MENU_SELECT:
             if feedback.menu_entry_id == GRIPPER_POSE_ID:
-                print 'go to the gripper pose'
+                ps = PoseStamped()
+                ps.header.frame_id = 'base_link'
+                ps.header.stamp = rospy.get_rostime()
+                ps.pose = feedback.pose
+                self._arm.move_to_pose(ps) # maybe loop if there is an error
             elif feedback.menu_entry_id == OPEN_GRIPPER_ID:
-                print 'open the gripper'
+                self._gripper.open()
             elif feedback.menu_entry_id == CLOSE_GRIPPER_ID:
-                print 'close the gripper'
+                self._gripper.close()
         elif feedback.event_type == InteractiveMarkerFeedback.POSE_UPDATE:
             ps = PoseStamped()
             ps.pose = feedback.pose
             ps.header.frame_id = 'base_link'
-            if self._arm.compute_ik(ps):
-                print 'TODO: Finish event handler code for POSE_UPDATE'
+            gripper_im = self._im_server.get(feedback.marker_name)
+            possible = self._arm.compute_ik(ps)
+            for marker in gripper_im.controls[0].markers:
+                if possible:
+                    marker.color = GREEN
+                else: 
+                    marker.color = RED
+            self._im_server.erase(feedback.marker_name)
+            self._im_server.insert(gripper_im)
+            self._im_server.applyChanges()
 
-        pass
 
+       
 
 class AutoPickTeleop(object):
     def __init__(self, arm, gripper, im_server):
