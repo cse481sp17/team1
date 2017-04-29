@@ -58,7 +58,7 @@ class MoveItGoalBuilder(object):
         self.max_velocity_scaling_factor = 0
         self.num_planning_attempts = 1
         self.plan_only = False
-        self.planner_id = ''
+        self.planner_id = 'RRTConnectkConfigDefault'
         self.replan = False
         self.replan_attempts = 5
         self.replan_delay = 1

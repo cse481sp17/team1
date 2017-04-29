@@ -70,8 +70,8 @@ def main():
     #
     # Initialize the interactive marker server for the gripper
     rospy.init_node('gripper_demo')
-    im_server = InteractiveMarkerServer('gripper_im_server')
-    auto_pick_im_server = InteractiveMarkerServer('auto_pick_im_server')
+    im_server = InteractiveMarkerServer('gripper_im_server', q_size=2)
+    auto_pick_im_server = InteractiveMarkerServer('auto_pick_im_server', q_size=2)
     arm = fetch_api.Arm()
     gripper = fetch_api.Gripper()
 
