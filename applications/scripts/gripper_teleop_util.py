@@ -29,6 +29,7 @@ def create_gripper_marker(pose):
     gripper_marker.description = 'Interactive Marker for Gripper'
     gripper_marker.name = 'gripper_im'
     gripper_marker.pose = pose
+    gripper_marker.scale = 0.5
 
     # Create marker for gripper base
     base_marker = Marker()
