@@ -35,15 +35,8 @@ class MapAnnotatorMonitor(object):
             self._marker_ctrl.rename_marker(msg.pose_name, msg.pose_name_new)
             self._pose_ctrl.rename_pose(msg.pose_name, msg.pose_name_new)
             self._publish_pose_names()
-<<<<<<< HEAD
-        elif msg.command == UserAction.GOTO and msg.pose_name:
-            self._ctrl.move_to_pose(msg.pose_name)
-        elif msg.command == UserAction.EDIT and msg.pose_name and msg.pose:
-            self._ctrl.edit_pose(msg.pose_name, msg.pose)
-=======
         elif msg.command == UserAction.GOTO:
             self._pose_ctrl.move_to_pose(msg.pose_name)
->>>>>>> ed710f9b0d3ed89f88102f67784077aaa41de81f
         else:
             print("Invalid command")
 
