@@ -31,28 +31,31 @@ def main():
     start.pose.position.z = 0.75
     arm = fetch_api.Arm()
     arm.move_to_pose(start)
-                                                                               
     reader = ArTagReader()
     # Subscribe to AR tag poses, use reader.callback
 
     sub = rospy.Subscriber('/ar_pose_marker', AlvarMarkers, reader.callback)
-    
     while len(reader.markers) == 0:
         print 'sleep'
         rospy.sleep(0.1)
-    
+    successes = []
     for marker in reader.markers:
-        marker.pose.header.frame_id = 'base_link'
-        marker.pose.pose.orientation = Quaternion(0,0,0,1)
-        marker.pose.pose.position.x -= 0.3
+        ps = PoseStamped()
+        ps.pose.position = marker.pose.pose.position
+        ps.header.frame_id = 'base_link'
+        ps.pose.orientation = Quaternion(0,0,0,1)
+        ps.pose.position.x -= 0.3
         print marker.pose
-        error = arm.move_to_pose(marker.pose, allowed_planning_time=30)
+        error = arm.move_to_pose(ps, allowed_planning_time=30)
         if error is None:
             rospy.loginfo('Moved to marker {}'.format(marker.id))
-            return
+            successes.append(marker.id)
         else:
             rospy.logwarn('Failed to move to marker {}'.format(marker.id))
-    rospy.logerr('Failed to move to any markers!')
+    if len(successes) > 0:
+        rospy.loginfo('Moved to markers {}!'.format(successes))
+    else:
+        rospy.logerr('Fail to move to any marker!')
 
 
 if __name__ == '__main__':

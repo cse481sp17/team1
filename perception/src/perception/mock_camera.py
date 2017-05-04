@@ -22,11 +22,6 @@ class MockCamera(object):
         with rosbag.Bag(path) as bag:
             msgs = bag.read_messages()
             for topic, msg, t in msgs:
-          #      print msg.header
-         #       return PointCloud2(header=msg.header, height=msg.height, width=msg.width, fields=msg.fields, is_bigendian=msg.is_bigendian, point_step=msg.point_step, row_step=msg.row_step, is_dense=msg.is_dense, data=msg.data)
                 return msg
+        return None
 
-            return None
-if __name__ == '__main__':
-    camera = MockCamera()
-    camera.read_cloud('/home/team1/catkin_ws/src/cse481c/perception/src/clowd.bag')
