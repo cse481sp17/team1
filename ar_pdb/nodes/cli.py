@@ -29,7 +29,7 @@ def prompt(program_ctrl):
         command, program_name, frame_id = command_args
 
     if command == "list":
-        print str(program_ctrl.programs)
+        print str(program_ctrl)
     elif command == "create" and program_name:
         program_ctrl.create_program(program_name)
     elif command == "save" and program_name:

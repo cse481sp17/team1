@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 import actionlib
 import control_msgs.msg
+from sensor_msgs.msg import JointState
 import rospy
 
 # TODO: ACTION_NAME = ???
@@ -13,10 +14,18 @@ class Gripper(object):
     """
     MIN_EFFORT = 35  # Min grasp force, in Newtons
     MAX_EFFORT = 100  # Max grasp force, in Newtons
-
+    CLOSED = 1
+    OPENED = 0
     def __init__(self):
         self.client = actionlib.SimpleActionClient('gripper_controller/gripper_action', control_msgs.msg.GripperCommandAction)
         self.client.wait_for_server()
+        self.joint_sub = rospy.Subscriber('/joint_states', JointState, self._callback)
+        self.r_finger_position = None
+        self.l_finger_position = None
+
+    def _callback(self, msg):
+        self.r_finger_position = msg.position[-1]
+        self.l_finger_position = msg.position[-2]
 
     def open(self):
         """Opens the gripper.
@@ -29,7 +38,7 @@ class Gripper(object):
         goal.command.max_effort = Gripper.MAX_EFFORT
         self.client.send_goal(goal)
         self.client.wait_for_result()
-        print(self.client.get_result())
+
 
     def close(self, max_effort=MAX_EFFORT):
         """Closes the gripper.
@@ -45,7 +54,11 @@ class Gripper(object):
         goal.command.position = CLOSED_POS
         goal.command.max_effort = max_effort
         self.client.send_goal(goal)
-
         self.client.wait_for_result()
-        print(self.client.get_result())
+
+    def state(self):
+        val = round(self.r_finger_position, 2)
+        if val == 0.05:
+            return Gripper.CLOSED
+        return Gripper.OPENED
 

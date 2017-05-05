@@ -27,10 +27,11 @@ class Program(object):
         #         ret += ", {}".format(step.__str__())
         # ret += "]"
         # return self.steps.__str__()
-        return self.steps.__repr__()
+        return "\n\n".join(list(map(str, (self.steps))))
 
 
     def add_step(self, step):
+        ret = ""
         self.steps.append(step)
 
     def calc_poses(self, markers):
@@ -61,10 +62,10 @@ class Program(object):
             # we have to do some transformation magic
             # we have the base_link_T_tag frame from marker_match.pose
             # we have the tag_T_gripper from step.pose
-            tag_T_gripper = copy.deepcopy(step.pose)
+            tag_T_wrist = copy.deepcopy(step.pose)
             base_link_T_tag = copy.deepcopy(marker_match.pose)
-            base_link_T_gripper = fetch_api.transform(base_link_T_tag.pose, tag_T_gripper.pose)
-            new_pose = PoseStamped(pose=base_link_T_gripper)
+            base_link_T_wrist = fetch_api.transform(base_link_T_tag.pose, tag_T_wrist.pose)
+            new_pose = PoseStamped(pose=base_link_T_wrist)
             new_pose.header.frame_id = 'base_link'
             return new_pose
 
@@ -72,13 +73,18 @@ class Program(object):
 
 class ProgramStep(object):
     #TODO: could add a gripper state
-    def __init__(self, pose=None):
+    def __init__(self, pose=None, gripper_state=fetch_api.Gripper.OPENED):
         self.pose = pose
+        self.gripper_state = gripper_state
 
     def __repr__(self):
         if self.pose is None:
             return "Empty"
-        return self.pose.__str__()
+        p = self.pose.pose.position
+        st_p = '({},{},{})'.format(p.x, p.y, p.z)
+        o = self.pose.pose.orientation
+        st_o = '({},{},{},{})'.format(o.x, o.y, o.z, o.w)
+        return "\t{}: {} {}, gripper {}".format(self.pose.header.frame_id, st_p, st_o, self.gripper_state)
 
 
 class ProgramController(object):
@@ -92,11 +98,11 @@ class ProgramController(object):
         self._curr_markers = None
         self._tf_listener = tf.TransformListener()
         self._arm = fetch_api.Arm()
-        rospy.sleep(0.1)
+        self._gripper = fetch_api.Gripper()
 
     def __str__(self):
         if self._programs:
-            return "Programs:\n" "\n".join(["{}:\n{}".format(name, pose) for name, pose in self._programs.items()])
+            return "Programs:\n" "\n".join(["{}:\n{}".format(name, program) for name, program in self._programs.items()])
         else:
             return "No programs"
 
@@ -167,7 +173,9 @@ class ProgramController(object):
             else:
                 print 'Please use base_link'
                 return
-        curr_program.add_step(ProgramStep(new_pose))
+        step = ProgramStep(new_pose)
+        step.gripper_state = self._gripper.state()
+        curr_program.add_step(step)
         self._write_out_programs()
 
     def create_program(self, program_name):
@@ -194,12 +202,15 @@ class ProgramController(object):
                 print "No markers exist"
                 return
             poses = self._programs[program_name].calc_poses(self._curr_markers)
-            print 'poses ', poses
             for i, pose in enumerate(poses):
                 error = self._arm.move_to_pose(pose, allowed_planning_time=15.0)
                 if error is not None:
                     print "{} failed to run at step #{}".format(program_name, i+1)
                     return
+                if self._programs[program_name].steps[i].gripper_state == fetch_api.Gripper.OPENED:
+                    self._gripper.open()
+                else:
+                    self._gripper.close()
                 rospy.sleep(1.5)
 
 
