@@ -38,7 +38,7 @@ class Program(object):
         if append:
             self.steps.append(step)
         else:
-            self.steps.prepend(step)
+            self.steps.insert(0, step)
 
     def calc_poses(self, markers):
         ret = []
