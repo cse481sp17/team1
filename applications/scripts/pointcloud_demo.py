@@ -27,7 +27,7 @@ def main():
         rospy.logerr('Could not load point cloud from {}'.format(path))
         return
 
-    pub = rospy.Publisher('mock_point_cloud', PointCloud2, queue_size=1)
+    pub = rospy.Publisher('mock_point_cloud', PointCloud2, queue_size=1, latch=True)
     rate = rospy.Rate(2)
     while not rospy.is_shutdown():
         cloud.header.stamp = rospy.Time.now()

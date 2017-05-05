@@ -8,3 +8,4 @@ from .destination_marker import DestinationMarker
 from .driver import Driver
 from .moveit_goal_builder import MoveItGoalBuilder
 from .gripper import Gripper
+from .util import *

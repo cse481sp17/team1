@@ -40,12 +40,12 @@ def main():
         rospy.sleep(0.1)
     successes = []
     for marker in reader.markers:
+        print marker
         ps = PoseStamped()
         ps.pose.position = marker.pose.pose.position
         ps.header.frame_id = 'base_link'
         ps.pose.orientation = Quaternion(0,0,0,1)
         ps.pose.position.x -= 0.3
-        print marker.pose
         error = arm.move_to_pose(ps, allowed_planning_time=30)
         if error is None:
             rospy.loginfo('Moved to marker {}'.format(marker.id))
