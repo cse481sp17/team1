@@ -34,11 +34,13 @@ class Program(object):
 
 
     def add_step(self, step, append=True):
-        ret = ""
         if append:
             self.steps.append(step)
         else:
             self.steps.insert(0, step)
+
+    def remove_step(self, index):
+        del self.steps[index]
 
     def calc_poses(self, markers):
         ret = []
@@ -128,6 +130,9 @@ class ProgramController(object):
         self._curr_markers = msg.markers
 
 
+    def remove_step(self, program_name, index):
+        self._programs[program_name].remove_step(index)
+        
     def relax_arm(self):
         goal = QueryControllerStatesGoal()
         state = ControllerState()
