@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import pickle
 import rospy
 from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion
@@ -6,11 +7,13 @@ from moveit_msgs.msg import MoveItErrorCodes
 import copy
 import tf
 import fetch_api
+from robot_controllers_msgs.msg import QueryControllerStatesAction, QueryControllerStatesGoal, ControllerState
+import actionlib
 
 POSE_FILE = '/home/team1/catkin_ws/src/cse481c/ar_pdb/nodes/programs.p'
 SUB_NAME = '/ar_pose_marker'
 
-ID_TO_TAGNAME = {'tag1':15, 'tag2':2}
+ID_TO_TAGNAME = {'tag1':15, 'tag2':3}
 
 class Program(object):
     def __init__(self, steps=[]):
@@ -99,6 +102,7 @@ class ProgramController(object):
         self._tf_listener = tf.TransformListener()
         self._arm = fetch_api.Arm()
         self._gripper = fetch_api.Gripper()
+        self._controller_client = actionlib.SimpleActionClient('/query_controller_states', QueryControllerStatesAction)
 
     def __str__(self):
         if self._programs:
@@ -119,6 +123,31 @@ class ProgramController(object):
 
     def _markers_callback(self, msg):
         self._curr_markers = msg.markers
+
+
+    def relax_arm(self):
+        goal = QueryControllerStatesGoal()
+        state = ControllerState()
+        state.name = 'arm_controller/follow_joint_trajectory'
+        state.state = ControllerState.STOPPED
+        goal.updates.append(state)
+        self._controller_client.send_goal(goal)
+        self._controller_client.wait_for_result()
+
+    def start_arm(self):
+        goal = QueryControllerStatesGoal()
+        state = ControllerState()
+        state.name = 'arm_controller/follow_joint_trajectory'
+        state.state = ControllerState.RUNNING
+        goal.updates.append(state)
+        self._controller_client.send_goal(goal)
+        self._controller_client.wait_for_result()
+
+    def close(self):
+        self._gripper.close()
+
+    def open(self):
+        self._gripper.open()
 
     # TODO: gripper status could be used here
     def save_program(self, program_name, frame_id):
@@ -202,6 +231,7 @@ class ProgramController(object):
                 print "No markers exist"
                 return
             poses = self._programs[program_name].calc_poses(self._curr_markers)
+            self.start_arm()
             for i, pose in enumerate(poses):
                 error = self._arm.move_to_pose(pose, allowed_planning_time=15.0)
                 if error is not None:

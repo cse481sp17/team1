@@ -1,17 +1,19 @@
 #!/usr/bin/env python
-
 import rospy
 from program_ctrl import ProgramController
 
 def help():
     print 'Welcome to the map annotator!'
     print "Commands:"
-    print "\tlist: List saved poses."
+    print "\tlist: List saved poses"
     print "\tcreate <name>: Create an empty program <name>"
-    print "\tsave <name> <frame_id>: Append the robot's current pose relative to <frame_id> to <name>."
-    print "\tdelete <name>: Delete the program given by <name>."
+    print "\tsave <name> <frame_id>: Append the robot's current pose relative to <frame_id> to <name>"
+    print "\tdelete <name>: Delete the program given by <name>"
     print "\trun <name>: Runs the program given by <name>"
-    print "\tquit: Exits the program."
+    print "\trelax: Relax the arm"
+    print "\tclose: Close the gripper"
+    print "\topen: Open the gripper"
+    print "\tquit: Exits the program"
     print "\thelp: Show this list of commands"
 
 def prompt(program_ctrl):
@@ -30,6 +32,12 @@ def prompt(program_ctrl):
 
     if command == "list":
         print str(program_ctrl)
+    elif command == "close":
+        program_ctrl.close()
+    elif command == "open":
+        program_ctrl.open()
+    elif command == "relax":
+        program_ctrl.relax_arm()
     elif command == "create" and program_name:
         program_ctrl.create_program(program_name)
     elif command == "save" and program_name:

@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-
 from geometry_msgs.msg import PoseStamped, Quaternion
 import fetch_api
 import rospy
