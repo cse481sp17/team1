@@ -33,9 +33,12 @@ class Program(object):
         return "\n\n".join(list(map(str, (self.steps))))
 
 
-    def add_step(self, step):
+    def add_step(self, step, append=True):
         ret = ""
-        self.steps.append(step)
+        if append:
+            self.steps.append(step)
+        else:
+            self.steps.prepend(step)
 
     def calc_poses(self, markers):
         ret = []
@@ -150,7 +153,7 @@ class ProgramController(object):
         self._gripper.open()
 
     # TODO: gripper status could be used here
-    def save_program(self, program_name, frame_id):
+    def save_program(self, program_name, frame_id, append=True):
         if not self._curr_markers:
             print "No ar markers available"
             return
@@ -204,7 +207,7 @@ class ProgramController(object):
                 return
         step = ProgramStep(new_pose)
         step.gripper_state = self._gripper.state()
-        curr_program.add_step(step)
+        curr_program.add_step(step, append)
         self._write_out_programs()
 
     def create_program(self, program_name):

@@ -41,7 +41,9 @@ def prompt(program_ctrl):
     elif command == "create" and program_name:
         program_ctrl.create_program(program_name)
     elif command == "save" and program_name:
-        program_ctrl.save_program(program_name, frame_id)
+        program_ctrl.save_program(program_name, frame_id, True)
+    elif command == "prepend" and program_name:
+        program_ctrl.save_program(program_name, frame_id, False)
     elif command == "delete" and program_name:
         program_ctrl.delete_program(program_name)
     elif command == "run" and program_name:
