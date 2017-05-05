@@ -59,6 +59,6 @@ class Gripper(object):
     def state(self):
         val = round(self.r_finger_position, 2)
         if val == 0.05:
-            return Gripper.CLOSED
-        return Gripper.OPENED
+            return Gripper.OPENED
+        return Gripper.CLOSED
 
