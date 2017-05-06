@@ -138,6 +138,8 @@ class ProgramController(object):
 
     def remove_step(self, program_name, index):
         self._programs[program_name].remove_step(index)
+        self._write_out_programs()
+
 
     def relax_arm(self):
         goal = QueryControllerStatesGoal()
