@@ -51,7 +51,10 @@ class Program(object):
     def _find_pose(self, step, markers):
         frame_id = step.pose.header.frame_id
         if frame_id == "base_link":
-            return step.pose
+            gripper_T_wrist = Pose(Point(-0.166, 0,0), Quaternion(0,0,0,1))
+            new_pose = PoseStamped(pose=fetch_api.transform(step.pose.pose, gripper_T_wrist))
+            new_pose.header.frame_id = 'base_link'
+            return new_pose
         else:
             if frame_id not in ID_TO_TAGNAME:
                 rospy.logerr("finding pose for a frame_id that isn't in ID_TO_TAGNAME")
