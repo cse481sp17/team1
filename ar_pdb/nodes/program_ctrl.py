@@ -70,10 +70,12 @@ class Program(object):
             # we have to do some transformation magic
             # we have the base_link_T_tag frame from marker_match.pose
             # we have the tag_T_gripper from step.pose
-            tag_T_wrist = copy.deepcopy(step.pose)
-            tag_T_wrist.pose.position.x -= 0.166
+            tag_T_gripper = copy.deepcopy(step.pose)
+            #tag_T_wrist.pose.position.x -= 0.166
             base_link_T_tag = copy.deepcopy(marker_match.pose)
-            base_link_T_wrist = fetch_api.transform(base_link_T_tag.pose, tag_T_wrist.pose)
+            gripper_T_wrist = Pose(Point(-0.166, 0,0), Quaternion(0,0,0,1))
+            base_link_T_gripper = fetch_api.transform(base_link_T_tag.pose, tag_T_gripper.pose)
+            base_link_T_wrist = fetch_api.transform(base_link_T_gripper, gripper_T_wrist)
             new_pose = PoseStamped(pose=base_link_T_wrist)
             new_pose.header.frame_id = 'base_link'
             return new_pose
