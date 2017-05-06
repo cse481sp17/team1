@@ -71,7 +71,7 @@ class Program(object):
             # we have the base_link_T_tag frame from marker_match.pose
             # we have the tag_T_gripper from step.pose
             tag_T_wrist = copy.deepcopy(step.pose)
-            tag_T_wrist.position.x -= 0.166
+            tag_T_wrist.pose.position.x -= 0.166
             base_link_T_tag = copy.deepcopy(marker_match.pose)
             base_link_T_wrist = fetch_api.transform(base_link_T_tag.pose, tag_T_wrist.pose)
             new_pose = PoseStamped(pose=base_link_T_wrist)
