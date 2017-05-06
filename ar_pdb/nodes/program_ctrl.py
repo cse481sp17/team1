@@ -132,7 +132,7 @@ class ProgramController(object):
 
     def remove_step(self, program_name, index):
         self._programs[program_name].remove_step(index)
-        
+
     def relax_arm(self):
         goal = QueryControllerStatesGoal()
         state = ControllerState()
@@ -189,7 +189,7 @@ class ProgramController(object):
                 # we have to then transform that current position to be relative to the curr_marker.pose
 
                 # get position and orientation of the gripper in the base link 
-                position, orientation = self._tf_listener.lookupTransform('/base_link', '/wrist_roll_link', rospy.Time(0))
+                position, orientation = self._tf_listener.lookupTransform('/base_link', '/gripper_link', rospy.Time(0))
                 base_link_T_wrist = Pose(Point(*position), Quaternion(*orientation))
 
                 # The transformation from the base_link to this tags frame is just the tags pose
@@ -203,7 +203,7 @@ class ProgramController(object):
             # user is trying to define frame_id in some arbitrary frame
             # assume base_link for now
             if frame_id == 'base_link':
-                position, orientation = self._tf_listener.lookupTransform('/base_link', '/wrist_roll_link', rospy.Time(0))
+                position, orientation = self._tf_listener.lookupTransform('/base_link', '/gripper_link', rospy.Time(0))
                 base_link_T_wrist = Pose(Point(*position), Quaternion(*orientation))
                 new_pose = PoseStamped(pose=base_link_T_wrist)
                 new_pose.header.frame_id = frame_id
