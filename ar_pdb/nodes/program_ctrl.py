@@ -75,6 +75,7 @@ class Program(object):
             base_link_T_wrist = fetch_api.transform(base_link_T_tag.pose, tag_T_wrist.pose)
             new_pose = PoseStamped(pose=base_link_T_wrist)
             new_pose.header.frame_id = 'base_link'
+            new_pose.pose.position.x -= 0.166
             return new_pose
 
         return None 
