@@ -12,7 +12,6 @@ namespace perception {
   void Cropper::Callback(const sensor_msgs::PointCloud2& msg) {   
     PointCloudC::Ptr cloud(new PointCloudC());
     pcl::fromROSMsg(msg, *cloud);
-    ROS_INFO("Got point cloud with %ld points", cloud->size());
 
     PointCloudC::Ptr cropped_cloud(new PointCloudC());
     double min_x, min_y, min_z, max_x, max_y, max_z;
@@ -29,7 +28,6 @@ namespace perception {
     crop.setMin(min_pt);
     crop.setMax(max_pt);
     crop.filter(*cropped_cloud);
-    ROS_INFO("Cropped to %ld points", cropped_cloud->size());
 
     sensor_msgs::PointCloud2 msg_out;
     pcl::toROSMsg(*cropped_cloud, msg_out);
@@ -38,7 +36,7 @@ namespace perception {
     PointC max_pcl;
     pcl::getMinMax3D<PointC>(*cropped_cloud, min_pcl, max_pcl);
     ROS_INFO("min: %f, max: %f", min_pcl.x, max_pcl.x);
-    
+
     pub_.publish(msg_out);
   }
 }
