@@ -123,7 +123,30 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
   extract.filter(*cloud_out);
   pcl::toROSMsg(*cloud_out, msg_out); 
   above_surface_pub_.publish(msg_out);
+  for (size_t i = 0; i < object_indices.size(); ++i) {
+    // Reify indices into a point cloud of the object.
+    pcl::PointIndices::Ptr indices(new pcl::PointIndices);
+    *indices = object_indices[i];
+    PointCloudC::Ptr object_cloud(new PointCloudC());
+    // TODO: fill in object_cloud using indices
+    pcl::ExtractIndices<PointC> extract_object_cloud;
+    extract_object_cloud.setInputCloud(cloud_out);
+    extract_object_cloud.setIndices(indices);
+    extract_object_cloud.filter(*object_cloud);
+    // Publish a bounding box around it.
+    visualization_msgs::Marker object_marker;
+    object_marker.ns = "objects";
+    object_marker.id = i;
+    object_marker.header.frame_id = "base_link";
+    object_marker.type = visualization_msgs::Marker::CUBE;
+    GetAxisAlignedBoundingBox(object_cloud, &object_marker.pose,
+                                &object_marker.scale);
+    object_marker.color.g = 1;
+    object_marker.color.a = 0.3;
+    marker_pub_.publish(object_marker);
+  }
 }
+
 
 void SegmentSurfaceObjects(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
                            pcl::PointIndices::Ptr surface_indices,

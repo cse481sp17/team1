@@ -26,13 +26,19 @@ void SegmentSurface(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
 void GetAxisAlignedBoundingBox(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
                                geometry_msgs::Pose* pose,
                                geometry_msgs::Vector3* dimensions);
+
+void SegmentSurfaceObjects(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
+                           pcl::PointIndices::Ptr surface_indices,
+                           std::vector<pcl::PointIndices>* object_indices);
+
 class Segmenter {
  public:
-  Segmenter(const ros::Publisher& surface_points_pub, const ros::Publisher& marker_pub);
+  Segmenter(const ros::Publisher& surface_points_pub, const ros::Publisher& marker_pub, const ros::Publisher& above_surface_pub);
   void Callback(const sensor_msgs::PointCloud2& msg);
 
  private:
   ros::Publisher surface_points_pub_;
   ros::Publisher marker_pub_;
+  ros::Publisher above_surface_pub_;
 };
 }  // namespace perception
