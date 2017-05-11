@@ -16,11 +16,16 @@
 #include "pcl/common/common.h"
 #include "visualization_msgs/Marker.h"
 #include <pcl/segmentation/extract_clusters.h>
+
+#include "geometry_msgs/Pose.h"
+#include "simple_grasping/shape_extraction.h"
+#include "shape_msgs/SolidPrimitive.h"
+
 typedef pcl::PointXYZRGB PointC;
 typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudC;
 using namespace std;
 namespace perception {
-void SegmentSurface(PointCloudC::Ptr cloud, pcl::PointIndices::Ptr indices) {
+void SegmentSurface(PointCloudC::Ptr cloud, pcl::PointIndices::Ptr indices, pcl::ModelCoefficients::Ptr coeff) {
   pcl::PointIndices indices_internal;
   pcl::SACSegmentation<PointC> seg;
   seg.setOptimizeCoefficients(true);
@@ -39,9 +44,9 @@ void SegmentSurface(PointCloudC::Ptr cloud, pcl::PointIndices::Ptr indices) {
 
   // coeff contains the coefficients of the plane:
   // ax + by + cz + d = 0
-  pcl::ModelCoefficients coeff;
+  //pcl::ModelCoefficients coeff;
 
-  seg.segment(indices_internal, coeff);
+  seg.segment(indices_internal, *coeff);
 
   double distance_above_plane;
   ros::param::param("distance_above_plane", distance_above_plane, 0.005);
@@ -91,7 +96,8 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
   pcl::removeNaNFromPointCloud(*nan_cloud, *cloud, v);
 
   pcl::PointIndices::Ptr table_inliers(new pcl::PointIndices());
-  SegmentSurface(cloud, table_inliers);
+  pcl::ModelCoefficients::Ptr coeff(new pcl::ModelCoefficients());
+  SegmentSurface(cloud, table_inliers, coeff);
   PointCloudC::Ptr table_cloud(new PointCloudC);
   pcl::ExtractIndices<PointC> extract;
   extract.setInputCloud(cloud);
@@ -106,14 +112,23 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
   table_marker.ns = "table";
   table_marker.header.frame_id = "base_link";
   table_marker.type = visualization_msgs::Marker::CUBE;
-  GetAxisAlignedBoundingBox(table_cloud, &table_marker.pose, &table_marker.scale);
-  table_marker.color.r = 1;
+  //GetAxisAlignedBoundingBox(table_cloud, &table_marker.pose, &table_marker.scale);
+  shape_msgs::SolidPrimitive table_shape;
+  PointCloudC::Ptr extract_out_table(new PointCloudC());
+  geometry_msgs::Pose table_pose;
+  simple_grasping::extractShape(*table_cloud, coeff, *extract_out_table, table_shape, table_pose);
+  table_marker.pose = table_pose;
+  table_marker.scale.x = table_shape.dimensions[0];
+  table_marker.scale.y = table_shape.dimensions[1];
+  table_marker.scale.z = table_shape.dimensions[2];
+  table_marker.color.r = 0.5;
   table_marker.color.a = 0.8;
   marker_pub_.publish(table_marker);
   // We are reusing the extract object created earlier in the callback.
 
   std::vector<pcl::PointIndices> object_indices;
-  SegmentSurfaceObjects(cloud, table_inliers, &object_indices);
+
+  SegmentSurfaceObjects(cloud, table_inliers, &object_indices, coeff);
   PointCloudC::Ptr cloud_out(new PointCloudC);
   extract.setNegative(true);
   extract.filter(*cloud_out);
@@ -136,8 +151,18 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
     object_marker.id = i;
     object_marker.header.frame_id = "base_link";
     object_marker.type = visualization_msgs::Marker::CUBE;
-    GetAxisAlignedBoundingBox(object_cloud, &object_marker.pose,
-                                &object_marker.scale);
+
+    PointCloudC::Ptr extract_out_object(new PointCloudC());
+    shape_msgs::SolidPrimitive object_shape;
+    geometry_msgs::Pose::Ptr object_pose(new geometry_msgs::Pose());
+    simple_grasping::extractShape(*object_cloud, coeff, *extract_out_object, object_shape, *object_pose);
+    object_marker.pose = *object_pose;
+    // need to set object_marker.scale
+    object_marker.scale.x = object_shape.dimensions[0];
+    object_marker.scale.y = object_shape.dimensions[1];
+    object_marker.scale.z = object_shape.dimensions[2];
+   // GetAxisAlignedBoundingBox(object_cloud, &object_marker.pose,
+   //                             &object_marker.scale);
     object_marker.color.g = 1;
     object_marker.color.a = 0.3;
     marker_pub_.publish(object_marker);
@@ -147,7 +172,8 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
 
 void SegmentSurfaceObjects(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
                            pcl::PointIndices::Ptr surface_indices,
-                           std::vector<pcl::PointIndices>* object_indices) {
+                           std::vector<pcl::PointIndices>* object_indices,
+                           pcl::ModelCoefficients::Ptr coeff) {
     pcl::ExtractIndices<PointC> extract;
     pcl::PointIndices::Ptr above_surface_indices(new pcl::PointIndices());
     extract.setInputCloud(cloud);

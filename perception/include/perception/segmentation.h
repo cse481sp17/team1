@@ -5,6 +5,12 @@
 #include "sensor_msgs/PointCloud2.h"
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/Vector3.h"
+
+#include "pcl/common/angles.h"
+#include "pcl/sample_consensus/method_types.h"
+#include "pcl/sample_consensus/model_types.h"
+#include "pcl/segmentation/sac_segmentation.h"
+
 namespace perception {
 // Finds the largest horizontal surface in the given point cloud.
 // This is useful for adding a collision object to MoveIt.
@@ -14,7 +20,8 @@ namespace perception {
 //  indices: The indices of points in the point cloud that correspond to the
 //    surface. Empty if no surface was found.
 void SegmentSurface(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
-                    pcl::PointIndices::Ptr indices);
+                    pcl::PointIndices::Ptr indices,
+                    pcl::ModelCoefficients::Ptr coeff);
 
 // Computes the axis-aligned bounding box of a point cloud.
 //
@@ -29,7 +36,8 @@ void GetAxisAlignedBoundingBox(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
 
 void SegmentSurfaceObjects(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
                            pcl::PointIndices::Ptr surface_indices,
-                           std::vector<pcl::PointIndices>* object_indices);
+                           std::vector<pcl::PointIndices>* object_indices,
+                           pcl::ModelCoefficients::Ptr coeff);
 
 class Segmenter {
  public:
