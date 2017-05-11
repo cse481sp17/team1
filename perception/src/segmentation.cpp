@@ -43,33 +43,25 @@ void SegmentSurface(PointCloudC::Ptr cloud, pcl::PointIndices::Ptr indices) {
 
   seg.segment(indices_internal, coeff);
 
-  *indices = indices_internal;
-
-  if (indices->indices.size() == 0) {
-    ROS_ERROR("Unable to find surface.");
-    return;
-  }
-
   double distance_above_plane;
   ros::param::param("distance_above_plane", distance_above_plane, 0.005);
 
   // Build custom indices that ignores points above the plane.
-  for (size_t i = 0; i < cloud->size(); ++i) {
+  /*for (size_t i = 0; i < cloud->size(); ++i) {
     const PointC& pt = cloud->points[i];
     float val = coeff.values[0] * pt.x + coeff.values[1] * pt.y +
                 coeff.values[2] * pt.z + coeff.values[3];
     if (val <= distance_above_plane) {
       indices->indices.push_back(i);
     }
-  }
+  }*/
 
-  // Comment this out
-  //*indices = indices_internal;
+  *indices = indices_internal;
+
   if (indices->indices.size() == 0) {
     ROS_ERROR("Unable to find surface.");
     return;
   }
-
 }
 
 void GetAxisAlignedBoundingBox(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
@@ -91,8 +83,12 @@ Segmenter::Segmenter(const ros::Publisher& surface_points_pub, const ros::Publis
     : surface_points_pub_(surface_points_pub), marker_pub_(marker_pub), above_surface_pub_(above_surface_pub) {}
 
 void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
+  PointCloudC::Ptr nan_cloud(new PointCloudC());
+  pcl::fromROSMsg(msg, *nan_cloud);
+
   PointCloudC::Ptr cloud(new PointCloudC());
-  pcl::fromROSMsg(msg, *cloud);
+  std:vector<int> v;
+  pcl::removeNaNFromPointCloud(*nan_cloud, *cloud, v);
 
   pcl::PointIndices::Ptr table_inliers(new pcl::PointIndices());
   SegmentSurface(cloud, table_inliers);
@@ -121,8 +117,9 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
   PointCloudC::Ptr cloud_out(new PointCloudC);
   extract.setNegative(true);
   extract.filter(*cloud_out);
-  pcl::toROSMsg(*cloud_out, msg_out); 
+  pcl::toROSMsg(*cloud_out, msg_out);
   above_surface_pub_.publish(msg_out);
+
   for (size_t i = 0; i < object_indices.size(); ++i) {
     // Reify indices into a point cloud of the object.
     pcl::PointIndices::Ptr indices(new pcl::PointIndices);
@@ -130,7 +127,7 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
     PointCloudC::Ptr object_cloud(new PointCloudC());
     // TODO: fill in object_cloud using indices
     pcl::ExtractIndices<PointC> extract_object_cloud;
-    extract_object_cloud.setInputCloud(cloud_out);
+    extract_object_cloud.setInputCloud(cloud);
     extract_object_cloud.setIndices(indices);
     extract_object_cloud.filter(*object_cloud);
     // Publish a bounding box around it.
@@ -161,8 +158,8 @@ void SegmentSurfaceObjects(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
     ROS_INFO("There are %ld points above the table", above_surface_indices->indices.size());
     double cluster_tolerance;
     int min_cluster_size, max_cluster_size;
-    ros::param::param("ec_cluster_tolerance", cluster_tolerance, 0.01);
-    ros::param::param("ec_min_cluster_size", min_cluster_size, 10);
+    ros::param::param("ec_cluster_tolerance", cluster_tolerance, 0.02);
+    ros::param::param("ec_min_cluster_size", min_cluster_size, 30);
     ros::param::param("ec_max_cluster_size", max_cluster_size, 10000);
 
     pcl::EuclideanClusterExtraction<PointC> euclid;
