@@ -15,8 +15,7 @@
 #include <pcl/filters/extract_indices.h>
 #include "pcl/common/common.h"
 #include "visualization_msgs/Marker.h"
-
-
+#include <pcl/segmentation/extract_clusters.h>
 typedef pcl::PointXYZRGB PointC;
 typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudC;
 using namespace std;
@@ -88,8 +87,8 @@ void GetAxisAlignedBoundingBox(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
   dimensions->z = (max_pcl.z - min_pcl.z);
 }
 
-Segmenter::Segmenter(const ros::Publisher& surface_points_pub, const ros::Publisher& marker_pub)
-    : surface_points_pub_(surface_points_pub), marker_pub_(marker_pub) {}
+Segmenter::Segmenter(const ros::Publisher& surface_points_pub, const ros::Publisher& marker_pub, const ros::Publisher& above_surface_pub)
+    : surface_points_pub_(surface_points_pub), marker_pub_(marker_pub), above_surface_pub_(above_surface_pub) {}
 
 void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
   PointCloudC::Ptr cloud(new PointCloudC());
@@ -105,10 +104,7 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
 
   sensor_msgs::PointCloud2 msg_out;
   pcl::toROSMsg(*table_cloud, msg_out);
-
-
   surface_points_pub_.publish(msg_out);
-
 
   visualization_msgs::Marker table_marker;
   table_marker.ns = "table";
@@ -118,6 +114,58 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
   table_marker.color.r = 1;
   table_marker.color.a = 0.8;
   marker_pub_.publish(table_marker);
+  // We are reusing the extract object created earlier in the callback.
 
+  std::vector<pcl::PointIndices> object_indices;
+  SegmentSurfaceObjects(cloud, table_inliers, &object_indices);
+  PointCloudC::Ptr cloud_out(new PointCloudC);
+  extract.setNegative(true);
+  extract.filter(*cloud_out);
+  pcl::toROSMsg(*cloud_out, msg_out); 
+  above_surface_pub_.publish(msg_out);
+}
+
+void SegmentSurfaceObjects(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
+                           pcl::PointIndices::Ptr surface_indices,
+                           std::vector<pcl::PointIndices>* object_indices) {
+    pcl::ExtractIndices<PointC> extract;
+    pcl::PointIndices::Ptr above_surface_indices(new pcl::PointIndices());
+    extract.setInputCloud(cloud);
+    extract.setIndices(surface_indices);
+    extract.setNegative(true);
+    extract.filter(above_surface_indices->indices);
+
+    ROS_INFO("There are %ld points above the table", above_surface_indices->indices.size());
+    double cluster_tolerance;
+    int min_cluster_size, max_cluster_size;
+    ros::param::param("ec_cluster_tolerance", cluster_tolerance, 0.01);
+    ros::param::param("ec_min_cluster_size", min_cluster_size, 10);
+    ros::param::param("ec_max_cluster_size", max_cluster_size, 10000);
+
+    pcl::EuclideanClusterExtraction<PointC> euclid;
+    euclid.setInputCloud(cloud);
+    euclid.setIndices(above_surface_indices);
+    euclid.setClusterTolerance(cluster_tolerance);
+    euclid.setMinClusterSize(min_cluster_size);
+    euclid.setMaxClusterSize(max_cluster_size);
+    euclid.extract(*object_indices);
+
+    // Find the size of the smallest and the largest object,
+    // where size = number of points in the cluster
+    size_t min_size = std::numeric_limits<size_t>::max();
+    size_t max_size = std::numeric_limits<size_t>::min();
+    for (size_t i = 0; i < object_indices->size(); ++i) {
+      // TODO: implement this      
+      size_t cluster_size = (*object_indices)[i].indices.size();
+      if (min_size > cluster_size) {
+        min_size = cluster_size;
+      }
+      if (max_size < cluster_size) {
+        max_size = cluster_size;
+      }
+    }
+
+    ROS_INFO("Found %ld objects, min size: %ld, max size: %ld",
+             object_indices->size(), min_size, max_size);
 }
 }  // namespace perception
