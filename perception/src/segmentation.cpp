@@ -98,6 +98,10 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
   pcl::PointIndices::Ptr table_inliers(new pcl::PointIndices());
   pcl::ModelCoefficients::Ptr coeff(new pcl::ModelCoefficients());
   SegmentSurface(cloud, table_inliers, coeff);
+  if (table_inliers->size() == 0) {
+    return;
+  }
+
   PointCloudC::Ptr table_cloud(new PointCloudC);
   pcl::ExtractIndices<PointC> extract;
   extract.setInputCloud(cloud);
@@ -145,6 +149,7 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
     extract_object_cloud.setInputCloud(cloud);
     extract_object_cloud.setIndices(indices);
     extract_object_cloud.filter(*object_cloud);
+
     // Publish a bounding box around it.
     visualization_msgs::Marker object_marker;
     object_marker.ns = "objects";
