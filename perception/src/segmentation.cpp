@@ -98,7 +98,7 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
   pcl::PointIndices::Ptr table_inliers(new pcl::PointIndices());
   pcl::ModelCoefficients::Ptr coeff(new pcl::ModelCoefficients());
   SegmentSurface(cloud, table_inliers, coeff);
-  if (table_inliers->size() == 0) {
+  if (table_inliers->indices.size() == 0) {
     return;
   }
 
