@@ -193,9 +193,40 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
     object_marker.scale.x = object_shape.dimensions[0];
     object_marker.scale.y = object_shape.dimensions[1];
     object_marker.scale.z = object_shape.dimensions[2];
+    std::cout << "object id: " << i << "x: " << object_marker.scale.x << "y: " << object_marker.scale.y << "z: " << object_marker.scale.z << std::endl;
    // GetAxisAlignedBoundingBox(object_cloud, &object_marker.pose,
    //                             &object_marker.scale);
-    object_marker.color.g = 1;
+
+    double x = 0.075; //0.0703085;
+    double y = 0.030; //0.0312478;
+    double z = 0.037; //0.0374182;
+    double thres = 0.17;
+    // double vol = x * y * z;
+    // double vol_lo = x * y * z * (1.0 - thres) * (1.0 - thres) * (1.0 - thres);
+    // double vol_hi = x * y * z * (1.0 + thres) * (1.0 + thres) * (1.0 + thres);
+    double x_lo = x * (1.0 - thres);
+    double y_lo = y * (1.0 - thres);
+    double z_lo = z * (1.0 - thres);
+    double x_hi = x * (1.0 + thres);
+    double y_hi = y * (1.0 + thres);
+    double z_hi = z * (1.0 + thres);
+
+
+    double object_vol = object_marker.scale.x * object_marker.scale.y * object_marker.scale.z;
+
+    if (x_lo <= object_marker.scale.x && object_marker.scale.x <= x_hi &&
+        y_lo <= object_marker.scale.y && object_marker.scale.y <= y_hi &&
+        z_lo <= object_marker.scale.z && object_marker.scale.z <= z_hi)
+    {
+      object_marker.color.r = 0;
+      object_marker.color.g = 0;
+      object_marker.color.b = 1;
+    } else {
+      object_marker.color.r = 0;
+      object_marker.color.g = 1;
+      object_marker.color.b = 0;
+    }
+    
     object_marker.color.a = 0.3;
     marker_pub_.publish(object_marker);
   }
