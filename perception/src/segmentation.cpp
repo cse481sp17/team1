@@ -217,29 +217,30 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
    // GetAxisAlignedBoundingBox(object_cloud, &object_marker.pose,
    //                             &object_marker.scale);
 
-    double x = 0.075; //0.0703085;
-    double y = 0.030; //0.0312478;
-    double z = 0.037; //0.0374182;
-    double thres = 0.20;
-    // double vol = x * y * z;
-    // double vol_lo = x * y * z * (1.0 - thres) * (1.0 - thres) * (1.0 - thres);
-    // double vol_hi = x * y * z * (1.0 + thres) * (1.0 + thres) * (1.0 + thres);
+    double x = 0.075;
+    double y = 0.030;
+    double z = 0.037;
+
+    double thres = 0.10;
+    double z_thres = 0.275;
+
     double x_lo = x * (1.0 - thres);
-    double y_lo = y * (1.0 - thres);
-    double z_lo = z * (1.0 - thres);
     double x_hi = x * (1.0 + thres);
+    double y_lo = y * (1.0 - thres);
     double y_hi = y * (1.0 + thres);
-    double z_hi = z * (1.0 + thres);
-
-
-    double object_vol = object_marker.scale.x * object_marker.scale.y * object_marker.scale.z;
-
+    double z_lo = z * (1.0 - z_thres);
+    double z_hi = z * (1.0 + z_thres);
 
     // Set the color for the bounding box
     if (x_lo <= object_marker.scale.x && object_marker.scale.x <= x_hi &&
         y_lo <= object_marker.scale.y && object_marker.scale.y <= y_hi &&
         z_lo <= object_marker.scale.z && object_marker.scale.z <= z_hi)
     {
+      // Update object marker pose position to be exact z
+      // table_marker.pose
+      // table_marker.scale.z
+      object_marker.pose.position.z = table_marker.pose.position.z + (table_marker.scale.z / 2.0) + (z / 2.0);
+      object_marker.scale.z = z;
       object_marker.color.r = 0;
       object_marker.color.g = 0;
       object_marker.color.b = 1;
