@@ -180,20 +180,40 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
     // Publish a bounding box around it.
     visualization_msgs::Marker object_marker;
     object_marker.ns = "objects";
-    object_marker.id = i;
+    object_marker.id = 2*i;
     object_marker.header.frame_id = "base_link";
     object_marker.type = visualization_msgs::Marker::CUBE;
 
+    // Publish a text view above it
+    visualization_msgs::Marker object_marker_text;
+    object_marker_text.ns = "text";
+    object_marker_text.id = 2*i + 1;
+    object_marker_text.header.frame_id = "base_link";
+    object_marker_text.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+
+    // Get object marker pose and scale
     PointCloudC::Ptr extract_out_object(new PointCloudC());
     shape_msgs::SolidPrimitive object_shape;
     geometry_msgs::Pose::Ptr object_pose(new geometry_msgs::Pose());
     simple_grasping::extractShape(*object_cloud, coeff, *extract_out_object, object_shape, *object_pose);
+
+    // Populate marker for bounding box
     object_marker.pose = *object_pose;
     // need to set object_marker.scale
     object_marker.scale.x = object_shape.dimensions[0];
     object_marker.scale.y = object_shape.dimensions[1];
     object_marker.scale.z = object_shape.dimensions[2];
-    std::cout << "object id: " << i << "x: " << object_marker.scale.x << "y: " << object_marker.scale.y << "z: " << object_marker.scale.z << std::endl;
+
+    // Populate marker for text box
+    object_marker_text.pose = *object_pose;
+    object_marker_text.text = boost::to_string(2*i + 1);
+    // need to set object_marker.scale
+    object_marker_text.scale.x = object_shape.dimensions[0];
+    object_marker_text.scale.y = object_shape.dimensions[1];
+    object_marker_text.scale.z = object_shape.dimensions[2];
+
+
+    std::cout << "object id: " << 2*i << "," << 2*i + 1 << " x: " << object_marker.scale.x << " y: " << object_marker.scale.y << " z: " << object_marker.scale.z << std::endl;
    // GetAxisAlignedBoundingBox(object_cloud, &object_marker.pose,
    //                             &object_marker.scale);
 
@@ -214,6 +234,8 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
 
     double object_vol = object_marker.scale.x * object_marker.scale.y * object_marker.scale.z;
 
+
+    // Set the color for the bounding box
     if (x_lo <= object_marker.scale.x && object_marker.scale.x <= x_hi &&
         y_lo <= object_marker.scale.y && object_marker.scale.y <= y_hi &&
         z_lo <= object_marker.scale.z && object_marker.scale.z <= z_hi)
@@ -226,9 +248,18 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
       object_marker.color.g = 1;
       object_marker.color.b = 0;
     }
-    
+
     object_marker.color.a = 0.3;
+
+    // Set the color for the text box
+
+    object_marker_text.color.r = 0;
+    object_marker_text.color.g = 1;
+    object_marker_text.color.b = 1;
+    object_marker_text.color.a = 1;
+
     marker_pub_.publish(object_marker);
+    marker_pub_.publish(object_marker_text);
   }
 }
 
