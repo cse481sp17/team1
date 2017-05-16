@@ -21,3 +21,6 @@ Labs and other documentation are on the **[wiki](https://github.com/cse481sp17/c
 6. `frontendrviz`
 7. Visit http://localhost:8080/ and use the Websocket URL: ws://localhost:9090
 
+## Dependencies 
+
+sudo apt-get install ros-indigo-simple-grasping
