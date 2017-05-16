@@ -7,6 +7,7 @@
 #include "ros/ros.h"
 #include "sensor_msgs/PointCloud2.h"
 #include <iostream>
+#include <string>
 
 #include "pcl/common/angles.h"
 #include "pcl/sample_consensus/method_types.h"
@@ -20,6 +21,10 @@
 #include "geometry_msgs/Pose.h"
 #include "simple_grasping/shape_extraction.h"
 #include "shape_msgs/SolidPrimitive.h"
+
+#include "pcl_ros/transforms.h"
+#include "tf/transform_listener.h"
+#include "sensor_msgs/PointCloud2.h"
 
 typedef pcl::PointXYZRGB PointC;
 typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudC;
@@ -88,13 +93,35 @@ Segmenter::Segmenter(const ros::Publisher& surface_points_pub, const ros::Publis
     : surface_points_pub_(surface_points_pub), marker_pub_(marker_pub), above_surface_pub_(above_surface_pub) {}
 
 void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
-  PointCloudC::Ptr nan_cloud(new PointCloudC());
-  pcl::fromROSMsg(msg, *nan_cloud);
-
+  
+  // Here we want to check the frame_id of the PointCloud
+  // and do a transformation to the base_link frame
+  
+  tf::TransformListener tf_listener;
+  tf_listener.waitForTransform("base_link", msg.header.frame_id,
+                                ros::Time(0), ros::Duration(5.0));
+  tf::StampedTransform transform;
+  try {
+    tf_listener.lookupTransform("base_link", msg.header.frame_id,
+                                ros::Time(0), transform);
+  } catch (tf::LookupException& e) {
+      std::cerr << e.what() << std::endl;
+      return;
+  } catch (tf::ExtrapolationException& e) {
+      std::cerr << e.what() << std::endl;
+      return;
+  }
+        
+  sensor_msgs::PointCloud2 cloud_transform_msg;
+  pcl_ros::transformPointCloud("base_link", transform, msg, cloud_transform_msg);
+  
+  PointCloudC::Ptr cloud_transform(new PointCloudC());
+  pcl::fromROSMsg(cloud_transform_msg, *cloud_transform);
+ 
   PointCloudC::Ptr cloud(new PointCloudC());
   std:vector<int> v;
-  pcl::removeNaNFromPointCloud(*nan_cloud, *cloud, v);
-
+  pcl::removeNaNFromPointCloud(*cloud_transform, *cloud, v);
+ 
   pcl::PointIndices::Ptr table_inliers(new pcl::PointIndices());
   pcl::ModelCoefficients::Ptr coeff(new pcl::ModelCoefficients());
   SegmentSurface(cloud, table_inliers, coeff);
