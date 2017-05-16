@@ -220,7 +220,7 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
     double x = 0.075; //0.0703085;
     double y = 0.030; //0.0312478;
     double z = 0.037; //0.0374182;
-    double thres = 0.17;
+    double thres = 0.20;
     // double vol = x * y * z;
     // double vol_lo = x * y * z * (1.0 - thres) * (1.0 - thres) * (1.0 - thres);
     // double vol_hi = x * y * z * (1.0 + thres) * (1.0 + thres) * (1.0 + thres);
