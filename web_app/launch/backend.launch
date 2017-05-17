@@ -1,0 +1,8 @@
+<launch>
+  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
+  <node pkg="web_teleop" type="joint_state_republisher.py" name="joint_state_republisher" />
+  <node pkg="web_teleop" type="actuators_node.py" name="web_teleop_actuators" />
+  <node pkg="web_video_server" type="web_video_server" name="web_video_server">
+    <param name="port" value="8000" />
+  </node>
+</launch>
