@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>webapp_nectar</name>
+  <name>webapp</name>
   <version>0.0.0</version>
   <description>The webapp_nectar package</description>
 
