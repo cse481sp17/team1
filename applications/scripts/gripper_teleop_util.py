@@ -82,7 +82,7 @@ def create_gripper_marker(x, z):
 
     return [base_marker, left_marker, right_marker]
 
-def create_gripper_interactive_marker(pose, pregrasp=True):
+def create_gripper_interactive_marker(pose, pregrasp=True, rotation_enabled=True):
     # Creates interactive marker with metadata, pose
     gripper_marker = InteractiveMarker()
     gripper_marker.header.frame_id = 'base_link'
@@ -127,21 +127,22 @@ def create_gripper_interactive_marker(pose, pregrasp=True):
 
     # Add the above control to the interactive marker
     gripper_marker.controls.append(gripper_control)
-    gripper_marker.controls.extend(make_6dof_controls())
+    gripper_marker.controls.extend(make_6dof_controls(rotation_enabled))
 
     # Return the InteractiveMarker
     return gripper_marker
 
-def make_6dof_controls():
+def make_6dof_controls(rotation_enabled):
     controls = []
     control = InteractiveMarkerControl()
     control.orientation.w = 1
     control.orientation.x = 1
     control.orientation.y = 0
     control.orientation.z = 0
-    control.name = "rotate_x"
-    control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
-    controls.append(copy.deepcopy(control))
+    if rotation_enabled:
+        control.name = "rotate_x"
+        control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
+        controls.append(copy.deepcopy(control))
     control.name = "move_x"
     control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
     controls.append(copy.deepcopy(control))
@@ -150,9 +151,10 @@ def make_6dof_controls():
     control.orientation.x = 0
     control.orientation.y = 1
     control.orientation.z = 0
-    control.name = "rotate_z"
-    control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
-    controls.append(copy.deepcopy(control))
+    if rotation_enabled:
+        control.name = "rotate_z"
+        control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
+        controls.append(copy.deepcopy(control))
     control.name = "move_z"
     control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
     controls.append(copy.deepcopy(control))
@@ -161,9 +163,10 @@ def make_6dof_controls():
     control.orientation.x = 0
     control.orientation.y = 0
     control.orientation.z = 1
-    control.name = "rotate_y"
-    control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
-    controls.append(copy.deepcopy(control))
+    if rotation_enabled:
+        control.name = "rotate_y"
+        control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
+        controls.append(copy.deepcopy(control))
     control.name = "move_y"
     control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
     controls.append(control) # not deep copy
