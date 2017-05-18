@@ -1,7 +1,9 @@
 #Navigation Docs
 
 To build a map:
-* In one terminal:
+```
+In one terminal:
+```
 * setrobot astro
 * roslaunch fetch_navigation build_map.launch*
 * #not teleoperate the robot around*
