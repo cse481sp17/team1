@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
   //  Visualize cropped point cloud
   ros::Publisher crop_pub =
      nh.advertise<sensor_msgs::PointCloud2>("cropped_cloud", 1, true);
-  perception::Cropper cropper(crop_pub);
+  perception::Cropper cropper(crop_pub, "crop");
 
   ros::Subscriber crop_sub =
      nh.subscribe("cloud_in", 1, &perception::Cropper::Callback, &cropper);
