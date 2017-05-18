@@ -1,11 +1,6 @@
 #include "perception/segmentation.h"
 
-#include "pcl/PointIndices.h"
-#include "pcl/point_cloud.h"
-#include "pcl/point_types.h"
 #include "pcl_conversions/pcl_conversions.h"
-#include "ros/ros.h"
-#include "sensor_msgs/PointCloud2.h"
 #include <iostream>
 #include <string>
 
@@ -15,7 +10,6 @@
 #include "pcl/segmentation/sac_segmentation.h"
 #include <pcl/filters/extract_indices.h>
 #include "pcl/common/common.h"
-#include "visualization_msgs/Marker.h"
 #include <pcl/segmentation/extract_clusters.h>
 
 #include "geometry_msgs/Pose.h"
@@ -138,12 +132,12 @@ void SegmentSurfaceObjects(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
              object_indices->size(), min_size, max_size);
 }
 
-void Segmenter::SegmentTableAndPublishMarker(PointCloudC::Ptr input_cloud) {
+int Segmenter::SegmentTableAndPublishMarker(PointCloudC::Ptr input_cloud, visualization_msgs::Marker::Ptr table_marker_ptr) {
   pcl::PointIndices::Ptr table_inliers(new pcl::PointIndices());
   pcl::ModelCoefficients::Ptr coeff(new pcl::ModelCoefficients());
   SegmentSurface(input_cloud, table_inliers, coeff);
   if (table_inliers->indices.size() == 0) {
-    return;
+    return 1;
   }
 
   PointCloudC::Ptr table_cloud(new PointCloudC);
@@ -156,22 +150,22 @@ void Segmenter::SegmentTableAndPublishMarker(PointCloudC::Ptr input_cloud) {
   pcl::toROSMsg(*table_cloud, msg_out);
   surface_points_pub_.publish(msg_out);
 
-  visualization_msgs::Marker table_marker;
-  table_marker.ns = "table";
-  table_marker.header.frame_id = "base_link";
-  table_marker.type = visualization_msgs::Marker::CUBE;
+  table_marker_ptr->ns = "table";
+  table_marker_ptr->header.frame_id = "base_link";
+  table_marker_ptr->type = visualization_msgs::Marker::CUBE;
 
   shape_msgs::SolidPrimitive table_shape;
   PointCloudC::Ptr extract_out_table(new PointCloudC());
   geometry_msgs::Pose table_pose;
   simple_grasping::extractShape(*table_cloud, coeff, *extract_out_table, table_shape, table_pose);
-  table_marker.pose = table_pose;
-  table_marker.scale.x = table_shape.dimensions[0];
-  table_marker.scale.y = table_shape.dimensions[1];
-  table_marker.scale.z = table_shape.dimensions[2];
-  table_marker.color.r = 0.5;
-  table_marker.color.a = 0.8;
-  marker_pub_.publish(table_marker);
+  table_marker_ptr->pose = table_pose;
+  table_marker_ptr->scale.x = table_shape.dimensions[0];
+  table_marker_ptr->scale.y = table_shape.dimensions[1];
+  table_marker_ptr->scale.z = table_shape.dimensions[2];
+  table_marker_ptr->color.r = 0.5;
+  table_marker_ptr->color.a = 0.8;
+  marker_pub_.publish(*table_marker_ptr);
+  return 0;
 }
 
 /*  Using rosparams tray_{min,max}_{x,y,z}, crops the input point cloud
@@ -261,7 +255,13 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
   // crop the cloud to the estimated tray area
   PointCloudC::Ptr tray_cropped_cloud = CropTrayAndPublishMarker(cloud_transformed_cleaned);
 
-  SegmentTableAndPublishMarker(cloud_transformed_cleaned);
+  visualization_msgs::Marker::Ptr table_marker_ptr(new visualization_msgs::Marker());
+
+  int ret = SegmentTableAndPublishMarker(cloud_transformed_cleaned, table_marker_ptr);
+  if (ret == 1) {
+    std::cerr << "Cannot segment table" << std::endl;
+    return;
+  }
 
 
   // Segment the surface above the cropped tray area
@@ -301,14 +301,24 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
     // Publish a bounding box around it.
     visualization_msgs::Marker object_marker;
     object_marker.ns = "objects";
-    object_marker.id = i;
+    object_marker.id = 2*i;
     object_marker.header.frame_id = "base_link";
     object_marker.type = visualization_msgs::Marker::CUBE;
 
+    // Publish a text view above it
+    visualization_msgs::Marker object_marker_text;
+    object_marker_text.ns = "text";
+    object_marker_text.id = 2*i + 1;
+    object_marker_text.header.frame_id = "base_link";
+    object_marker_text.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+
+    // Get object marker pose and scale
     PointCloudC::Ptr extract_out_object(new PointCloudC());
     shape_msgs::SolidPrimitive object_shape;
     geometry_msgs::Pose::Ptr object_pose(new geometry_msgs::Pose());
     simple_grasping::extractShape(*object_cloud, tray_coeff, *extract_out_object, object_shape, *object_pose);
+
+    // Populate marker for bounding box
     object_marker.pose = *object_pose;
     // need to set object_marker.scale
     object_marker.scale.x = object_shape.dimensions[0];
@@ -316,27 +326,43 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
     object_marker.scale.z = object_shape.dimensions[2];
     std::cout << "object id: " << i << "x: " << object_marker.scale.x << "y: " << object_marker.scale.y << "z: " << object_marker.scale.z << std::endl;
 
-    double x = 0.075; //0.0703085;
-    double y = 0.030; //0.0312478;
-    double z = 0.037; //0.0374182;
-    double thres = 0.17;
-    // double vol = x * y * z;
-    // double vol_lo = x * y * z * (1.0 - thres) * (1.0 - thres) * (1.0 - thres);
-    // double vol_hi = x * y * z * (1.0 + thres) * (1.0 + thres) * (1.0 + thres);
+    // Populate marker for text box
+    object_marker_text.pose = *object_pose;
+    object_marker_text.text = boost::to_string(2*i + 1);
+    // need to set object_marker.scale
+    object_marker_text.scale.x = object_shape.dimensions[0];
+    object_marker_text.scale.y = object_shape.dimensions[1];
+    object_marker_text.scale.z = object_shape.dimensions[2];
+
+
+    std::cout << "object id: " << 2*i << "," << 2*i + 1 << " x: " << object_marker.scale.x << " y: " << object_marker.scale.y << " z: " << object_marker.scale.z << std::endl;
+
+    double x = 0.075;
+    double y = 0.030;
+    double z = 0.037;
+
+    double thres = 0.10;
+    double z_thres = 0.275;
+
     double x_lo = x * (1.0 - thres);
-    double y_lo = y * (1.0 - thres);
-    double z_lo = z * (1.0 - thres);
     double x_hi = x * (1.0 + thres);
+    double y_lo = y * (1.0 - thres);
     double y_hi = y * (1.0 + thres);
-    double z_hi = z * (1.0 + thres);
+    double z_lo = z * (1.0 - z_thres);
+    double z_hi = z * (1.0 + z_thres);
 
-
-    double object_vol = object_marker.scale.x * object_marker.scale.y * object_marker.scale.z;
-
+    // Set the color for the bounding box
     if (x_lo <= object_marker.scale.x && object_marker.scale.x <= x_hi &&
         y_lo <= object_marker.scale.y && object_marker.scale.y <= y_hi &&
         z_lo <= object_marker.scale.z && object_marker.scale.z <= z_hi)
     {
+      // Update object marker pose position to be exact z
+      // table_marker.pose
+      // table_marker.scale.z
+      if (table_marker_ptr) {
+        object_marker.pose.position.z = table_marker_ptr->pose.position.z + (table_marker_ptr->scale.z / 2.0) + (z / 2.0);
+      }
+      object_marker.scale.z = z;
       object_marker.color.r = 0;
       object_marker.color.g = 0;
       object_marker.color.b = 1;
@@ -345,9 +371,18 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
       object_marker.color.g = 1;
       object_marker.color.b = 0;
     }
-    
+
     object_marker.color.a = 0.3;
+
+    // Set the color for the text box
+
+    object_marker_text.color.r = 0;
+    object_marker_text.color.g = 1;
+    object_marker_text.color.b = 1;
+    object_marker_text.color.a = 1;
+
     marker_pub_.publish(object_marker);
+    marker_pub_.publish(object_marker_text);
   }
 }
 }  // namespace perception

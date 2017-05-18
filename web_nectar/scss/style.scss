@@ -1,0 +1,142 @@
+@import url('https://fonts.googleapis.com/css?family=Ubuntu:500');
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+
+$navbar-height: 50px;
+
+$purple: #9d6acc;
+$gray: #d8d8d8;
+$green: #4ca64c;
+$red: #990000;
+
+html, body {
+  height: 100%;
+}
+
+img {
+  border-radius: 3px;
+}
+
+body {
+  font-family: 'Open Sans', arial, sans-serif;
+  line-height: 200%;
+
+  section {
+    &:first-of-type {
+      padding-top: 1em;
+    }
+    &:last-of-type {
+      padding-bottom: 2em;
+    }
+
+    padding: 0 1em;
+    font-size: 12pt;
+
+    h2 {
+      font-family: 'Ubuntu';
+      color: darken($gray, 55%);
+    }
+
+    &:last {
+      padding-bottom: 3em;
+    }
+
+    .form {
+      margin: 1em auto;
+      padding: 20px;
+      background: #f4f4f4;
+      border-radius: 3px;
+      -webkit-box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.3);
+
+      p {
+        display: block;
+        font-weight: 500;
+      }
+
+      input, button {
+        display: block;
+        width: 98%;
+        height: 38px;
+        margin: auto;
+        font-weight: 500;
+        font-size: 16px;
+        background: none;
+        border: 0;
+        border-bottom: 1px solid $gray;
+        padding: 0;
+        &:focus {
+          border-color: $purple;
+          outline: 0;
+        }
+      }
+
+      button {
+        color: #494d59;
+        text-align: center;
+        text-shadow: 0 1px rgba(255, 255, 255, 0.5);
+        background: #fcfcfc;
+        border-radius: 2px;
+        cursor: pointer;
+        border: 1px solid;
+        border-color: #d8d8d8 #d1d1d1 #c3c3c3;
+      }
+
+      legend {
+        padding: 0;
+        ul {
+          margin: 1em;
+          padding: 0;
+          list-style-type: none;
+          overflow: hidden;
+          background: darken($gray, 50%);
+          border-radius: 2px;
+          li {
+            label {
+              padding: 2.5%;
+              margin: 2.5%;
+              float: left;
+              width: 45%;
+              line-height: 32px;
+              color: white;
+              font-weight: bold;
+              font-size: 14pt;
+              text-align: center;
+              cursor: pointer;
+              user-select: none;
+              overflow: hidden;
+            }
+
+            input {
+               display: none;
+            }
+
+            input:checked + label {
+              color: #494d59;
+              text-align: center;
+              text-shadow: 0 1px rgba(255, 255, 255, 0.5);
+              background: #fcfcfc;
+              border-radius: 2px;
+            }
+          }
+        }
+      }
+
+      .response {
+        text-align: center;
+        padding-top: 1em;
+        color: $green;
+      }
+
+      .loading {
+        width: 50px;
+        height: 50px;
+        background: url('assets/spinner.gif') no-repeat bottom center;
+      }
+    }
+
+    .error {
+      color: $red !important;
+    }
+  }
+}
+

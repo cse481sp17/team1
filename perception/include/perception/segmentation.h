@@ -10,6 +10,7 @@
 #include "pcl/sample_consensus/method_types.h"
 #include "pcl/sample_consensus/model_types.h"
 #include "pcl/segmentation/sac_segmentation.h"
+#include "visualization_msgs/Marker.h"
 
 namespace perception {
 // Finds the largest horizontal surface in the given point cloud.
@@ -41,12 +42,16 @@ void SegmentSurfaceObjects(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
 
 class Segmenter {
  public:
-  Segmenter(const ros::Publisher& surface_points_pub, const ros::Publisher& marker_pub, const ros::Publisher& above_surface_pub);
+  Segmenter(const ros::Publisher& surface_points_pub, const ros::Publisher& marker_pub, 
+    const ros::Publisher& above_surface_pub, const ros::Publisher& tray_crop_pub);
   void Callback(const sensor_msgs::PointCloud2& msg);
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr CropTrayAndPublishMarker(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud);
+  int SegmentTableAndPublishMarker(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud, visualization_msgs::Marker::Ptr table_marker_ptr);
 
  private:
   ros::Publisher surface_points_pub_;
   ros::Publisher marker_pub_;
   ros::Publisher above_surface_pub_;
+  ros::Publisher tray_crop_pub_;
 };
 }  // namespace perception
