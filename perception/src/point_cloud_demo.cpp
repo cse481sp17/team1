@@ -34,10 +34,10 @@ int main(int argc, char** argv) {
   ros::Publisher above_pub =
     nh.advertise<sensor_msgs::PointCloud2>("object_cloud", 1, true);
 
-  ros::Publisher tray_crop_pub =
-    nh.advertise<sensor_msgs::PointCloud2>("tray_crop", 1, true);
+  ros::Publisher tray_cloud_pub =
+    nh.advertise<sensor_msgs::PointCloud2>("tray_cloud", 1, true);
 
-  perception::Segmenter segmenter(table_pub, marker_pub, above_pub, tray_crop_pub);
+  perception::Segmenter segmenter(table_pub, marker_pub, above_pub, tray_cloud_pub);
   ros::Subscriber segmenter_sub = nh.subscribe("downsampled_and_cropped_cloud", 1, &perception::Segmenter::Callback, &segmenter);
 
   ros::spin();
