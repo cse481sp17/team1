@@ -4,10 +4,12 @@ import rospy, copy
 from visualization_msgs.msg import *
 from std_msgs.msg import ColorRGBA
 from geometry_msgs.msg import Pose, Quaternion, Point, PoseStamped
+import fetch_api
 
 GRIPPER_POSE_ID = 1
 OPEN_GRIPPER_ID = 2
 CLOSE_GRIPPER_ID = 3
+HANDLE_POSE_ID = 4
 
 GRIPPER_MESH = 'package://fetch_description/meshes/gripper_link.dae'
 L_FINGER_MESH = 'package://fetch_description/meshes/l_gripper_finger_link.STL'
@@ -24,6 +26,12 @@ GREEN.r = 0.0
 GREEN.g = 1.0
 GREEN.b = 0.0
 GREEN.a = 1.0
+
+PINK = ColorRGBA()
+PINK.r = 255
+PINK.g = 105
+PINK.b = 180
+PINK.a = 1
 
 GRIPPER_SCALE = 0.5
 GRIPPER_X_OFFSET = 0.166
@@ -62,14 +70,19 @@ def create_pose_stamped(pose):
     ps.pose = copy.deepcopy(pose)
     return ps
 
-def create_gripper_marker(x, z):
+def create_gripper_marker(x, z, pose):
     # Create marker for gripper base
     base_marker = Marker()
     base_marker.type = Marker.MESH_RESOURCE
     base_marker.mesh_resource = GRIPPER_MESH
-    base_marker.color = RED
     base_marker.pose.position.x += x + GRIPPER_X_OFFSET
     base_marker.pose.position.z += z
+
+    arm = fetch_api.Arm()
+    if arm.compute_ik(create_pose_stamped(pose)):
+        base_marker.color = GREEN
+    else:
+        base_marker.color = RED
 
     # Create marker for left gripper prong
     left_marker = copy.deepcopy(base_marker)
@@ -82,12 +95,12 @@ def create_gripper_marker(x, z):
 
     return [base_marker, left_marker, right_marker]
 
-def create_gripper_interactive_marker(pose, pregrasp=True, rotation_enabled=True):
+def create_gripper_interactive_marker(pose, name='gripper_im', pregrasp=True, rotation_enabled=True, dof_controls=True):
     # Creates interactive marker with metadata, pose
     gripper_marker = InteractiveMarker()
     gripper_marker.header.frame_id = 'base_link'
     gripper_marker.description = 'Interactive Marker for Gripper'
-    gripper_marker.name = 'gripper_im'
+    gripper_marker.name = name
     gripper_marker.pose = pose
     gripper_marker.scale = GRIPPER_SCALE
 
@@ -120,14 +133,15 @@ def create_gripper_interactive_marker(pose, pregrasp=True, rotation_enabled=True
     menu_entry.title = 'close the gripper'
     gripper_marker.menu_entries.append(menu_entry) # not deep copy
 
-    gripper_control.markers.extend(create_gripper_marker(0, 0))
+    gripper_control.markers.extend(create_gripper_marker(0, 0, pose))
     if pregrasp:
-        gripper_control.markers.extend(create_gripper_marker(PREGRASP_OFFSET, 0))
-        gripper_control.markers.extend(create_gripper_marker(0, LIFT_OFFSET))
+        gripper_control.markers.extend(create_gripper_marker(PREGRASP_OFFSET, 0, pose))
+        gripper_control.markers.extend(create_gripper_marker(0, LIFT_OFFSET, pose))
 
     # Add the above control to the interactive marker
     gripper_marker.controls.append(gripper_control)
-    gripper_marker.controls.extend(make_6dof_controls(rotation_enabled))
+    if dof_controls:
+        gripper_marker.controls.extend(make_6dof_controls(rotation_enabled))
 
     # Return the InteractiveMarker
     return gripper_marker
