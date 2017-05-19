@@ -3,11 +3,8 @@ Navigation Docs
 
 This README guides you through the map building process in the real world using Astro.
 
-In a tmux terminal, run the following command:
+In a tmux terminal, run the following commands...
 
-```
-roscore
-```
 
 ---
 
