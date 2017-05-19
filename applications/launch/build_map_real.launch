@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find fetch_navigation)/launch/build_map.launch" />
+  <node pkg="applications" type="keyboard_teleop.py" name="fetch_keyboard_teleop" output="screen" />
+</launch>
