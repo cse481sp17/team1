@@ -13,7 +13,7 @@
 
 4. `roslaunch fetch_api move_group.launch`
 
-5. `roslaunch perception perception_mock bag_file:=<somebagfile.bag>` for bag files or `roslaunch perception perception_camera` for the real camera as input
+5. `roslaunch perception perception_mock.launch bag_file:=<somebagfile.bag>` for bag files or `roslaunch perception perception_camera.launch` for the real camera as input
 
 ## How to save a new point cloud from the robot:
 
