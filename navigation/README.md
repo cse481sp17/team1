@@ -19,7 +19,7 @@ STEP 2: 'setrobot astro'  <br />
 * Map
 * Laser scan
 * Image
-* Fixed frame = map
+* Fixed frame = map  <br />
 [ONLY DO IF NEED TO CONFIG RVIZ] STEP 6: shutdown rviz and build_map.launch  <br />
 STEP 7: `roslaunch applications build_map_real.launch`  <br />
 STEP 8: NOW, drive the robot around to bulid a map of the world! How excite.  <br />
@@ -42,7 +42,7 @@ STEP 2: `gazebo` <br />
 * Map
 * Laser scan
 * Image
-* Fixed frame = map
+* Fixed frame = map  <br />
 [ONLY DO IF NEED TO CONFIG RVIZ] STEP 6: shutdown rviz and build_map.launch  <br />
 STEP 7: `roslaunch applications build_map.launch`  <br />
 STEP 8: NOW, drive the robot around to bulid a map of the world! How excite.  <br />
