@@ -58,7 +58,15 @@ class GripperTeleopDown(GripperTeleop):
             # TODO: use the msg.pose.orientation to conver the scale directly 
             # instead of manually swapping x and y
             self._planning_scene.addBox('table', msg.scale.y, msg.scale.x, msg.scale.z, msg.pose.position.x, msg.pose.position.y, msg.pose.position.z)
-
+        if msg.ns == 'tray handle':
+            print(msg.pose)
+            #handle_im = create_handle_interactive_marker(create_pose_stamped(msg.pose).pose, msg.scale)
+            pose = create_pose_stamped(msg.pose).pose
+            pose.orientation = self._constraint_pose.orientation
+            pose.position.z += 0.3
+            handle_im = create_gripper_interactive_marker(pose, 'handle', False, False, False)
+            self._im_server.insert(handle_im, feedback_cb=self.handle_feedback)
+            self._im_server.applyChanges()
 
     def start(self):
         mat = tft.identity_matrix()
@@ -66,9 +74,9 @@ class GripperTeleopDown(GripperTeleop):
         mat[:,2] = np.array([1,0,0,0])
         o = tft.quaternion_from_matrix(mat)
         print(mat)
-        pose = Pose(orientation=Quaternion(*o))
-        print(pose)
-        gripper_im = create_gripper_interactive_marker(pose, pregrasp=False, rotation_enabled=False)
+        self._constraint_pose = Pose(orientation=Quaternion(*o))
+        print(self._constraint_pose)
+        gripper_im = create_gripper_interactive_marker(self._constraint_pose, pregrasp=False, rotation_enabled=False)
 
         self._im_server.insert(gripper_im, feedback_cb=self.handle_feedback)
         self._im_server.applyChanges()
@@ -76,7 +84,7 @@ class GripperTeleopDown(GripperTeleop):
         oc = OrientationConstraint()
         oc.header.frame_id = 'base_link'
         oc.link_name = 'gripper_link'
-        oc.orientation = pose.orientation
+        oc.orientation = self._constraint_pose.orientation
         oc.weight = 1.0
         oc.absolute_z_axis_tolerance = 0.1
         oc.absolute_x_axis_tolerance = 0.1

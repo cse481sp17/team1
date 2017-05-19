@@ -1,0 +1,8 @@
+<launch>
+    <node pkg="rviz" type="rviz" name="$(anon rviz)" args="-d $(find perception)/config/perception.rviz"/>
+    <arg name="bag_file"/>
+    <node name="$(anon latch_mock_cloud)" pkg="applications" type="pointcloud_demo.py" args="$(arg bag_file)"/>
+    <node name="$(anon perception_demo)" pkg="perception" type="point_cloud_demo" args="cloud_in:=/mock_point_cloud"/>
+    <node name="$(anon gripper_teleop)" pkg="applications" type="gripper_teleop.py"/>
+</launch>
+
