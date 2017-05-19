@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find fetch_navigation)/launch/build_map.launch" />
+  <node pkg="rviz" type="rviz" name="$(anon rviz)" args="-d $(find applications)/config/navigation.rviz" />
+  <node pkg="applications" type="keyboard_teleop.py" name="fetch_keyboard_teleop" output="screen" />
+</launch>

@@ -48,6 +48,7 @@ class GripperTeleop(object):
 class GripperTeleopDown(GripperTeleop):
     def __init__(self, arm, gripper, im_server):
         super(GripperTeleopDown, self).__init__(arm, gripper, im_server)
+        # subscribes to the visualization marker for the table coming from perception
         self._table_sub = rospy.Subscriber('/visualization_marker', Marker, self.table_callback)
         self._planning_scene = PlanningSceneInterface('base_link')
 
