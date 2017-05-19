@@ -7,12 +7,14 @@ from std_msgs.msg import ColorRGBA
 import fetch_api
 from gripper_teleop_util import *
 import tf.transformations as tft
+from moveit_msgs.msg import OrientationConstraint
 
 class GripperTeleop(object):
     def __init__(self, arm, gripper, im_server):
         self._arm = arm
         self._gripper = gripper
         self._im_server = im_server
+        self.constraint = None
 
     def start(self):
         pose = Pose(orientation=Quaternion(0,0,1,1))
@@ -26,7 +28,7 @@ class GripperTeleop(object):
             if feedback.menu_entry_id == GRIPPER_POSE_ID:
                 print(feedback.pose)
                 ps = create_pose_stamped(feedback.pose)
-                self._arm.move_to_pose(ps)
+                self._arm.move_to_pose(ps, orientation_constraint = self.constraint)
             elif feedback.menu_entry_id == OPEN_GRIPPER_ID:
                 self._gripper.open()
             elif feedback.menu_entry_id == CLOSE_GRIPPER_ID:
@@ -59,6 +61,17 @@ class GripperTeleopDown(GripperTeleop):
 
         self._im_server.insert(gripper_im, feedback_cb=self.handle_feedback)
         self._im_server.applyChanges()
+
+        oc = OrientationConstraint()
+        oc.header.frame_id = 'base_link'
+        oc.link_name = 'gripper_link'
+        oc.orientation = pose.orientation
+        oc.weight = 1.0
+        oc.absolute_z_axis_tolerance = 0.1
+        oc.absolute_x_axis_tolerance = 0.1
+        oc.absolute_y_axis_tolerance = 0.1
+
+        self.contraint = oc
 
 class AutoPickTeleop(object):
     def __init__(self, arm, gripper, im_server):
