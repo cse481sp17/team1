@@ -319,7 +319,7 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
     object_marker.scale.x = object_shape.dimensions[0];
     object_marker.scale.y = object_shape.dimensions[1];
     object_marker.scale.z = object_shape.dimensions[2];
-    std::cout << "object id: " << i << "x: " << object_marker.scale.x << "y: " << object_marker.scale.y << "z: " << object_marker.scale.z << std::endl;
+    //std::cout << "object id: " << i << "x: " << object_marker.scale.x << "y: " << object_marker.scale.y << "z: " << object_marker.scale.z << std::endl;
 
     // Publish a text view above it
     visualization_msgs::Marker object_marker_text;
@@ -337,7 +337,7 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
     object_marker_text.scale.z = object_shape.dimensions[2];
 
 
-    std::cout << "object id: " << 2*i << "," << 2*i + 1 << " x: " << object_marker.scale.x << " y: " << object_marker.scale.y << " z: " << object_marker.scale.z << std::endl;
+   // std::cout << "object id: " << 2*i << "," << 2*i + 1 << " x: " << object_marker.scale.x << " y: " << object_marker.scale.y << " z: " << object_marker.scale.z << std::endl;
 
     double x = 0.075;
     double y = 0.030;
@@ -353,9 +353,10 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
     double z_lo = z * (1.0 - z_thres);
     double z_hi = z * (1.0 + z_thres);
 
-    std::cout << "x_lo: " << x_lo << " x_hi: " << x_hi << std::endl;
+    /*std::cout << "x_lo: " << x_lo << " x_hi: " << x_hi << std::endl;
     std::cout << "y_lo: " << y_lo << " y_hi: " << y_hi << std::endl;
     std::cout << "z_lo: " << z_lo << " z_hi: " << z_hi << std::endl;
+    */
 
     // Set the color for the bounding box
     if (x_lo <= object_marker.scale.x && object_marker.scale.x <= x_hi &&
@@ -365,11 +366,14 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
       // Update object marker pose position to be exact z
       // table_marker.pose
       // table_marker.scale.z
-     // object_marker.pose.position.z = table_marker_ptr->pose.position.z + (table_marker_ptr->scale.z / 2.0) + (z / 2.0);
-      //object_marker.scale.z = z;
+      object_marker.pose.position.z = table_marker_ptr->pose.position.z + (table_marker_ptr->scale.z / 2.0) + (z / 2.0);
+      object_marker.scale.z = z;
       object_marker.color.r = 0;
       object_marker.color.g = 0;
       object_marker.color.b = 1;
+      object_marker.ns = "tray handle";
+      std::cout << "handle pose: " << object_marker.pose << std::endl;
+
     } else {
       object_marker.color.r = 0;
       object_marker.color.g = 1;
