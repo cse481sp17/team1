@@ -8,6 +8,7 @@ import fetch_api
 from gripper_teleop_util import *
 import tf.transformations as tft
 from moveit_msgs.msg import OrientationConstraint
+from moveit_python import PlanningSceneInterface
 
 class GripperTeleop(object):
     def __init__(self, arm, gripper, im_server):
@@ -26,7 +27,6 @@ class GripperTeleop(object):
     def handle_feedback(self, feedback):
         if feedback.event_type == InteractiveMarkerFeedback.MENU_SELECT:
             if feedback.menu_entry_id == GRIPPER_POSE_ID:
-                print(feedback.pose)
                 ps = create_pose_stamped(feedback.pose)
                 self._arm.move_to_pose(ps, orientation_constraint = self.constraint)
             elif feedback.menu_entry_id == OPEN_GRIPPER_ID:
@@ -48,6 +48,16 @@ class GripperTeleop(object):
 class GripperTeleopDown(GripperTeleop):
     def __init__(self, arm, gripper, im_server):
         super(GripperTeleopDown, self).__init__(arm, gripper, im_server)
+        self._table_sub = rospy.Subscriber('/visualization_marker', Marker, self.table_callback)
+        self._planning_scene = PlanningSceneInterface('base_link')
+
+    def table_callback(self, msg):
+        if msg.ns == 'table':
+            self._planning_scene.removeCollisionObject('table')
+            # TODO: use the msg.pose.orientation to conver the scale directly 
+            # instead of manually swapping x and y
+            self._planning_scene.addBox('table', msg.scale.y, msg.scale.x, msg.scale.z, msg.pose.position.x, msg.pose.position.y, msg.pose.position.z)
+
 
     def start(self):
         mat = tft.identity_matrix()
@@ -89,7 +99,6 @@ class AutoPickTeleop(object):
     def handle_feedback(self, feedback):
         if feedback.event_type == InteractiveMarkerFeedback.MENU_SELECT:
             if feedback.menu_entry_id == GRIPPER_POSE_ID:
-                print(feedback.pose)
                 gripper_im = self._im_server.get(feedback.marker_name)
                 marker_pre = gripper_im.controls[0].markers[3]
                 marker_grasp = gripper_im.controls[0].markers[0]
