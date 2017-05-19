@@ -13,14 +13,7 @@
 
 4. `roslaunch fetch_api move_group.launch`
 
-5. To create a topic /mock_point_cloud with some .bag file, do 
-`rosrun applications pointcloud_demo ~/data/<something.bag>`
-
-6. To verify that /mock_point_cloud is up, in rviz, set PointCloud2 to /mock_point_cloud or use rostopic ping /mock_point_cloud
-
-7. To run our perception demo, do 
-`rosrun perception point_cloud_demo cloud_in:=mock_point_cloud`
-(replace mock_point_cloud with /head_camera/depth_registered/points if we are using the real robot)
+5. `roslaunch perception perception_mock bag_file:=<somebagfile.bag>` for bag files or `roslaunch perception perception_camera` for the real camera as input
 
 ## How to save a new point cloud from the robot:
 
