@@ -372,6 +372,7 @@ void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
       object_marker.color.g = 0;
       object_marker.color.b = 1;
       object_marker.ns = "tray handle";
+      object_marker.id = 400
       std::cout << "handle pose: " << object_marker.pose << std::endl;
 
     } else {
