@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 from program_ctrl import ProgramController
+from visualization_msgs.msg import Marker
 
 def help():
     print 'Welcome to the map annotator!'
