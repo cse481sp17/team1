@@ -64,7 +64,7 @@ class GripperTeleopDown(GripperTeleop):
             pose = create_pose_stamped(msg.pose).pose
             pose.orientation = self._constraint_pose.orientation
             pose.position.z += 0.3
-            handle_im = create_gripper_interactive_marker(pose, 'handle', False, False, False)
+            handle_im = create_gripper_interactive_marker(pose, 'handle', False, False)
             self._im_server.insert(handle_im, feedback_cb=self.handle_feedback)
             self._im_server.applyChanges()
 

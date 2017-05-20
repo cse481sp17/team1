@@ -9,8 +9,9 @@ import tf
 import fetch_api
 from robot_controllers_msgs.msg import QueryControllerStatesAction, QueryControllerStatesGoal, ControllerState
 import actionlib
+from visualization_msgs.msg import Marker
 
-POSE_FILE = '~/data/handle_programs.p'
+POSE_FILE = '/home/team1/data/handle_programs.p'
 SUB_NAME = '/visualization_marker'
 
 ID_TO_TAGNAME = {'handle':400}
@@ -60,13 +61,8 @@ class Program(object):
                 rospy.logerr("finding pose for a frame_id that isn't in ID_TO_TAGNAME")
                 return None
             marker_id = ID_TO_TAGNAME[frame_id]
-            marker_match = None
-            for marker in markers:
-                if marker_id == marker.id:
-                    marker_match = marker
-                    break
 
-            if marker_match is None:
+            if marker_id != markers.id:
                 rospy.logerr("cannot find the {} with id {}".format(frame_id, marker_id))
                 return
 
@@ -75,7 +71,7 @@ class Program(object):
             # we have the tag_T_gripper from step.pose
             tag_T_gripper = copy.deepcopy(step.pose)
             #tag_T_wrist.pose.position.x -= 0.166
-            base_link_T_tag = copy.deepcopy(marker_match.pose)
+            base_link_T_tag = copy.deepcopy(markers)
             gripper_T_wrist = Pose(Point(-0.166, 0,0), Quaternion(0,0,0,1))
             base_link_T_gripper = fetch_api.transform(base_link_T_tag.pose, tag_T_gripper.pose)
             base_link_T_wrist = fetch_api.transform(base_link_T_gripper, gripper_T_wrist)
@@ -109,7 +105,7 @@ class ProgramController(object):
                                           Marker, 
                                           callback=self._markers_callback)
         self._programs = self._read_in_programs()
-        self._curr_markers = None
+        self._curr_markers = None 
         self._tf_listener = tf.TransformListener()
         self._arm = fetch_api.Arm()
         self._gripper = fetch_api.Gripper()
@@ -133,8 +129,8 @@ class ProgramController(object):
             pickle.dump(self._programs, file)
 
     def _markers_callback(self, msg):
-        self._curr_markers = msg.markers
-
+        if msg.ns == "tray handle":
+            self._curr_markers = msg 
 
     def remove_step(self, program_name, index):
         self._programs[program_name].remove_step(index)
@@ -185,11 +181,7 @@ class ProgramController(object):
             # need to grab the marker from self._curr_markers that matches frame_id
             marker_id = ID_TO_TAGNAME[frame_id]
             curr_marker = None
-            for marker in self._curr_markers:
-                if marker.id == marker_id:
-                    curr_marker = marker
-                    break
-            if curr_marker is None:
+            if marker_id != self._curr_markers.id:
                 rospy.logerr('No marker found with frame_id {} and marker_id {} in program {}'.format(frame_id, marker_id, program_name))
                 return
             else:
@@ -201,9 +193,9 @@ class ProgramController(object):
                 base_link_T_wrist = Pose(Point(*position), Quaternion(*orientation))
 
                 # The transformation from the base_link to this tags frame is just the tags pose
-                base_link_T_tags = copy.deepcopy(marker.pose)
+                base_link_T_tags = copy.deepcopy(self._curr_markers.pose)
 
-                tags_T_wrist = fetch_api.transform(fetch_api.inverse_pose(base_link_T_tags.pose), base_link_T_wrist)
+                tags_T_wrist = fetch_api.transform(fetch_api.inverse_pose(base_link_T_tags), base_link_T_wrist)
 
                 new_pose = PoseStamped(pose=tags_T_wrist)
                 new_pose.header.frame_id = frame_id
