@@ -1,5 +1,4 @@
 <launch>
-    <node pkg="rviz" type="rviz" name="$(anon rviz)" args="-d $(find perception)/config/perception.rviz"/>
     <node name="$(anon perception_demo)" pkg="perception" type="point_cloud_demo" args="cloud_in:=/head_camera/depth_registered/points"/>
     <node name="$(anon gripper_teleop)" pkg="applications" type="gripper_teleop.py"/>
 </launch>
