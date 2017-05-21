@@ -11,7 +11,6 @@ ACTION_NAME = 'torso_controller/follow_joint_trajectory'
 JOINT_NAME = 'torso_lift_joint'
 TIME_FROM_START = 5  # How many seconds it should take to set the torso height.
 
-
 class Torso(object):
     """Torso controls the robot's torso height.
     """
@@ -27,7 +26,8 @@ class Torso(object):
         self._joint_sub = rospy.Subscriber('/joint_states', JointState, self._callback)
 
     def _callback(self, msg):
-        self.torso_height = msg.position[msg.name.index('torso_lift_joint')]
+        if JOINT_NAME in msg.name:
+            self.torso_height = msg.position[msg.name.index(JOINT_NAME)]
 
     def state(self):
         return self.torso_height

@@ -8,6 +8,8 @@ import rospy
 CLOSED_POS = 0.0  # The position for a fully-closed gripper (meters).
 OPENED_POS = 0.10  # The position for a fully-open gripper (meters).
 
+R_NAME = 'r_gripper_finger_joint'
+L_NAME = 'l_gripper_finger_joint'
 
 class Gripper(object):
     """Gripper controls the robot's gripper.
@@ -24,8 +26,10 @@ class Gripper(object):
         self.l_finger_position = None
 
     def _callback(self, msg):
-        self.r_finger_position = msg.position[msg.name.index('r_gripper_finger_joint')]
-        self.l_finger_position = msg.position[msg.name.index('l_gripper_finger_joint')]
+        if r_name in msg.name:
+            self.r_finger_position = msg.position[msg.name.index(R_NAME)]
+        if l_name in msg.name:
+            self.l_finger_position = msg.position[msg.name.index(L_NAME)]
 
     def open(self):
         """Opens the gripper.
