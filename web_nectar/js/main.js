@@ -39,8 +39,12 @@ $(function() {
       var form = $('#selectionForm');
       var foodGroup = $('#foodGroup', form);
       var foodOptions = $('#food', foodGroup);
+      var dessertGroup = $('#dessertGroup', form);
+      var dessertOptions = $('#dessert', dessertGroup);
       var sideGroup = $('#sideGroup', form);
       var sideOptions = $('#sides', sideGroup);
+      var drinkGroup = $('#drinkGroup', form);
+      var drinkOptions = $('#drinks', drinkGroup);
       var locationGroup = $('#locationGroup', form);
       var locationOptions = $('#locations', locationGroup);
       var buttonGroup = $('.buttonGroup', form);
@@ -66,6 +70,18 @@ $(function() {
           sideOptions.append(createOption('sideItem', item));
         });
 
+        // Add desserts to page
+        data['dessert'].forEach(function(item) {
+          console.log("Dessert item:", item);
+          dessertOptions.append(createOption('dessertItem', item));
+        });
+
+        // Add drinks to page
+        data['drinks'].forEach(function(item) {
+          console.log("Dessert item:", item);
+          drinkOptions.append(createOption('drinkItem', item));
+        });
+
         // Make locations happen
         data['locations'].forEach(function(loc) {
           console.log("Location:", loc);
@@ -75,6 +91,8 @@ $(function() {
         // Hide the dank spinner gifs
         $('.loading', foodGroup).hide();
         $('.loading', sideGroup).hide();
+        $('.loading', dessertGroup).hide();
+        $('.loading', drinkGroup).hide();
         $('.loading', locationGroup).hide();
       };
 
@@ -95,9 +113,13 @@ $(function() {
         e.preventDefault();
         var selectedItem = $('input[name=foodItem]:checked', foodOptions).val();
         var selectedSide = $('input[name=sideItem]:checked', sideOptions).val();
+        var selectedDessert = $('input[name=sideDessert]:checked', dessertOptions).val();
+        var selectedDrink = $('input[name=drinkItem]:checked', drinkOptions).val();
         var selectedLoc = $('input[name=location]:checked', locationOptions).val();
         console.log("Selected food item:", selectedItem);
         console.log("Selected side item:", selectedSide);
+        console.log("Selected dessert item:", selectedDessert);
+        console.log("Selected drink item:", selectedDrink);
         console.log("Selected location:", selectedLoc);
 
         $('.loading', buttonGroup).show();
@@ -111,6 +133,8 @@ $(function() {
         var foodAndLocation = {
           foodItem: selectedItem,
           sideItem: selectedSide,
+          dessertItem: selectedDessert,
+          drinkItem: selectedDrink,
           location: selectedLoc
         };
 
