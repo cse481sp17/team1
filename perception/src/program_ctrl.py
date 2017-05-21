@@ -2,7 +2,6 @@
 import pickle
 import rospy
 from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion
-from ar_track_alvar_msgs.msg import AlvarMarkers
 from moveit_msgs.msg import MoveItErrorCodes
 import copy
 import tf
@@ -83,9 +82,10 @@ class Program(object):
 
 class ProgramStep(object):
     #TODO: could add a gripper state
-    def __init__(self, pose=None, gripper_state=fetch_api.Gripper.OPENED):
+    def __init__(self, pose=None, gripper_state=fetch_api.Gripper.OPENED, torso_height=0.4):
         self.pose = pose
         self.gripper_state = gripper_state
+        self.torso_height = torso_height
 
     def __repr__(self):
         if self.pose is None:
@@ -94,7 +94,7 @@ class ProgramStep(object):
         st_p = '({},{},{})'.format(p.x, p.y, p.z)
         o = self.pose.pose.orientation
         st_o = '({},{},{},{})'.format(o.x, o.y, o.z, o.w)
-        return "\t{}: {} {}, gripper {}".format(self.pose.header.frame_id, st_p, st_o, self.gripper_state)
+        return "\t{}: {} {}, gripper {}, torso height {}".format(self.pose.header.frame_id, st_p, st_o, self.gripper_state, self.torso_height)
 
 
 class ProgramController(object):
@@ -109,6 +109,7 @@ class ProgramController(object):
         self._tf_listener = tf.TransformListener()
         self._arm = fetch_api.Arm()
         self._gripper = fetch_api.Gripper()
+        self._torso = fetch_api.Torso()
         self._controller_client = actionlib.SimpleActionClient('/query_controller_states', QueryControllerStatesAction)
 
     def __str__(self):
@@ -212,6 +213,7 @@ class ProgramController(object):
                 return
         step = ProgramStep(new_pose)
         step.gripper_state = self._gripper.state()
+        step.torso_height = self._torso.state()
         curr_program.add_step(step, append)
         self._write_out_programs()
 
@@ -241,6 +243,7 @@ class ProgramController(object):
             poses = self._programs[program_name].calc_poses(self._curr_markers)
             self.start_arm()
             for i, pose in enumerate(poses):
+                self._torso.set_height(self._programs[program_name].steps[i].torso_height)
                 error = self._arm.move_to_pose(pose, allowed_planning_time=15.0)
                 if error is not None:
                     print "{} failed to run at step #{}".format(program_name, i+1)
