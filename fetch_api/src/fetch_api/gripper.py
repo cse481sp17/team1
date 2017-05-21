@@ -26,9 +26,9 @@ class Gripper(object):
         self.l_finger_position = None
 
     def _callback(self, msg):
-        if r_name in msg.name:
+        if R_NAME in msg.name:
             self.r_finger_position = msg.position[msg.name.index(R_NAME)]
-        if l_name in msg.name:
+        if L_NAME in msg.name:
             self.l_finger_position = msg.position[msg.name.index(L_NAME)]
 
     def open(self):
