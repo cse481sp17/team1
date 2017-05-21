@@ -113,7 +113,7 @@ $(function() {
         e.preventDefault();
         var selectedItem = $('input[name=foodItem]:checked', foodOptions).val();
         var selectedSide = $('input[name=sideItem]:checked', sideOptions).val();
-        var selectedDessert = $('input[name=sideDessert]:checked', dessertOptions).val();
+        var selectedDessert = $('input[name=dessertItem]:checked', dessertOptions).val();
         var selectedDrink = $('input[name=drinkItem]:checked', drinkOptions).val();
         var selectedLoc = $('input[name=location]:checked', locationOptions).val();
         console.log("Selected food item:", selectedItem);
