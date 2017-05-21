@@ -5,9 +5,9 @@ $(function() {
       var ERROR = "Unexpected error: please reload the page and try again"
       var handleError = function() {
         // Woops no good
-        console.log("Errreur");
+        console.log("Please select your preference for ALL of the food option categories!");
         $('.response', buttonGroup).addClass('error');
-        $('.response', buttonGroup).html("Errreur");
+        $('.response', buttonGroup).html("Please select your preference for each of the food option categories!");
         $('.response', buttonGroup).show();
         $('.loading', buttonGroup).hide();
       };
@@ -124,7 +124,7 @@ $(function() {
 
         $('.loading', buttonGroup).show();
 
-        if (!selectedItem || !selectedLoc) {
+        if (!selectedItem || !selectedLoc || !selectedSide || !selectedDessert || !selectedDrink) {
           console.log("Form is incomplete");
           handleError();
           return;

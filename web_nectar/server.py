@@ -7,25 +7,29 @@ PORT = 8080
 FOOD = [
     "Pasta",
     "Hamburger",
-    "Burrito"
+    "Burrito",
+    "None"
 ]
 
 SIDES = [
-    "salad",
-    "soup",
-    "fries"
+    "Salad",
+    "Soup",
+    "Fries",
+    "None"
 ]
 
 DESSERTS = [
-    "cookie",
-    "cheesecake",
-    "macarons"
+    "Cookie",
+    "Cheesecake",
+    "Macarons",
+    "None"
 ]
 
 DRINKS = [
-    "water",
-    "ice tea",
-    "lemonade"
+    "Water",
+    "Ice tea",
+    "Lemonade",
+    "None"
 ]
 
 LOCATIONS = [
