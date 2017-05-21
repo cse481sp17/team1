@@ -24,8 +24,8 @@ class Gripper(object):
         self.l_finger_position = None
 
     def _callback(self, msg):
-        self.r_finger_position = msg.position[-1]
-        self.l_finger_position = msg.position[-2]
+        self.r_finger_position = msg.position[msg.name.index('r_finger_position')]
+        self.l_finger_position = msg.position[msg.name.index('l_finger_position')]
 
     def open(self):
         """Opens the gripper.
