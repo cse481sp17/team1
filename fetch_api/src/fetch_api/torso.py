@@ -29,6 +29,9 @@ class Torso(object):
     def _callback(self, msg):
         self.torso_height = msg.position[msg.name.index('torso_lift_joint')]
 
+    def state(self):
+        return self.torso_height
+
     def set_height(self, height):
         """Sets the torso height.
 
