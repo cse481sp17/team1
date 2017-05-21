@@ -250,7 +250,7 @@ class ProgramController(object):
             for i, pose in enumerate(poses):
                 height = self._programs[program_name].steps[i].torso_height
                 self._torso.set_height(height)
-                if prevHeight != None && prevHeight != height:
+                if prevHeight != None and prevHeight != height:
                     doPose = False
                 
                 prevHeight = height
