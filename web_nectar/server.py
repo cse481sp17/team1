@@ -10,6 +10,12 @@ FOOD = [
     "bottled water, yum"
 ]
 
+SIDES = [
+    "salad",
+    "soup",
+    "fries"
+]
+
 LOCATIONS = [
     "over here",
     "over there"
@@ -25,7 +31,7 @@ def send_empty_response(request_handler):
     request_handler.wfile.write(response)
 
 def send_food_and_locations(request_handler):
-    response = json.dumps({'food': FOOD, 'locations': LOCATIONS})
+    response = json.dumps({'food': FOOD, 'sides': SIDES, 'locations': LOCATIONS})
     request_handler.send_response(200)
     request_handler.send_header("Content-type", "application/javascript")
     request_handler.send_header("Content-length", len(response))
@@ -52,8 +58,10 @@ class ServerHandler(BaseHTTPRequestHandler):
         length = int(self.headers.getheader('content-length'))
         params = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
         foodItem = params['foodItem'][0]
+        sideItem = params['sideItem'][0]
         location = params['location'][0]
         print "Food item:", foodItem
+        print "Side item:", sideItem
         print "Location:", location
 
         #TODO: make robot deliver hot steamy pile of food

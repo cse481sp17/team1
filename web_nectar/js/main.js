@@ -39,6 +39,8 @@ $(function() {
       var form = $('#selectionForm');
       var foodGroup = $('#foodGroup', form);
       var foodOptions = $('#food', foodGroup);
+      var sideGroup = $('#sideGroup', form);
+      var sideOptions = $('#sides', sideGroup);
       var locationGroup = $('#locationGroup', form);
       var locationOptions = $('#locations', locationGroup);
       var buttonGroup = $('.buttonGroup', form);
@@ -58,6 +60,12 @@ $(function() {
           foodOptions.append(createOption('foodItem', item));
         });
 
+        // Add sides to page
+        data['sides'].forEach(function(item) {
+          console.log("Side item:", item);
+          sideOptions.append(createOption('sideItem', item));
+        });
+
         // Make locations happen
         data['locations'].forEach(function(loc) {
           console.log("Location:", loc);
@@ -66,6 +74,7 @@ $(function() {
 
         // Hide the dank spinner gifs
         $('.loading', foodGroup).hide();
+        $('.loading', sideGroup).hide();
         $('.loading', locationGroup).hide();
       };
 
@@ -85,8 +94,10 @@ $(function() {
       form.submit(function(e) {
         e.preventDefault();
         var selectedItem = $('input[name=foodItem]:checked', foodOptions).val();
+        var selectedSide = $('input[name=sideItem]:checked', sideOptions).val();
         var selectedLoc = $('input[name=location]:checked', locationOptions).val();
         console.log("Selected food item:", selectedItem);
+        console.log("Selected side item:", selectedSide);
         console.log("Selected location:", selectedLoc);
 
         $('.loading', buttonGroup).show();
@@ -99,6 +110,7 @@ $(function() {
 
         var foodAndLocation = {
           foodItem: selectedItem,
+          sideItem: selectedSide,
           location: selectedLoc
         };
 
