@@ -22,6 +22,9 @@ $(function() {
     var orderQueue = $('#orderQueue', chefForm);
 
     // Helpers
+    var chefUpdateInterval = 10000;
+    var chefTimeout;
+
     var fadeTimeout;
     var fadeOut = function(element) {
       if (fadeTimeout) {
@@ -97,7 +100,6 @@ $(function() {
         dataType: 'text',
         timeout: 5000,
         success: function(response) {
-          console.log("here");
           orderFulfilledCallback(response, element, id);
         },
         error: function(e) {
@@ -150,6 +152,7 @@ $(function() {
       });
 
       $('.loading', chefForm).hide();
+      chefTimeout = setTimeout(function() {updateOrders()}, chefUpdateInterval);
     };
 
     var orderSubmitCallback = function(response) {
@@ -232,6 +235,11 @@ $(function() {
     var displayClientPage = function() {
       console.log("Switching to client page");
 
+      // Reset timeout
+      if (chefTimeout) {
+        clearTimeout(chefTimeout);
+      }
+
       // Show client page; hide chef page
       chefContainer.hide();
       clientContainer.show();
@@ -242,10 +250,20 @@ $(function() {
       });
 
       // Pull new data
-      $('.response', selectionForm).hide();
       $('.loading', selectionForm).show();
       $('.buttonGroup .loading', selectionForm).hide();
       getData('food');
+    }
+
+    var updateOrders = function() {
+      console.log("Populating orders");
+
+      // Clear entries
+      orderQueue.empty();
+
+      // Pull new data
+      $('.loading', chefForm).show();
+      getData('orders');
     }
 
     // Chef page init
@@ -256,13 +274,7 @@ $(function() {
       clientContainer.hide();
       chefContainer.show();
 
-      // Clear entries
-      orderQueue.empty();
-
-      // Pull new data
-      $('.response', chefForm).hide();
-      $('.loading', chefForm).show();
-      getData('orders');
+      updateOrders();
     }
 
     // Init
