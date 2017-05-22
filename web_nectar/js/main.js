@@ -180,6 +180,15 @@ $(function() {
       });
     });
 
+    // Event handlers
+    $('input.toggleInput#toggleClientPage').change(function() {
+      displayClientPage();
+    });
+
+    $('input.toggleInput#toggleChefPage').change(function() {
+      displayChefPage();
+    });
+
     // Client page init
     var displayClientPage = function() {
       console.log("Switching to client page");
@@ -218,7 +227,6 @@ $(function() {
     }
 
     // Init
-//     displayClientPage();
-    displayChefPage();
+    displayClientPage();
   });
 });
