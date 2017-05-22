@@ -50,7 +50,7 @@ $(function() {
       return "<li><input id='" + type + "-" + item + "' type='radio' name='" + type + "' value='" + item + "'><label for='" + type + "-" + item + "'>" + item + "</label></li>";
     };
     var createChefOrder = function(order) {
-      return "<li><button id='order" + order.id + "'><strong>Order #" + order.id + "</strong><br />" + order.foodItem + "<br />" + order.sideItem + "<br />" + order.dessertItem + "<br />" + order.drinkItem + "</li>";
+      return "<li><button id='order" + order.id + "'><strong>Order #" + order.id + ":</strong> " + order.foodItem + ", " + order.sideItem + ", " + order.dessertItem + ", " + order.drinkItem + "</li>";
     }
     var getData = function(type) {
       $.ajax({
@@ -218,6 +218,7 @@ $(function() {
     }
 
     // Init
-    displayClientPage();
+//     displayClientPage();
+    displayChefPage();
   });
 });
