@@ -337,6 +337,7 @@ $(function() {
       loginContainer.hide();
       $('.response', passwordContainer).hide();
       passwordContainer.show();
+      passwordInput.focus();
     }
 
     displayLoginPage();
