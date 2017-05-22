@@ -26,8 +26,8 @@ html(lang="en")
             form.form
               input(type="password" name="password" placeholder="Chef password")
               .buttonGroup#passwordButtonGroup
-                button#loginBack Go back
                 button#loginSubmit Log in
+                button#loginBack Go back
               .response
       .container#pageToggleContainer(hidden="true")
         .row
@@ -65,7 +65,7 @@ html(lang="en")
               .buttonGroup
                 button#submit Get food now
                 .loading.center-block
-                .response
+                .response(hidden="true")
       .container#chefContainer(hidden="true")
         .row
           .col-md-6.col-md-offset-3.col-sm-8.col-sm-offset-2
@@ -73,7 +73,7 @@ html(lang="en")
               .buttonGroup
                 h3 Order queue
                 .loading.center-block
-                .response
+                .response(hidden="true")
                 ul#orderQueue
 
     script(src="dist/jquery/dist/jquery.min.js" type="text/javascript")
