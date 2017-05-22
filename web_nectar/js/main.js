@@ -1,159 +1,223 @@
 $(function() {
   $(document).ready(function() {
 
-      // Helpers
-      var ERROR = "Unexpected error: please reload the page and try again"
-      var handleError = function() {
-        // Woops no good
-        console.log("Please select your preference for ALL of the food option categories!");
-        $('.response', buttonGroup).addClass('error');
-        $('.response', buttonGroup).html("Please select your preference for each of the food option categories!");
-        $('.response', buttonGroup).show();
-        $('.loading', buttonGroup).hide();
-      };
-      var createOption = function(type, item) {
-        return "<li><input id='" + type + "-" + item + "' type='radio' name='" + type + "' value='" + item + "'><label for='" + type + "-" + item + "'>" + item + "</label></li>";
-      };
-      var sleep = function(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+    // Client page elements
+    var clientContainer = $('#clientContainer');
+    var selectionForm = $('form', clientContainer);
+    var foodGroup = $('#foodGroup', selectionForm);
+    var foodOptions = $('#food', foodGroup);
+    var dessertGroup = $('#dessertGroup', selectionForm);
+    var dessertOptions = $('#dessert', dessertGroup);
+    var sideGroup = $('#sideGroup', selectionForm);
+    var sideOptions = $('#sides', sideGroup);
+    var drinkGroup = $('#drinkGroup', selectionForm);
+    var drinkOptions = $('#drinks', drinkGroup);
+    var locationGroup = $('#locationGroup', selectionForm);
+    var locationOptions = $('#locations', locationGroup);
+    var options = [foodOptions, dessertOptions, sideOptions, drinkOptions, locationOptions];
+
+    // Chef page elements
+    var chefContainer = $('#chefContainer');
+    var chefForm = $('form', chefContainer);
+    var orderQueue = $('#orderQueue', chefForm);
+
+    // Helpers
+    var sleep = function(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    var ERROR = "Unexpected error. Please reload the page and try again."
+    var handleClientError = function(message) {
+      if (!message) {
+        message = ERROR;
       }
-      var getFoodAndLocations = function() {
-        // Fetch fresh hot food options (straight fire)
-        $.ajax({
-          url: 'http://localhost:8080',
-          type: 'GET',
-          dataType: 'json',
-          crossDomain: true,
-          cache: false,
-          timeout: 5000,
-          success: function(data) {
-            GETCallback(data);
-          },
-          error: function() {
-            handleError();
-            sleep(5000).then(getFoodAndLocations);
+      console.log(message);
+      $('.response', selectionForm).addClass('error');
+      $('.response', selectionForm).html(message);
+      $('.response', selectionForm).show();
+      $('.loading', selectionForm).hide();
+    };
+    var handleChefError = function(message) {
+      if (!message) {
+        message = ERROR;
+      }
+      console.log(message);
+      $('.response', chefForm).addClass('error');
+      $('.response', chefForm).html(message);
+      $('.response', chefForm).show();
+      $('.loading', chefForm).hide();
+    }
+    var createOption = function(type, item) {
+      return "<li><input id='" + type + "-" + item + "' type='radio' name='" + type + "' value='" + item + "'><label for='" + type + "-" + item + "'>" + item + "</label></li>";
+    };
+    var createChefOrder = function(order) {
+      return "<li><button id='order" + order.id + "'><strong>Order #" + order.id + "</strong><br />" + order.foodItem + "<br />" + order.sideItem + "<br />" + order.dessertItem + "<br />" + order.drinkItem + "</li>";
+    }
+    var getData = function(type) {
+      $.ajax({
+        url: 'http://localhost:8080',
+        type: 'GET',
+        dataType: 'json',
+        crossDomain: true,
+        cache: false,
+        timeout: 5000,
+        success: function(data) {
+          if (type === 'food') {
+            populateFood(data);
+          } else if (type === 'orders') {
+            populateOrders(data);
           }
-        })};
-
-      // Page elements is right here
-      var form = $('#selectionForm');
-      var foodGroup = $('#foodGroup', form);
-      var foodOptions = $('#food', foodGroup);
-      var dessertGroup = $('#dessertGroup', form);
-      var dessertOptions = $('#dessert', dessertGroup);
-      var sideGroup = $('#sideGroup', form);
-      var sideOptions = $('#sides', sideGroup);
-      var drinkGroup = $('#drinkGroup', form);
-      var drinkOptions = $('#drinks', drinkGroup);
-      var locationGroup = $('#locationGroup', form);
-      var locationOptions = $('#locations', locationGroup);
-      var buttonGroup = $('.buttonGroup', form);
-
-      // Init
-      $('.response', buttonGroup).hide();
-      $('.loading', buttonGroup).hide();
-      getFoodAndLocations();
-
-      // Callbacks
-      var GETCallback = function(data) {
-        $('.response', buttonGroup).hide();
-
-        // Put hot, steamy food options on the page
-        data['food'].forEach(function(item) {
-          console.log("Food item:", item);
-          foodOptions.append(createOption('foodItem', item));
-        });
-
-        // Add sides to page
-        data['sides'].forEach(function(item) {
-          console.log("Side item:", item);
-          sideOptions.append(createOption('sideItem', item));
-        });
-
-        // Add desserts to page
-        data['dessert'].forEach(function(item) {
-          console.log("Dessert item:", item);
-          dessertOptions.append(createOption('dessertItem', item));
-        });
-
-        // Add drinks to page
-        data['drinks'].forEach(function(item) {
-          console.log("Dessert item:", item);
-          drinkOptions.append(createOption('drinkItem', item));
-        });
-
-        // Make locations happen
-        data['locations'].forEach(function(loc) {
-          console.log("Location:", loc);
-          locationOptions.append(createOption('location', loc));
-        });
-
-        // Hide the dank spinner gifs
-        $('.loading', foodGroup).hide();
-        $('.loading', sideGroup).hide();
-        $('.loading', dessertGroup).hide();
-        $('.loading', drinkGroup).hide();
-        $('.loading', locationGroup).hide();
-      };
-
-      var POSTCallback = function(response) {
-        if (response === 'success') {
-          console.log("Food has delivered");
-          $('.response', buttonGroup).removeClass('error');
-          $('.response', buttonGroup).html("Food is been delivering");
-          $('.response', buttonGroup).show();
-          $('.loading', buttonGroup).hide();
-        } else {
-          handleError();
-          return;
+        },
+        error: function() {
+          sleep(5000).then(getData);
         }
-      };
+      })};
 
-      form.submit(function(e) {
-        e.preventDefault();
-        var selectedItem = $('input[name=foodItem]:checked', foodOptions).val();
-        var selectedSide = $('input[name=sideItem]:checked', sideOptions).val();
-        var selectedDessert = $('input[name=dessertItem]:checked', dessertOptions).val();
-        var selectedDrink = $('input[name=drinkItem]:checked', drinkOptions).val();
-        var selectedLoc = $('input[name=location]:checked', locationOptions).val();
-        console.log("Selected food item:", selectedItem);
-        console.log("Selected side item:", selectedSide);
-        console.log("Selected dessert item:", selectedDessert);
-        console.log("Selected drink item:", selectedDrink);
-        console.log("Selected location:", selectedLoc);
+    // Callbacks
+    var populateFood = function(data) {
+      console.log("Received data:", data);
 
-        $('.loading', buttonGroup).show();
-
-        if (!selectedItem || !selectedLoc || !selectedSide || !selectedDessert || !selectedDrink) {
-          console.log("Form is incomplete");
-          handleError();
-          return;
-        }
-
-        var foodAndLocation = {
-          foodItem: selectedItem,
-          sideItem: selectedSide,
-          dessertItem: selectedDessert,
-          drinkItem: selectedDrink,
-          location: selectedLoc
-        };
-
-        console.log("Sending:", foodAndLocation);
-
-        $.ajax({
-          url: 'http://localhost:8080',
-          type: 'POST',
-          dataType: 'text',
-          crossDomain: true,
-          data: foodAndLocation,
-          cache: false,
-          success: function(response) {
-            POSTCallback(response);
-          },
-          error: function() {
-            handleError();
-          }
-        });
+      // Put hot, steamy, main dish options on the page
+      data['food'].forEach(function(item) {
+        foodOptions.append(createOption('foodItem', item));
       });
+
+      // Add sides to page
+      data['sides'].forEach(function(item) {
+        sideOptions.append(createOption('sideItem', item));
+      });
+
+      // Add desserts to page
+      data['dessert'].forEach(function(item) {
+        dessertOptions.append(createOption('dessertItem', item));
+      });
+
+      // Add drinks to page
+      data['drinks'].forEach(function(item) {
+        drinkOptions.append(createOption('drinkItem', item));
+      });
+
+      // Make locations happen
+      data['locations'].forEach(function(loc) {
+        locationOptions.append(createOption('location', loc));
+      });
+
+      // Hide the dank spinner gifs
+      $('.loading', selectionForm).hide();
+    };
+
+    var populateOrders = function(data) {
+      // Make orders happen
+      data['orders'].forEach(function(order) {
+        orderQueue.append(createChefOrder(order));
+      });
+
+      $('.loading', chefForm).hide();
+    };
+
+    var orderSubmitCallback = function(response) {
+      if (response === 'success') {
+        console.log("Food order placed");
+        $('.response', selectionForm).removeClass('error');
+        $('.response', selectionForm).html("Food order placed");
+        $('.response', selectionForm).show();
+        $('.buttonGroup .loading', selectionForm).hide();
+      } else {
+        handleClientError("Bad server response. Please try again!");
+        return;
+      }
+    };
+
+    var orderFulfilledCallback = function(response) {
+      if (response === 'success') {
+        message = "Food fulfillment received"
+        console.log(message);
+        $('.response', chefForm).removeClass('error');
+        $('.response', chefForm).html(message);
+        $('.response', chefForm).show();
+        $('.buttonGroup .loading', chefForm).hide();
+      } else {
+        handleChefError("Bad server response. Please try again!");
+        return;
+      }
+    };
+
+    selectionForm.submit(function(e) {
+      e.preventDefault();
+      var selectedItem = $('input[name=foodItem]:checked', foodOptions).val();
+      var selectedSide = $('input[name=sideItem]:checked', sideOptions).val();
+      var selectedDessert = $('input[name=dessertItem]:checked', dessertOptions).val();
+      var selectedDrink = $('input[name=drinkItem]:checked', drinkOptions).val();
+      var selectedLoc = $('input[name=location]:checked', locationOptions).val();
+
+      if (!selectedItem || !selectedLoc || !selectedSide || !selectedDessert || !selectedDrink) {
+        handleClientError("Please select your preference for ALL of the food option categories!");
+        return;
+      }
+
+      $('.buttonGroup .loading', selectionForm).show();
+      var foodAndLocation = {
+        foodItem: selectedItem,
+        sideItem: selectedSide,
+        dessertItem: selectedDessert,
+        drinkItem: selectedDrink,
+        location: selectedLoc
+      };
+      console.log("Sending:", foodAndLocation);
+
+      $.ajax({
+        url: 'http://localhost:8080',
+        type: 'POST',
+        dataType: 'text',
+        crossDomain: true,
+        data: foodAndLocation,
+        cache: false,
+        success: function(response) {
+          orderSubmitCallback(response);
+        },
+        error: function() {
+          handleClientError("Bad server response. Please try again!");
+        }
+      });
+    });
+
+    // Client page init
+    var displayClientPage = function() {
+      console.log("Switching to client page");
+
+      // Show client page; hide chef page
+      chefContainer.hide();
+      clientContainer.show();
+
+      // Clear entries
+      options.forEach(function(ul) {
+        ul.empty();
+      });
+
+      // Pull new data
+      $('.response', selectionForm).hide();
+      $('.loading', selectionForm).show();
+      $('.buttonGroup .loading', selectionForm).hide();
+      getData('food');
+    }
+
+    // Chef page init
+    var displayChefPage = function() {
+      console.log("Switching to chef page");
+
+      // Show chef page; hide client page
+      clientContainer.hide();
+      chefContainer.show();
+
+      // Clear entries
+      orderQueue.empty();
+
+      // Pull new data
+      $('.response', chefForm).hide();
+      $('.loading', chefForm).show();
+      getData('orders');
+    }
+
+    // Init
+    displayClientPage();
   });
 });

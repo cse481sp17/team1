@@ -24,6 +24,7 @@ body {
     &:first-of-type {
       padding-top: 1em;
     }
+
     &:last-of-type {
       padding-bottom: 2em;
     }
@@ -79,45 +80,55 @@ body {
         cursor: pointer;
         border: 1px solid;
         border-color: #d8d8d8 #d1d1d1 #c3c3c3;
-        width: 85%;
+        width: 92%;
       }
 
-      legend {
+      legend, h3 {
+        text-align: center;
         padding: 0;
-        ul {
-          margin: 1em;
-          padding: 0;
-          list-style-type: none;
-          overflow: hidden;
-          background: darken($gray, 50%);
-          border-radius: 2px;
-          li {
-            label {
-              padding: 2.5%;
-              margin: 2.5%;
-              float: left;
-              width: 45%;
-              line-height: 32px;
-              color: white;
-              font-weight: bold;
-              font-size: 14pt;
-              text-align: center;
-              cursor: pointer;
-              user-select: none;
-              overflow: hidden;
-            }
+      }
 
-            input {
-               display: none;
-            }
+      ul {
+        margin: 1em;
+        padding: 0;
+        list-style-type: none;
+        overflow: hidden;
+        background: darken($gray, 50%);
+        border-radius: 2px;
 
-            input:checked + label {
-              color: #494d59;
-              text-align: center;
-              text-shadow: 0 1px rgba(255, 255, 255, 0.5);
-              background: #fcfcfc;
-              border-radius: 2px;
-            }
+        li {
+          label {
+            padding: 2.5%;
+            margin: 2.5%;
+            float: left;
+            width: 45%;
+            line-height: 32px;
+            color: white;
+            font-weight: bold;
+            font-size: 14pt;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            overflow: hidden;
+          }
+
+          input {
+             display: none;
+          }
+
+          input:checked + label {
+            color: #494d59;
+            text-align: center;
+            text-shadow: 0 1px rgba(255, 255, 255, 0.5);
+            background: #fcfcfc;
+            border-radius: 2px;
+          }
+
+          button {
+            width: 85%;
+            height: auto;
+            padding: 0.5em;
+            margin: 7.5%;
           }
         }
       }
@@ -125,6 +136,8 @@ body {
       .response {
         text-align: center;
         padding-top: 1em;
+        padding-left: 3em;
+        padding-right: 3em;
         color: $green;
       }
 
