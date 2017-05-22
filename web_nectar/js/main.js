@@ -21,9 +21,22 @@ $(function() {
     var chefForm = $('form', chefContainer);
     var orderQueue = $('#orderQueue', chefForm);
 
+    // Login and page selection elements
+    var loginContainer = $('#loginContainer');
+    var loginCustomer = $('#loginCustomer', loginContainer);
+    var loginChef = $('#loginChef', loginContainer);
+
+    var passwordContainer = $('#passwordContainer');
+    var passwordInput = $('input', passwordContainer);
+    var loginSubmit = $('#loginSubmit', passwordContainer);
+    var loginBack = $('#loginBack', passwordContainer);
+
+    var pageToggleContainer = $('#pageToggleContainer');
+
     // Helpers
     var chefUpdateInterval = 10000;
     var chefTimeout;
+    var CHEF_PASSWORD = "dankmemes"
 
     var fadeTimeout;
     var fadeOut = function(element) {
@@ -108,6 +121,17 @@ $(function() {
         }
       })
     };
+
+    var updateOrders = function() {
+      console.log("Populating orders");
+
+      // Clear entries
+      orderQueue.empty();
+
+      // Pull new data
+      $('.loading', chefForm).show();
+      getData('orders');
+    }
 
     // Callbacks
     var populateFood = function(data) {
@@ -223,24 +247,60 @@ $(function() {
       });
     });
 
-    $('input.toggleInput#toggleClientPage').change(function() {
+    $('#toggleClientPage', pageToggleContainer).change(function() {
       displayClientPage();
     });
 
-    $('input.toggleInput#toggleChefPage').change(function() {
+    $('#toggleChefPage', pageToggleContainer).change(function() {
       displayChefPage();
+    });
+
+    $('#loginCustomer', loginContainer).click(function(e) {
+      e.preventDefault();
+      displayClientPage();
+    });
+
+    $('#loginChef', loginContainer).click(function(e) {
+      e.preventDefault();
+      displayPasswordPage();
+    });
+
+    $('#loginBack', passwordContainer).click(function(e) {
+      e.preventDefault();
+      displayLoginPage();
+    });
+
+    $('#loginSubmit', passwordContainer).click(function(e) {
+      e.preventDefault();
+      if (passwordInput.val() == CHEF_PASSWORD) {
+        pageToggleContainer.show();
+        displayChefPage();
+        $('#toggleChefPage', pageToggleContainer).prop('checked', true);
+      } else {
+        $('.response', passwordContainer).addClass('error');
+        $('.response', passwordContainer).html("Wrong password");
+        $('.response', passwordContainer).show();
+        fadeOut($('.response', passwordContainer));
+      }
+    });
+
+    $('form', loginContainer).click(function(e) {
+      e.preventDefault();
+    });
+
+    $('form', passwordContainer).click(function(e) {
+      e.preventDefault();
     });
 
     // Client page init
     var displayClientPage = function() {
-      console.log("Switching to client page");
-
       // Reset timeout
       if (chefTimeout) {
         clearTimeout(chefTimeout);
       }
 
-      // Show client page; hide chef page
+      loginContainer.hide();
+      passwordContainer.hide();
       chefContainer.hide();
       clientContainer.show();
 
@@ -255,29 +315,30 @@ $(function() {
       getData('food');
     }
 
-    var updateOrders = function() {
-      console.log("Populating orders");
-
-      // Clear entries
-      orderQueue.empty();
-
-      // Pull new data
-      $('.loading', chefForm).show();
-      getData('orders');
-    }
-
     // Chef page init
     var displayChefPage = function() {
-      console.log("Switching to chef page");
-
-      // Show chef page; hide client page
+      loginContainer.hide();
+      passwordContainer.hide();
       clientContainer.hide();
       chefContainer.show();
 
       updateOrders();
     }
 
-    // Init
-    displayClientPage();
+    // Login page init
+    var displayLoginPage = function() {
+      passwordContainer.hide();
+      loginContainer.show();
+    }
+
+    // Password page init
+    var displayPasswordPage = function() {
+      passwordInput.val("");
+      loginContainer.hide();
+      $('.response', passwordContainer).hide();
+      passwordContainer.show();
+    }
+
+    displayLoginPage();
   });
 });

@@ -35,6 +35,28 @@ body {
       padding-bottom: 3em;
     }
 
+    #loginContainer, #clientContainer {
+      .buttonGroup {
+        :first-child {
+          margin-top: 0;
+        }
+      }
+    }
+
+    #passwordContainer {
+      .buttonGroup {
+        button {
+          display: inline;
+          width: 49%;
+        }
+
+        :first-child {
+          margin-right: 2%;
+          margin-bottom: 5px;
+        }
+      }
+    }
+
     .form {
       margin: 1em auto;
       padding: 20px;
@@ -108,6 +130,7 @@ body {
       }
 
       button {
+        margin-top: 1em;
         color: #494d59;
         text-align: center;
         text-shadow: 0 1px rgba(255, 255, 255, 0.5);
@@ -118,6 +141,8 @@ body {
         border-color: #d8d8d8 #d1d1d1 #c3c3c3;
         width: 92%;
       }
+
+
 
       legend, h3 {
         text-align: center;
