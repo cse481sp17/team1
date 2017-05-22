@@ -22,9 +22,17 @@ $(function() {
     var orderQueue = $('#orderQueue', chefForm);
 
     // Helpers
+    var fadeTimeout;
+    var fadeOut = function(element) {
+      if (fadeTimeout) {
+        clearTimeout(fadeTimeout);
+      }
+      fadeTimeout = setTimeout(function() {element.fadeOut()}, 5000);
+    }
     var sleep = function(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
     }
+
     var ERROR = "Unexpected error. Please reload the page and try again."
     var handleClientError = function(message) {
       if (!message) {
@@ -35,7 +43,9 @@ $(function() {
       $('.response', selectionForm).html(message);
       $('.response', selectionForm).show();
       $('.loading', selectionForm).hide();
+      fadeOut($('.response', selectionForm).show());
     };
+
     var handleChefError = function(message) {
       if (!message) {
         message = ERROR;
@@ -45,13 +55,17 @@ $(function() {
       $('.response', chefForm).html(message);
       $('.response', chefForm).show();
       $('.loading', chefForm).hide();
+      fadeOut($('.response', chefForm).show());
     }
+
     var createOption = function(type, item) {
-      return "<li><input id='" + type + "-" + item + "' type='radio' name='" + type + "' value='" + item + "'><label for='" + type + "-" + item + "'>" + item + "</label></li>";
+      return $("<li><input id='" + type + "-" + item + "' type='radio' name='" + type + "' value='" + item + "'><label for='" + type + "-" + item + "'>" + item + "</label></li>");
     };
+
     var createChefOrder = function(order) {
-      return "<li><button id='order" + order.id + "'><strong>Order #" + order.id + ":</strong> " + order.foodItem + ", " + order.sideItem + ", " + order.dessertItem + ", " + order.drinkItem + "</li>";
+      return $("<li><button id='order" + order.id + "' name='" + order.id + "'><strong>Order #" + order.id + ":</strong> " + order.foodItem + ", " + order.sideItem + ", " + order.dessertItem + ", " + order.drinkItem + "</li>");
     }
+
     var getData = function(type) {
       $.ajax({
         url: 'http://localhost:8080',
@@ -70,7 +84,28 @@ $(function() {
         error: function() {
           sleep(5000).then(getData);
         }
-      })};
+      })
+    };
+
+    var deleteOrder = function(element) {
+      var id = $('button', element).attr('name');
+      $.ajax({
+        url: 'http://localhost:8080?' + $.param({'id': id}),
+        type: 'DELETE',
+        crossDomain: true,
+        cache: false,
+        dataType: 'text',
+        timeout: 5000,
+        success: function(response) {
+          console.log("here");
+          orderFulfilledCallback(response, element, id);
+        },
+        error: function(e) {
+          console.log(e);
+          handleChefError();
+        }
+      })
+    };
 
     // Callbacks
     var populateFood = function(data) {
@@ -108,7 +143,10 @@ $(function() {
     var populateOrders = function(data) {
       // Make orders happen
       data['orders'].forEach(function(order) {
-        orderQueue.append(createChefOrder(order));
+        orderQueue.append(createChefOrder(order).click(function(e) {
+          e.preventDefault();
+          deleteOrder(this);
+        }));
       });
 
       $('.loading', chefForm).hide();
@@ -121,26 +159,28 @@ $(function() {
         $('.response', selectionForm).html("Food order placed");
         $('.response', selectionForm).show();
         $('.buttonGroup .loading', selectionForm).hide();
+        fadeOut($('.response', selectionForm));
       } else {
-        handleClientError("Bad server response. Please try again!");
-        return;
+        handleClientError();
       }
     };
 
-    var orderFulfilledCallback = function(response) {
+    var orderFulfilledCallback = function(response, element, id) {
       if (response === 'success') {
-        message = "Food fulfillment received"
+        message = "Food fulfillment received for order #" + id;
         console.log(message);
+        element.remove();
         $('.response', chefForm).removeClass('error');
         $('.response', chefForm).html(message);
         $('.response', chefForm).show();
         $('.buttonGroup .loading', chefForm).hide();
+        fadeOut($('.response', chefForm));
       } else {
-        handleChefError("Bad server response. Please try again!");
-        return;
+        handleChefError();
       }
     };
 
+    // Event handlers
     selectionForm.submit(function(e) {
       e.preventDefault();
       var selectedItem = $('input[name=foodItem]:checked', foodOptions).val();
@@ -175,12 +215,11 @@ $(function() {
           orderSubmitCallback(response);
         },
         error: function() {
-          handleClientError("Bad server response. Please try again!");
+          handleClientError();
         }
       });
     });
 
-    // Event handlers
     $('input.toggleInput#toggleClientPage').change(function() {
       displayClientPage();
     });
