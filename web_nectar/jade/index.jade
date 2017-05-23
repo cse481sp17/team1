@@ -1,6 +1,6 @@
 doctype html
 html(lang="en")
-pageTitle = "Jade Rocks!"
+
   head
     title Nectar
     meta(charset="utf-8")
@@ -13,10 +13,35 @@ pageTitle = "Jade Rocks!"
 
   body
     section
-      .container
+      .container#loginContainer(hidden="true")
         .row
           .col-md-6.col-md-offset-3.col-sm-8.col-sm-offset-2
-            form.form#selectionForm
+            form.form
+              .buttonGroup#loginButtonGroup
+                button#loginCustomer I am hungry
+                button#loginChef I am chef
+      .container#passwordContainer(hidden="true")
+        .row
+          .col-md-6.col-md-offset-3.col-sm-8.col-sm-offset-2
+            form.form
+              input(type="password" name="password" placeholder="Chef password" autofocus)
+              .buttonGroup#passwordButtonGroup
+                button#loginSubmit Log in
+                button#loginBack Go back
+              .response
+      .container#pageToggleContainer(hidden="true")
+        .row
+          .col-md-6.col-md-offset-3.col-sm-8.col-sm-offset-2
+            form.form#pageToggle
+              .toggle
+                input.toggleInput#toggleClientPage(type="radio" name="pageToggle" checked)
+                label.toggleLabel(for="toggleClientPage") Order
+                input.toggleInput#toggleChefPage(type="radio" name="pageToggle")
+                label.toggleLabel(for="toggleChefPage") Manage orders
+      .container#clientContainer(hidden="true")
+        .row
+          .col-md-6.col-md-offset-3.col-sm-8.col-sm-offset-2
+            form.form
               fieldset.radioGroup#foodGroup
                 legend Select entree
                   .loading.center-block
@@ -28,11 +53,11 @@ pageTitle = "Jade Rocks!"
               fieldset.radioGroup#dessertGroup
                 legend Select dessert
                   .loading.center-block
-                  ul#dessert 
+                  ul#dessert
               fieldset.radioGroup#drinkGroup
                 legend Select beverage
                   .loading.center-block
-                  ul#drinks      
+                  ul#drinks
               fieldset.radioGroup#locationGroup
                 legend Select location
                   .loading.center-block
@@ -40,7 +65,16 @@ pageTitle = "Jade Rocks!"
               .buttonGroup
                 button#submit Get food now
                 .loading.center-block
-                .response
+                .response(hidden="true")
+      .container#chefContainer(hidden="true")
+        .row
+          .col-md-6.col-md-offset-3.col-sm-8.col-sm-offset-2
+            form.form
+              .buttonGroup
+                h3 Order queue
+                .loading.center-block
+                .response(hidden="true")
+                ul#orderQueue
 
     script(src="dist/jquery/dist/jquery.min.js" type="text/javascript")
     script(src="dist/bootstrap/dist/js/bootstrap.min.js" type="text/javascript")

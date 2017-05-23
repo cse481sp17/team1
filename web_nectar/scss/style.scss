@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css?family=Ubuntu:500');
 @import url('https://fonts.googleapis.com/css?family=Open+Sans');
 
 $navbar-height: 50px;
@@ -24,6 +23,7 @@ body {
     &:first-of-type {
       padding-top: 1em;
     }
+
     &:last-of-type {
       padding-bottom: 2em;
     }
@@ -31,13 +31,33 @@ body {
     padding: 0 1em;
     font-size: 12pt;
 
-    h2 {
-      font-family: 'Ubuntu';
-      color: darken($gray, 55%);
-    }
-
     &:last {
       padding-bottom: 3em;
+    }
+
+    #loginContainer, #clientContainer {
+      .buttonGroup {
+        :first-child {
+          margin-top: 0;
+        }
+      }
+    }
+
+    #passwordContainer {
+      .buttonGroup {
+        overflow: hidden;
+
+        button {
+          float: right;
+          display: inline;
+          width: 49%;
+        }
+
+        :first-child {
+          margin-left: 2%;
+          margin-bottom: 5px;
+        }
+      }
     }
 
     .form {
@@ -47,6 +67,48 @@ body {
       border-radius: 3px;
       -webkit-box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.3);
       box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.3);
+
+      .toggleInput:checked + .toggleLabel {
+        color: #494d59;
+        text-align: center;
+        text-shadow: 0 1px rgba(255, 255, 255, 0.5);
+        background: #fcfcfc;
+        border-radius: 2px;
+      }
+
+      .toggle {
+        overflow: hidden;
+        padding: 2.5%;
+        background: darken($gray, 50%);
+        border-radius: 2px;
+      }
+
+      .toggleInput {
+        display: none;
+        float: left;
+        width: 50%;
+        margin: 0;
+        line-height: 32px;
+        color: white;
+        font-weight: bold;
+        text-align: center;
+        cursor: pointer;
+        user-select: none;
+        overflow: hidden;
+      }
+
+      .toggleLabel {
+        float: left;
+        width: 50%;
+        margin: 0;
+        line-height: 32px;
+        color: white;
+        font-weight: bold;
+        text-align: center;
+        cursor: pointer;
+        user-select: none;
+        overflow: hidden;
+      }
 
       p {
         display: block;
@@ -71,6 +133,7 @@ body {
       }
 
       button {
+        margin-top: 1em;
         color: #494d59;
         text-align: center;
         text-shadow: 0 1px rgba(255, 255, 255, 0.5);
@@ -79,44 +142,61 @@ body {
         cursor: pointer;
         border: 1px solid;
         border-color: #d8d8d8 #d1d1d1 #c3c3c3;
+        width: 92%;
       }
 
-      legend {
+
+
+      legend, h3 {
+        text-align: center;
+        line-height: 28px;
         padding: 0;
-        ul {
-          margin: 1em;
-          padding: 0;
-          list-style-type: none;
-          overflow: hidden;
-          background: darken($gray, 50%);
-          border-radius: 2px;
-          li {
-            label {
-              padding: 2.5%;
-              margin: 2.5%;
-              float: left;
-              width: 45%;
-              line-height: 32px;
-              color: white;
-              font-weight: bold;
-              font-size: 14pt;
-              text-align: center;
-              cursor: pointer;
-              user-select: none;
-              overflow: hidden;
-            }
+        font-size: 21px;
+      }
 
-            input {
-               display: none;
-            }
+      h3 {
+        margin: 0;
+      }
 
-            input:checked + label {
-              color: #494d59;
-              text-align: center;
-              text-shadow: 0 1px rgba(255, 255, 255, 0.5);
-              background: #fcfcfc;
-              border-radius: 2px;
-            }
+      ul {
+        margin: 1em;
+        padding: 0;
+        list-style-type: none;
+        overflow: hidden;
+        background: darken($gray, 50%);
+        border-radius: 2px;
+
+        li {
+          label {
+            margin: 2.5%;
+            float: left;
+            width: 45%;
+            line-height: 32px;
+            color: white;
+            font-weight: bold;
+            font-size: 12pt;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            overflow: hidden;
+          }
+
+          input {
+             display: none;
+          }
+
+          input:checked + label {
+            color: #494d59;
+            text-align: center;
+            text-shadow: 0 1px rgba(255, 255, 255, 0.5);
+            background: #fcfcfc;
+            border-radius: 2px;
+          }
+
+          button {
+            height: auto;
+            padding: 2.5%;
+            margin: 4%;
           }
         }
       }
@@ -124,6 +204,8 @@ body {
       .response {
         text-align: center;
         padding-top: 1em;
+        padding-left: 4em;
+        padding-right: 4em;
         color: $green;
       }
 
