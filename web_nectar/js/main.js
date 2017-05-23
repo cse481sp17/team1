@@ -34,6 +34,8 @@ $(function() {
     var pageToggleContainer = $('#pageToggleContainer');
 
     // Helpers
+    var HOSTNAME = "unimate.cs.washington.edu"
+
     var chefUpdateInterval = 10000;
     var chefTimeout;
     var CHEF_PASSWORD = "dankmemes"
@@ -84,7 +86,7 @@ $(function() {
 
     var getData = function(type) {
       $.ajax({
-        url: 'http://localhost:8080',
+        url: 'http://' + HOSTNAME + ':8080',
         type: 'GET',
         dataType: 'json',
         crossDomain: true,
@@ -106,7 +108,7 @@ $(function() {
     var deleteOrder = function(element) {
       var id = $('button', element).attr('name');
       $.ajax({
-        url: 'http://localhost:8080?' + $.param({'id': id}),
+        url: 'http://' + HOSTNAME + ':8080?' + $.param({'id': id}),
         type: 'DELETE',
         crossDomain: true,
         cache: false,
@@ -232,7 +234,7 @@ $(function() {
       console.log("Sending:", foodAndLocation);
 
       $.ajax({
-        url: 'http://localhost:8080',
+        url: 'http://' + HOSTNAME + ':8080',
         type: 'POST',
         dataType: 'text',
         crossDomain: true,
