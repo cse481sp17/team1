@@ -14,5 +14,6 @@ python server.py
 ```
 npm install && npm update
 bower install && bower update
-gulp serve
+gulp serve # single client
+python -m SimpleHTTPServe 3000 # many client
 ```
