@@ -59,10 +59,9 @@ catkin_python_setup()
 # )
 
 ## Generate services in the 'srv' folder
- add_service_files(
-   FILES
-   Serving.srv
- )
+# add_service_files(
+#   FILES
+#)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -184,7 +183,7 @@ target_link_libraries(perception_downsampler
     ${catkin_LIBRARIES}
 )
 #target_link_libraries(perception_box_fitter
-#  ${catkin_LIBRARIES}
+#    ${catkin_LIBRARIES}
 #)
 #target_link_libraries(perception_segmentation
 #    perception_box_fitter
