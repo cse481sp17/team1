@@ -9,6 +9,8 @@ class Server:
     def __init__(self):
         self._program_ctrl = ProgramController(PROGRAM_FILE)
 
+    # TODO: program retreive and place
+    # via the cli.py 
     def serve(self, req):
         print req
         if req.action == ServingRequest.RETREIVE:

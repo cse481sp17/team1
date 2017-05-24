@@ -9,6 +9,7 @@ class Navigator:
     def __init__(self):
         self._pose_ctrl = PoseController(PROGRAM_FILE)
 
+    # TODO: program the navigation with cli.py
     def navigate(self, req):
         print req
         return self.run_procedure(req.location)
