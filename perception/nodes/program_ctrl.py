@@ -98,19 +98,20 @@ class ProgramStep(object):
 
 
 class ProgramController(object):
-    def __init__(self):
+    def __init__(self, pose_file=POSE_FILE):
         # TODO: Either implement behavior that fixes programs when markers change
         # or only let this callback run once
         self._markers_sub = rospy.Subscriber(SUB_NAME,
                                           Marker, 
                                           callback=self._markers_callback)
-        self._programs = self._read_in_programs()
         self._curr_markers = None 
         self._tf_listener = tf.TransformListener()
         self._arm = fetch_api.Arm()
         self._gripper = fetch_api.Gripper()
         self._torso = fetch_api.Torso()
         self._controller_client = actionlib.SimpleActionClient('/query_controller_states', QueryControllerStatesAction)
+        self._pose_file = pose_file
+        self._programs = self._read_in_programs()
 
     def __str__(self):
         if self._programs:
@@ -120,13 +121,13 @@ class ProgramController(object):
 
     def _read_in_programs(self):
         try:
-            with open(POSE_FILE, 'rb') as file:
+            with open(self._pose_file, 'rb') as file:
                 return pickle.load(file)
         except IOError:
             return {}
 
     def _write_out_programs(self):
-        with open(POSE_FILE, 'wb') as file:
+        with open(self._pose_file, 'wb') as file:
             pickle.dump(self._programs, file)
 
     def _markers_callback(self, msg):
