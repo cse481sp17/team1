@@ -11,6 +11,8 @@ import actionlib
 from visualization_msgs.msg import Marker
 
 POSE_FILE = '/home/team1/data/handle_programs.p'
+# TODO: we should sub to some other topic for the handle 
+# pose. going through visualization marker is janky
 SUB_NAME = '/visualization_marker'
 
 ID_TO_TAGNAME = {'handle':400}
