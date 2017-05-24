@@ -21,7 +21,10 @@ class Server:
         if name not in self._program_ctrl._programs:
             print("{} program does not exist".format(name))
             return False
+        #TODO have run_program return a boolean
+        # false if the program could not run
         self._program_ctrl.run_program(name)
+        return True
 
 
 if __name__ == '__main__':
