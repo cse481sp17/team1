@@ -7,13 +7,14 @@ SUB_NAME = 'amcl_pose'
 PUB_NAME = 'move_base_simple/goal'
 
 class PoseController(object):
-    def __init__(self):
+    def __init__(self, pose_file=POSE_FILE):
         self._pose_sub = rospy.Subscriber(SUB_NAME,
                                           PoseWithCovarianceStamped, 
                                           callback=self._pose_callback)
         self._pose_pub = rospy.Publisher(PUB_NAME,
                                          PoseStamped,
                                          queue_size=10)
+        self._pose_file = pose_file
         self._poses = self._read_in_poses()
         self._curr_pose = None
 
@@ -25,13 +26,13 @@ class PoseController(object):
 
     def _read_in_poses(self):
         try:
-            with open(POSE_FILE, 'rb') as file:
+            with open(self._pose_file, 'rb') as file:
                 return pickle.load(file)
         except IOError:
             return {}
 
     def _write_out_poses(self):
-        with open(POSE_FILE, 'wb') as file:
+        with open(self._pose_file, 'wb') as file:
             pickle.dump(self._poses, file)
 
     def _pose_callback(self, msg):

@@ -1,0 +1,6 @@
+string CHEF_TABLE="chef table"
+string CLIENT_A="client a"
+string CLIENT_B="client b"
+string location
+---
+bool success
