@@ -90,7 +90,7 @@ body {
         margin: 0;
         line-height: 32px;
         color: white;
-        font-weight: bold;
+        /*font-weight: bold;*/
         text-align: center;
         cursor: pointer;
         user-select: none;
@@ -103,7 +103,7 @@ body {
         margin: 0;
         line-height: 32px;
         color: white;
-        font-weight: bold;
+        /*font-weight: bold;*/
         text-align: center;
         cursor: pointer;
         user-select: none;
@@ -136,7 +136,7 @@ body {
         margin-top: 1em;
         color: #494d59;
         text-align: center;
-        text-shadow: 0 1px rgba(255, 255, 255, 0.5);
+        /*text-shadow: 0 1px rgba(255, 255, 255, 0.5);*/
         background: #fcfcfc;
         border-radius: 2px;
         cursor: pointer;
@@ -144,8 +144,6 @@ body {
         border-color: #d8d8d8 #d1d1d1 #c3c3c3;
         width: 92%;
       }
-
-
 
       legend, h3 {
         text-align: center;
@@ -159,26 +157,33 @@ body {
       }
 
       ul {
-        margin: 1em;
-        padding: 0;
+        /*margin: 1em;*/
+        margin-top: 1em;
+        margin-bottom: 1em;
+        /*padding: 0;*/
         list-style-type: none;
         overflow: hidden;
-        background: darken($gray, 50%);
+        /*background: darken($gray, 50%);*/
         border-radius: 2px;
 
         li {
           label {
-            margin: 2.5%;
+            margin: 1%;
+            border-radius: 10px;
             float: left;
+            line-height: 140px; /* This controls size of buttons */
             width: 45%;
-            line-height: 32px;
             color: white;
-            font-weight: bold;
+            font-weight: lighter;
             font-size: 12pt;
             text-align: center;
             cursor: pointer;
             user-select: none;
             overflow: hidden;
+            opacity: 1.0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
           }
 
           input {
@@ -186,11 +191,23 @@ body {
           }
 
           input:checked + label {
-            color: #494d59;
+            opacity: 0.7; /* Selector */
             text-align: center;
-            text-shadow: 0 1px rgba(255, 255, 255, 0.5);
-            background: #fcfcfc;
-            border-radius: 2px;
+            font-weight: bolder;
+            font-size: 13pt;
+            /*text-shadow: 0 1px rgba(255, 255, 255, 0.5);*/
+            /*background: #006600;*/
+            /*border-radius: 2px;*/
+          }
+
+          input:checked + label[for="location-Counter Area 1"],
+          input:checked + label[for="location-Counter Area 2"] {
+            background: #86C67C;
+            opacity: 1.0; /* Selector */
+          }
+
+          label:hover {
+            opacity: 0.9;
           }
 
           button {
@@ -214,6 +231,78 @@ body {
         height: 50px;
         background: url('assets/spinner.gif') no-repeat bottom center;
       }
+    }
+
+    label[for="foodItem-Pasta"] {
+      background-image: url('assets/pasta.jpg');
+    }
+
+    label[for="foodItem-Hamburger"] {
+      background-image: url('assets/burger.jpg');
+    }
+
+    label[for="foodItem-Burrito"] {
+      background-image: url('assets/burrito.jpg');
+    }
+
+    label[for="foodItem-None"] {
+      background: #333333;
+    }
+
+    label[for="sideItem-Salad"] {
+      background-image: url('assets/salad.jpg');
+    }
+
+    label[for="sideItem-Soup"] {
+      background-image: url('assets/soup.png');
+    }
+
+    label[for="sideItem-Fries"] {
+      background-image: url('assets/fries.jpg');
+    }
+
+    label[for="sideItem-None"] {
+      background: #333333;
+    }
+
+    label[for="dessertItem-Cookie"] {
+      background-image: url('assets/cookies.jpg');
+    }
+
+    label[for="dessertItem-Cheesecake"] {
+      background-image: url('assets/cheesecake.jpg');
+    }
+
+    label[for="dessertItem-Macarons"] {
+      background-image: url('assets/macarons.jpg');
+    }
+
+    label[for="dessertItem-None"] {
+      background: #333333;
+    }
+
+    label[for="drinkItem-Water"] {
+      background-image: url('assets/water.jpg');
+    }
+
+    label[for="drinkItem-Ice tea"] {
+      background-image: url('assets/icetea.jpg');
+    }
+
+    label[for="drinkItem-Lemonade"] {
+      background-image: url('assets/lemonade.jpg');
+    }
+
+    label[for="drinkItem-None"] {
+      background: #333333;
+    }
+
+    label[for="location-Counter Area 1"] {
+      background: #999999;
+    }
+
+    label[for="location-Counter Area 2"] {
+      background: #999999;
     }
 
     .error {
