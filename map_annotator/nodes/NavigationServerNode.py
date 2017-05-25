@@ -13,7 +13,6 @@ class Navigator:
     def navigate(self, req):
         print req
         return self.run_procedure(req.location)
-        return False
 
     def run_procedure(self, name):
         if name not in self._pose_ctrl._poses:

@@ -1,6 +1,6 @@
-string CHEF_TABLE="chef table"
-string CLIENT_A="client a"
-string CLIENT_B="client b"
+string CHEF_TABLE=Chef Table
+string COUNTER_AREA_1=Counter Area 1
+string COUNTER_AREA_2=Counter Area 2
 string location
 ---
 bool success

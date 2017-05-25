@@ -1,6 +1,8 @@
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from SocketServer import ThreadingMixIn
 import threading, cgi, json, urlparse
+from order_msgs.msg import Order
+import rospy
 
 PORT = 8080
 
@@ -67,6 +69,25 @@ def reply_not_found(request_handler):
     request_handler.end_headers()
     request_handler.wfile.write(response)
 
+def order_failure_callback(msg):
+    # append the failed order back to the orders
+    print("FAILURE CALLBACK")
+    order = {}
+    order['id'] = msg.id
+    order['location'] = msg.location
+    order['sideItem'] = msg.sideItem
+    order['drinkItem'] = msg.drinkItem
+    order['foodItem'] = msg.foodItem
+    order['dessertItem'] = msg.dessertItem
+
+    # TODO: add some field that let's the frontend know that it failed and maybe display
+    # it different
+
+    # TODO do something like this maybe
+    # order['isFail'] = True
+
+    ORDERS.insert(0, order)
+
 class ServerHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(200, "ok")
@@ -106,12 +127,27 @@ class ServerHandler(BaseHTTPRequestHandler):
 
         #TODO: make robot deliver hot steamy pile of food
 
-        # Remove order from list
+        # TODO: take order and convert it to an order_msg
+        order_msg = Order()
+        order_msg.id = order['id']
+        order_msg.location = order['location']
+        order_msg.sideItem = order['sideItem']
+        order_msg.drinkItem = order['drinkItem']
+        order_msg.foodItem = order['foodItem']
+        order_msg.dessertItem = order['dessertItem']
+        NECTAR_ORDER_PUB.publish(order_msg)
+
         ORDERS.remove(order)
         reply_success(self)
 
+
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     pass
+
+rospy.init_node('nectar_web_server_backend')
+
+NECTAR_ORDER_PUB = rospy.Publisher('/orders', Order, queue_size=10)
+NECTAR_FAILURE_SUB = rospy.Subscriber('/order_failure', Order, order_failure_callback)
 
 httpd = ThreadedHTTPServer(("", PORT), ServerHandler)
 httpd.allow_reuse_address = True

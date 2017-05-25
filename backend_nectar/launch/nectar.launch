@@ -1,7 +1,9 @@
 <launch>
-    <node name="$(anon nav_server)" pkg="map_annotator" type="ServingServerNode" respawn="true"/>
-    <node name="$(anon serving_server" pkg="perception" tpye="NavigationServerNode" respawn="true"/>
-    <node name="nectar" pkg="backend_nectar" type="backend.py" required="true" /> 
+    <include file="$(find fetch_gazebo)/launch/simulation.launch" />
+    <include file="$(find fetch_api)/launch/move_group.launch" />
+    <node name="serving_server" pkg="perception" type="ServingServerNode.py" respawn="true" output="screen"/>
+    <node name="nav_server" pkg="map_annotator" type="NavigationServerNode.py" respawn="true" output="screen"/>
+    <node name="nectar" pkg="backend_nectar" type="backend.py" required="true" output="screen"/> 
     <node name="$(anon perception_demo)" pkg="perception" type="point_cloud_demo" args="cloud_in:=/head_camera/depth_registered/points"/>
     <param name="ec_cluster_tolerance" value="0.03" />
     <param name="ec_min_cluster_size" value="60" />
