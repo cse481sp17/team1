@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(perception)
+project(navigator_msg)
 
 ## Add support for C++11, supported in ROS Kinetic and newer
 # add_definitions(-std=c++11)
@@ -8,13 +8,7 @@ project(perception)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  pcl_ros
-  rosbag
-  roscpp
   rospy
-  sensor_msgs
-  simple_grasping
-  tf
   message_generation
 )
 
@@ -25,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-catkin_python_setup()
+# catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -59,9 +53,10 @@ catkin_python_setup()
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#)
+ add_service_files(
+   FILES
+   Navigation.srv
+ )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -71,10 +66,10 @@ catkin_python_setup()
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
+ generate_messages(
+   DEPENDENCIES
 #   std_msgs  # Or other packages containing msgs
-# )
+ )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -106,13 +101,9 @@ catkin_python_setup()
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-    INCLUDE_DIRS include
-    LIBRARIES
-    	perception_crop
-    	perception_downsampler
 #  INCLUDE_DIRS include
-#  LIBRARIES perception
-#  CATKIN_DEPENDS roscpp rospy
+#  LIBRARIES navigator_msg
+#  CATKIN_DEPENDS rospy
 #  DEPENDS system_lib
 )
 
@@ -124,19 +115,13 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  include
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/perception.cpp
+#   src/${PROJECT_NAME}/navigator_msg.cpp
 # )
-
-add_library(perception_crop src/crop.cpp)
-add_library(perception_downsampler src/downsampler.cpp)
-add_library(perception_segmentation src/segmentation.cpp)
-#add_library(perception_box_fitter src/box_fitter.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -146,51 +131,22 @@ add_library(perception_segmentation src/segmentation.cpp)
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(perception_save_cloud_main src/save_cloud_main.cpp)
-add_executable(perception_point_cloud_demo src/point_cloud_demo.cpp)
+# add_executable(${PROJECT_NAME}_node src/navigator_msg_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
 ## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
-set_target_properties(perception_save_cloud_main PROPERTIES OUTPUT_NAME save_cloud PREFIX "")
-set_target_properties(perception_point_cloud_demo PROPERTIES OUTPUT_NAME point_cloud_demo PREFIX "")
+# set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(perception_save_cloud_main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(perception_point_cloud_demo ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(perception_crop ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(perception_downsampler ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(perception_segmentation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-#add_dependencies(perception_box_fitter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
+# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(perception_save_cloud_main
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(perception_point_cloud_demo
-    perception_crop
-    perception_downsampler
-    perception_segmentation
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(perception_crop 
-    ${catkin_LIBRARIES}
-)
-target_link_libraries(perception_downsampler
-    ${catkin_LIBRARIES}
-)
-#target_link_libraries(perception_box_fitter
-#    ${catkin_LIBRARIES}
-#)
-#target_link_libraries(perception_segmentation
-#    perception_box_fitter
-#    ${catkin_LIBRARIES}
-#)
-
-
+# target_link_libraries(${PROJECT_NAME}_node
+#   ${catkin_LIBRARIES}
+# )
 
 #############
 ## Install ##
@@ -232,7 +188,7 @@ target_link_libraries(perception_downsampler
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_perception.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_navigator_msg.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

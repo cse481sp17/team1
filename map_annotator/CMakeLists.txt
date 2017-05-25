@@ -51,7 +51,6 @@ add_message_files(
   FILES
   PoseNames.msg
   UserAction.msg
-#   Message1.msg
 #   Message2.msg
 )
 
