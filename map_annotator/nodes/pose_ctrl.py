@@ -3,6 +3,7 @@ import rospy
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from actionlib_msgs.msg import GoalStatus
 
 POSE_FILE = '/home/team1/catkin_ws/src/cse481c/map_annotator/nodes/poses'
 SUB_NAME = 'amcl_pose'
@@ -101,5 +102,5 @@ class PoseController(object):
             self._pose_action_client.send_goal(goal)
             self._pose_action_client.wait_for_result()
 
-            return ac.getState() == actionlib.SimpleClientGoalState.SUCCEEDED
+            return self._pose_action_client.get_state() == GoalStatus.SUCCEEDED
 
