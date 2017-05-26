@@ -47,7 +47,11 @@ class Program(object):
     def calc_poses(self, markers):
         ret = []
         for step in self.steps:
-            ret.append(self._find_pose(step, markers))
+            pose = self._find_pose(step, markers)
+            if pose is None:
+                print 'cannot run program that uses markers when there are no markers'
+                return []
+            ret.append(pose)
         return ret
 
     def _find_pose(self, step, markers):
@@ -65,7 +69,7 @@ class Program(object):
 
             if marker_id != markers.id:
                 rospy.logerr("cannot find the {} with id {}".format(frame_id, marker_id))
-                return
+                return None
 
             # we have to do some transformation magic
             # we have the base_link_T_tag frame from marker_match.pose
@@ -236,11 +240,7 @@ class ProgramController(object):
     def run_program(self, program_name):
         if program_name not in self._programs:
             print "{} does not exist".format(program_name)
-        else:
-            if self._curr_markers is None:
-                print "No markers exist"
-                return
-            
+        else:      
             # only move arm to pose if we aren't changing height
             doPose = True
             poses = self._programs[program_name].calc_poses(self._curr_markers)
