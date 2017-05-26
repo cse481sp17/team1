@@ -7,7 +7,7 @@ if __name__ == "__main__":
     rospy.wait_for_service('navigation')
     try:
         navigator = rospy.ServiceProxy('navigation', Navigation)
-        print(navigator())
+        print(navigator(NavigationRequest.CHEF_TABLE))
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
