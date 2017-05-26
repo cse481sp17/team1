@@ -57,7 +57,9 @@ class GripperTeleopDown(GripperTeleop):
             self._planning_scene.removeCollisionObject('table')
             # TODO: use the msg.pose.orientation to conver the scale directly 
             # instead of manually swapping x and y
-            self._planning_scene.addBox('table', msg.scale.y, msg.scale.x, msg.scale.z, msg.pose.position.x, msg.pose.position.y, msg.pose.position.z)
+            x = min(msg.scale.y, msg.scale.x)
+            y = max(msg.scale.y, msg.scale.x)
+            self._planning_scene.addBox('table', x, y, msg.scale.z, msg.pose.position.x, msg.pose.position.y, msg.pose.position.z)
         if msg.ns == 'tray handle':
             print(msg.pose)
             #handle_im = create_handle_interactive_marker(create_pose_stamped(msg.pose).pose, msg.scale)
