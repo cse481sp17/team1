@@ -167,9 +167,6 @@ class ProgramController(object):
 
     # TODO: gripper status could be used here
     def save_program(self, program_name, frame_id, append=True):
-        if not self._curr_markers:
-            print "No ar markers available"
-            return
         print "Saving next position for program {} in {}".format(program_name, frame_id)
         # need to grab the program as is
         curr_program = self._programs.get(program_name)
