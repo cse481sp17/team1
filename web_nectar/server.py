@@ -79,6 +79,7 @@ def order_failure_callback(msg):
     order['drinkItem'] = msg.drinkItem
     order['foodItem'] = msg.foodItem
     order['dessertItem'] = msg.dessertItem
+    order['isFail'] = True
 
     # TODO: add some field that let's the frontend know that it failed and maybe display
     # it different

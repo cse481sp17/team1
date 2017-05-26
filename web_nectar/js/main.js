@@ -81,7 +81,11 @@ $(function() {
     };
 
     var createChefOrder = function(order) {
-      return $("<li><button id='order" + order.id + "' name='" + order.id + "'><strong>Order #" + order.id + ":</strong> " + order.foodItem + ", " + order.sideItem + ", " + order.dessertItem + ", " + order.drinkItem + "</li>");
+      if (order.isFail) {
+        // color: white;
+        return $("<li><button style=\"background:red;\" id='order" + order.id + "' name='" + order.id + "'><strong>Order #" + order.id + ":</strong> " + order.foodItem + ", " + order.sideItem + ", " + order.dessertItem + ", " + order.drinkItem + "</li>");
+      }
+      return $("<li ><button style=\"background:white;\" id='order" + order.id + "' name='" + order.id + "'><strong>Order #" + order.id + ":</strong> " + order.foodItem + ", " + order.sideItem + ", " + order.dessertItem + ", " + order.drinkItem + "</li>");
     }
 
     var getData = function(type) {
