@@ -2,7 +2,7 @@ import pickle
 import rospy
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
 import actionlib
-from move_base_msgs import MoveBaseAction, MoveBaseGoal
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 POSE_FILE = '/home/team1/catkin_ws/src/cse481c/map_annotator/nodes/poses'
 SUB_NAME = 'amcl_pose'
