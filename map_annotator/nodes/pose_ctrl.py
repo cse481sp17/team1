@@ -101,5 +101,5 @@ class PoseController(object):
             self._pose_action_client.send_goal(goal)
             self._pose_action_client.wait_for_result()
 
-            return ac.getState() == actionlib.SimpleClientGoalState.SUCCEEDED:
+            return ac.getState() == actionlib.SimpleClientGoalState.SUCCEEDED
 
