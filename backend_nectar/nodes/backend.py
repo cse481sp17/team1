@@ -7,6 +7,8 @@ from order_msgs.msg import Order
 
 #TODO import msg from backend_nectar, figure out how
 
+OrderLocationToNavigationLocation = {Order.COUNTER_AREA_1: NavigationRequest.COUNTER_AREA_1, ORDER.COUNTER_AREA_2: NavigationRequest.COUNTER_AREA_2}
+
 class NectarBackend:
     def __init__(self):
         self._order_queue = deque()
@@ -21,7 +23,6 @@ class NectarBackend:
 
         # TODO setup all the other stuff with the frontend communication
         # _order_callback is the callback for the frontend's topic
-
         # make a subscriber to the frontend
         self._frontend_sub = rospy.Subscriber('/orders', Order, self._order_callback)
 
@@ -31,7 +32,6 @@ class NectarBackend:
 
     # TODO hook this callback into the frontend
     def _order_callback(self, msg):
-        print "CALLBACK"
         self._order_queue.append(msg)
 
     def poll_queue_and_run(self):
@@ -56,7 +56,7 @@ class NectarBackend:
             return
 
         # TODO, the navigation location comes from the frontend
-        ret = self._navigator_server(order_msg.location)
+        ret = self._navigator_server(OrderLocationToNavigationLocation[order_msg.location])
         if not ret.success:
             self.error("ERROR in navigation to customer", order_msg)
             return

@@ -8,6 +8,7 @@ PUB_NAME = 'move_base_simple/goal'
 
 class PoseController(object):
     def __init__(self, pose_file=POSE_FILE):
+        print 'making pose controller'
         self._pose_sub = rospy.Subscriber(SUB_NAME,
                                           PoseWithCovarianceStamped, 
                                           callback=self._pose_callback)
