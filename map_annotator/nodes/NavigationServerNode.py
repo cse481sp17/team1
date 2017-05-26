@@ -18,8 +18,7 @@ class Navigator:
             return False
         #TODO have run_program return a boolean
         # false if the program could not run
-        self._pose_ctrl.move_to_pose(name)
-        return True
+        return self._pose_ctrl.move_to_pose(name)
 
 
 if __name__ == '__main__':
