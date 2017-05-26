@@ -17,16 +17,28 @@ In a tmux terminal, run the following commands...
 ---
 To run the exisitng map file and save poses do this:
 ####In one terminal:
+```
 ssh team1@astro
+```
 Launch the fetch navigation: fetch_nav with map file real_robot_take_1.yaml and keepout obstacles_small_room.yaml: change if you need
+```
 roslaunch map_annotator navigation.launch
+```
 ####Then run in another terminal:
+```
 ssh team1@astro
+```
+```
 roslaunch fetch_api move_group.launch
+```
 
 ####In another terminal:
+```
 setrobot astro
+```
+```
 rosrun rviz rviz -d ~/catkin_ws/src/cse481c/applications/config/navigation.rviz
+```
 
 ---
 To build map in the real world, run the following commands (in tmux if you want to keep your sanity)...
