@@ -3,11 +3,9 @@ from perception_msgs.srv import Serving, ServingRequest
 import rospy
 from program_ctrl import ProgramController
 
-PROGRAM_FILE = "programs.p"
-
 class Server:
     def __init__(self):
-        self._program_ctrl = ProgramController(PROGRAM_FILE)
+        self._program_ctrl = ProgramController()
 
     # TODO: program retreive and place
     # via the cli.py 
