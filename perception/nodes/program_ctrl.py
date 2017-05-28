@@ -9,6 +9,7 @@ import fetch_api
 from robot_controllers_msgs.msg import QueryControllerStatesAction, QueryControllerStatesGoal, ControllerState
 import actionlib
 from visualization_msgs.msg import Marker
+import copy
 
 PROGRAM_FILE = '/home/team1/catkin_ws/src/cse481c/perception/nodes/programs.p'
 # TODO: we should sub to some other topic for the handle 
@@ -18,7 +19,10 @@ SUB_NAME = '/visualization_marker'
 ID_TO_TAGNAME = {'handle':400}
 
 class Program(object):
-    def __init__(self, steps=[]):
+    def __init__(self, steps=None):
+        if steps is None:
+            steps = []
+        print 'steps is {}'.format(steps)
         self.steps = steps
 
     def __repr__(self):
@@ -225,6 +229,7 @@ class ProgramController(object):
         if program_name not in self._programs:
             self._programs[program_name] = Program()
             print "{} created".format(program_name)
+            print "the program is {}".format(self._programs[program_name])
         else:
             print "Trying to create program {} when it already exists".format(program_name)
         self._write_out_programs()
@@ -242,31 +247,20 @@ class ProgramController(object):
             print "{} does not exist".format(program_name)
         else:      
             # only move arm to pose if we aren't changing height
-            doPose = True
-            poses = self._programs[program_name].calc_poses(self._curr_markers)
+            poses = self._programs[program_name].calc_poses(copy.deepcopy(self._curr_markers))
             self.start_arm()
 
-            prevHeight = None
             for i, pose in enumerate(poses):
-                height = self._programs[program_name].steps[i].torso_height
-                self._torso.set_height(height)
-                if prevHeight != None and prevHeight != height:
-                    doPose = False
-                
-                prevHeight = height
+                error = self._arm.move_to_pose(pose, allowed_planning_time=15.0)
+                if error is not None:
+                    print "{} failed to run at step #{}".format(program_name, i+1)
+                    return
+                rospy.sleep(1.5)
 
                 if self._programs[program_name].steps[i].gripper_state == fetch_api.Gripper.OPENED:
                     self._gripper.open()
                 else:
                     self._gripper.close()
-
-                if doPose:
-                    error = self._arm.move_to_pose(pose, allowed_planning_time=15.0)
-                    if error is not None:
-                        print "{} failed to run at step #{}".format(program_name, i+1)
-                        return
-                rospy.sleep(1.5)
-
 
     @property
     def programs(self):
