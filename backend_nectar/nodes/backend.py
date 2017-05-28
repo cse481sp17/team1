@@ -7,7 +7,7 @@ from order_msgs.msg import Order
 
 #TODO import msg from backend_nectar, figure out how
 
-OrderLocationToNavigationLocation = {Order.COUNTER_AREA_1: NavigationRequest.COUNTER_AREA_1, ORDER.COUNTER_AREA_2: NavigationRequest.COUNTER_AREA_2}
+OrderLocationToNavigationLocation = {Order.COUNTER_AREA_1: NavigationRequest.COUNTER_AREA_1, Order.COUNTER_AREA_2: NavigationRequest.COUNTER_AREA_2}
 
 class NectarBackend:
     def __init__(self):
