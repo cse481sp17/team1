@@ -245,6 +245,7 @@ class ProgramController(object):
     def run_program(self, program_name):
         if program_name not in self._programs:
             print "{} does not exist".format(program_name)
+            return False
         else:      
             poses = self._programs[program_name].calc_poses(copy.deepcopy(self._curr_markers))
             self.start_arm()
@@ -258,7 +259,8 @@ class ProgramController(object):
                 error = self._arm.move_to_pose(pose, allowed_planning_time=15.0)
                 if error is not None:
                     print "{} failed to run at step #{}".format(program_name, i+1)
-                    return
+                    return False
+        return True
 
 
     @property
