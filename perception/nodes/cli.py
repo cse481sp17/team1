@@ -26,30 +26,32 @@ def prompt(program_ctrl):
     if len(command_args) == 1:
         command = command_args[0]
     if len(command_args) == 2:
-        command, program_name = command_args
+        command, first_arg = command_args
     if len(command_args) == 3:
-        command, program_name, frame_id = command_args
+        command, first_arg, second_arg = command_args
 
     if command == "list":
         print str(program_ctrl)
+    elif command == rename and first_arg and second_arg:
+        program_ctrl.rename(first_arg, second_arg)
     elif command == "close":
         program_ctrl.close()
     elif command == "open":
         program_ctrl.open()
     elif command == "relax":
         program_ctrl.relax_arm()
-    elif command == "create" and program_name:
-        program_ctrl.create_program(program_name)
-    elif command == "save" and program_name:
-        program_ctrl.save_program(program_name, frame_id, True)
-    elif command == "prepend" and program_name:
-        program_ctrl.save_program(program_name, frame_id, False)
-    elif command == "remove" and program_name and frame_id:
-        program_ctrl.remove_step(program_name, int(frame_id))
-    elif command == "delete" and program_name:
-        program_ctrl.delete_program(program_name)
-    elif command == "run" and program_name:
-        program_ctrl.run_program(program_name)
+    elif command == "create" and first_arg:
+        program_ctrl.create_program(first_arg)
+    elif command == "save" and first_arg and second_arg:
+        program_ctrl.save_program(first_arg, second_arg, True)
+    elif command == "prepend" and first_arg and second_arg:
+        program_ctrl.save_program(first_arg, second_arg, False)
+    elif command == "remove" and first_arg and second_arg:
+        program_ctrl.remove_step(first_arg, int(second_arg))
+    elif command == "delete" and first_arg:
+        program_ctrl.delete_program(first_arg)
+    elif command == "run" and first_arg:
+        program_ctrl.run_program(first_arg)
     elif command == "quit" or command == "q":
         exit(0)
     elif command == "help":

@@ -26,16 +26,6 @@ class Program(object):
         self.steps = steps
 
     def __repr__(self):
-        # ret = "["
-        # first = True
-        # for step in self.steps:
-        #     if first:
-        #         ret += step.__str__()
-        #         first = False
-        #     else:
-        #         ret += ", {}".format(step.__str__())
-        # ret += "]"
-        # return self.steps.__str__()
         return "\n\n".join(list(map(str, (self.steps))))
 
 
@@ -179,7 +169,7 @@ class ProgramController(object):
         # need to grab the program as is
         curr_program = self._programs.get(program_name)
         if curr_program is None:
-            rospy.logerr("This shouldn't happen if create has been called")
+            print("{} does not exist yet".format(program_name))
             return
 
         # TODO: Complete this
@@ -191,7 +181,7 @@ class ProgramController(object):
             marker_id = ID_TO_TAGNAME[frame_id]
             curr_marker = None
             if marker_id != self._curr_markers.id:
-                rospy.logerr('No marker found with frame_id {} and marker_id {} in program {}'.format(frame_id, marker_id, program_name))
+                print('No marker found with frame_id {} and marker_id {} in program {}'.format(frame_id, marker_id, program_name))
                 return
             else:
                 # now we have the marker (curr_marker) which has some pose and we can get the robots current position for its arm
@@ -224,6 +214,17 @@ class ProgramController(object):
         step.torso_height = self._torso.state()
         curr_program.add_step(step, append)
         self._write_out_programs()
+
+    def rename_program(self, program_name, new_program_name):
+        if program_name not in self._programs:
+            print '{} does not exist'.format(program_name)
+            return
+        if new_program_name in self._programs:
+            print '{} already exists'.format(new_program_name)
+            return
+
+        self._programs[new_program_name] = self._programs[program_name]
+        del self._programs[program_name]
 
     def create_program(self, program_name):
         if program_name not in self._programs:
