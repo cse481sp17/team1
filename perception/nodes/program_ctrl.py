@@ -245,31 +245,19 @@ class ProgramController(object):
         if program_name not in self._programs:
             print "{} does not exist".format(program_name)
         else:      
-            # only move arm to pose if we aren't changing height
-            doPose = True
             poses = self._programs[program_name].calc_poses(copy.deepcopy(self._curr_markers))
             self.start_arm()
 
-            prevHeight = None
             for i, pose in enumerate(poses):
-                height = self._programs[program_name].steps[i].torso_height
-                self._torso.set_height(height)
-                if prevHeight != None and prevHeight != height:
-                    doPose = False
-                
-                prevHeight = height
-
                 if self._programs[program_name].steps[i].gripper_state == fetch_api.Gripper.OPENED:
                     self._gripper.open()
                 else:
                     self._gripper.close()
 
-                if doPose:
-                    error = self._arm.move_to_pose(pose, allowed_planning_time=15.0)
-                    if error is not None:
-                        print "{} failed to run at step #{}".format(program_name, i+1)
-                        return
-                rospy.sleep(1.5)
+                error = self._arm.move_to_pose(pose, allowed_planning_time=15.0)
+                if error is not None:
+                    print "{} failed to run at step #{}".format(program_name, i+1)
+                    return
 
 
     @property
