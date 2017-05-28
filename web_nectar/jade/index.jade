@@ -45,23 +45,33 @@ html(lang="en")
           .col-md-6.col-md-offset-3.col-sm-8.col-sm-offset-2
             form.form
               fieldset.radioGroup#foodGroup
-                legend Select entree
+                legend
+                  h3 
+                    span.strike Select entree
                   .loading.center-block
                   ul#food
               fieldset.radioGroup#sideGroup
-                legend Select side dish
+                legend 
+                  h3 
+                    span.strike Select side dish
                   .loading.center-block
                   ul#sides
               fieldset.radioGroup#dessertGroup
-                legend Select dessert
+                legend 
+                  h3 
+                    span.strike Select dessert
                   .loading.center-block
                   ul#dessert
               fieldset.radioGroup#drinkGroup
-                legend Select beverage
+                legend 
+                  h3 
+                    span.strike Select beverage
                   .loading.center-block
                   ul#drinks
               fieldset.radioGroup#locationGroup
-                legend Select location
+                legend 
+                  h3 
+                    span.strike Select location
                   .loading.center-block
                   ul#locations
               .buttonGroup
@@ -73,7 +83,8 @@ html(lang="en")
           .col-md-6.col-md-offset-3.col-sm-8.col-sm-offset-2
             form.form
               .buttonGroup
-                h3 Order queue
+                h3 
+                  span.strike Order queue
                 .loading.center-block
                 .response(hidden="true")
                 ul#orderQueue

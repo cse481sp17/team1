@@ -82,9 +82,9 @@ body {
 
     .form {
       margin: 1em auto;
-      margin-top: 50px;
+      margin-top: 15px;
       padding: 20px;
-      background: #f4f4f4;
+      background: #f7f7f7;
       border-radius: 3px;
       -webkit-box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.3);
       box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -167,20 +167,37 @@ body {
       }
 
       legend, h3 {
+        font-family: 'Georgia', serif;
+        font-style: italic;
         text-align: center;
         line-height: 28px;
-        padding: 0;
+        padding-top: 0.9em;
         font-size: 21px;
+        border-bottom: 0;
+        
+        display: block;
+        .strike {
+          background: #f7f7f7; 
+          padding:0 12px;
+        }
+
       }
 
       h3 {
         margin: 0;
+        margin-left: 20px;
+        margin-right: 20px;
+        border-bottom: 1px solid #9F9F9F; 
+        text-align:center; 
+        line-height:0.1em; 
       }
 
       ul {
         /*margin: 1em;*/
-        margin-top: 1em;
+        margin-top: 1.5em;
         margin-bottom: 1em;
+        font-family: 'Open Sans', arial, sans-serif;
+        font-style: normal;
         /*padding: 0;*/
         list-style-type: none;
         overflow: hidden;
@@ -224,7 +241,7 @@ body {
           input:checked + label[for="location-Counter Area 1"],
           input:checked + label[for="location-Counter Area 2"] {
             background: #86C67C;
-            opacity: 1.0; /* Selector */
+            font-size: 12pt;
           }
 
           label:hover {
