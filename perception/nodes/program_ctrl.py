@@ -18,7 +18,10 @@ SUB_NAME = '/visualization_marker'
 ID_TO_TAGNAME = {'handle':400}
 
 class Program(object):
-    def __init__(self, steps=[]):
+    def __init__(self, steps=None):
+        if steps is None:
+            steps = []
+
         self.steps = steps
 
     def __repr__(self):
