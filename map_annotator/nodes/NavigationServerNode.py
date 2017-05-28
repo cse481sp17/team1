@@ -3,11 +3,9 @@ from navigator_msg.srv import Navigation, NavigationRequest
 import rospy
 from pose_ctrl import PoseController
 
-PROGRAM_FILE = "programs.p"
-
 class Navigator:
     def __init__(self):
-        self._pose_ctrl = PoseController(PROGRAM_FILE)
+        self._pose_ctrl = PoseController()
 
     # TODO: program the navigation with cli.py
     def navigate(self, req):
@@ -20,8 +18,7 @@ class Navigator:
             return False
         #TODO have run_program return a boolean
         # false if the program could not run
-        self._pose_ctrl.move_to_pose(name)
-        return True
+        return self._pose_ctrl.move_to_pose(name)
 
 
 if __name__ == '__main__':

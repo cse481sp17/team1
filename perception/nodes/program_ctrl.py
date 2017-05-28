@@ -11,7 +11,7 @@ import actionlib
 from visualization_msgs.msg import Marker
 import copy
 
-POSE_FILE = '/home/team1/data/handle_programs.p'
+PROGRAM_FILE = '/home/team1/catkin_ws/src/cse481c/perception/nodes/programs.p'
 # TODO: we should sub to some other topic for the handle 
 # pose. going through visualization marker is janky
 SUB_NAME = '/visualization_marker'
@@ -108,7 +108,7 @@ class ProgramStep(object):
 
 
 class ProgramController(object):
-    def __init__(self, pose_file=POSE_FILE):
+    def __init__(self, program_file=PROGRAM_FILE):
         # TODO: Either implement behavior that fixes programs when markers change
         # or only let this callback run once
         self._markers_sub = rospy.Subscriber(SUB_NAME,
@@ -120,7 +120,7 @@ class ProgramController(object):
         self._gripper = fetch_api.Gripper()
         self._torso = fetch_api.Torso()
         self._controller_client = actionlib.SimpleActionClient('/query_controller_states', QueryControllerStatesAction)
-        self._pose_file = pose_file
+        self._program_file = program_file
         self._programs = self._read_in_programs()
 
     def __str__(self):
@@ -131,13 +131,13 @@ class ProgramController(object):
 
     def _read_in_programs(self):
         try:
-            with open(self._pose_file, 'rb') as file:
+            with open(self._program_file, 'rb') as file:
                 return pickle.load(file)
         except IOError:
             return {}
 
     def _write_out_programs(self):
-        with open(self._pose_file, 'wb') as file:
+        with open(self._program_file, 'wb') as file:
             pickle.dump(self._programs, file)
 
     def _markers_callback(self, msg):

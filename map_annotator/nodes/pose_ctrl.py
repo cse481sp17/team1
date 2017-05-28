@@ -1,6 +1,9 @@
 import pickle
 import rospy
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
+import actionlib
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from actionlib_msgs.msg import GoalStatus
 
 POSE_FILE = '/home/team1/catkin_ws/src/cse481c/map_annotator/nodes/poses'
 SUB_NAME = 'amcl_pose'
@@ -8,12 +11,17 @@ PUB_NAME = 'move_base_simple/goal'
 
 class PoseController(object):
     def __init__(self, pose_file=POSE_FILE):
+        print 'making pose controller'
         self._pose_sub = rospy.Subscriber(SUB_NAME,
                                           PoseWithCovarianceStamped, 
                                           callback=self._pose_callback)
-        self._pose_pub = rospy.Publisher(PUB_NAME,
-                                         PoseStamped,
-                                         queue_size=10)
+        # self._pose_pub = rospy.Publisher(PUB_NAME,
+        #                                  PoseStamped,
+        #                                  queue_size=10)
+
+        self._pose_action_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+        self._pose_action_client.wait_for_server()
+
         self._pose_file = pose_file
         self._poses = self._read_in_poses()
         self._curr_pose = None
@@ -83,9 +91,16 @@ class PoseController(object):
         return self._curr_pose
 
     def move_to_pose(self, pose_name):
+        #TODO change this to use navigation goals
+        # move_base_simple/goal
         if pose_name in self._poses:
             msg = PoseStamped()
             msg.header = self._poses[pose_name].header
             msg.pose = self._poses[pose_name].pose.pose
-            self._pose_pub.publish(msg)
+            goal = MoveBaseGoal()
+            goal.target_pose = msg
+            self._pose_action_client.send_goal(goal)
+            self._pose_action_client.wait_for_result()
+
+            return self._pose_action_client.get_state() == GoalStatus.SUCCEEDED
 

@@ -1,6 +1,7 @@
 <launch>
     <include file="$(find fetch_gazebo)/launch/simulation.launch" />
     <include file="$(find fetch_api)/launch/move_group.launch" />
+    <node name="web server" pkg="web_nectar" type="server.py" />
     <node name="serving_server" pkg="perception" type="ServingServerNode.py" respawn="true" output="screen"/>
     <node name="nav_server" pkg="map_annotator" type="NavigationServerNode.py" respawn="true" output="screen"/>
     <node name="nectar" pkg="backend_nectar" type="backend.py" required="true" output="screen"/> 
