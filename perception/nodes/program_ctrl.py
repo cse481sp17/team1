@@ -9,6 +9,7 @@ import fetch_api
 from robot_controllers_msgs.msg import QueryControllerStatesAction, QueryControllerStatesGoal, ControllerState
 import actionlib
 from visualization_msgs.msg import Marker
+import copy
 
 POSE_FILE = '/home/team1/data/handle_programs.p'
 # TODO: we should sub to some other topic for the handle 
@@ -246,7 +247,7 @@ class ProgramController(object):
         else:      
             # only move arm to pose if we aren't changing height
             doPose = True
-            poses = self._programs[program_name].calc_poses(self._curr_markers)
+            poses = self._programs[program_name].calc_poses(copy.deepcopy(self._curr_markers))
             self.start_arm()
 
             prevHeight = None
