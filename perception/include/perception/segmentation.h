@@ -12,6 +12,8 @@
 #include "pcl/segmentation/sac_segmentation.h"
 #include "visualization_msgs/Marker.h"
 
+#include "perception/object.h"
+
 namespace perception {
 // Finds the largest horizontal surface in the given point cloud.
 // This is useful for adding a collision object to MoveIt.
@@ -40,6 +42,8 @@ void SegmentSurfaceObjects(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
                            std::vector<pcl::PointIndices>* object_indices,
                            pcl::ModelCoefficients::Ptr coeff);
 
+void SegmentTabletopScene(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, std::vector<Object>* objects);
+
 class Segmenter {
  public:
   Segmenter(const ros::Publisher& surface_points_pub, const ros::Publisher& marker_pub, 
@@ -47,6 +51,7 @@ class Segmenter {
   void Callback(const sensor_msgs::PointCloud2& msg);
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr CropTrayAndPublishMarker(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud);
   int SegmentTableAndPublishMarker(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud, visualization_msgs::Marker::Ptr table_marker_ptr);
+  int SegmentSurfaceObjectsAndPublishMarkers(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud);
 
  private:
   ros::Publisher surface_points_pub_;
