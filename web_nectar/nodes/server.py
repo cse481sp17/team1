@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from SocketServer import ThreadingMixIn
 import threading, cgi, json, urlparse
