@@ -43,6 +43,11 @@ namespace perception {
     seg.setAxis(axis);
     seg.setEpsAngle(pcl::deg2rad(10.0));
 
+    if (indices_internal.indices.size() == 0) {
+      //ROS_ERROR("Unable to find surface.");
+      return;
+    }
+
     seg.segment(indices_internal, *coeff);
 
     double distance_above_plane;
@@ -59,7 +64,7 @@ namespace perception {
     }
 
     if (indices->indices.size() == 0) {
-      ROS_ERROR("Unable to find surface.");
+      //ROS_ERROR("Unable to find surface.");
       return;
     }
   }
