@@ -119,6 +119,8 @@ namespace perception {
              object_indices->size(), min_size, max_size);
   }
 
+
+
   void SegmentTabletopScene(PointCloudC::Ptr cloud, std::vector<Object>* objects) {
     pcl::ModelCoefficients::Ptr coeff(new pcl::ModelCoefficients());
     pcl::PointIndices::Ptr table_inliers(new pcl::PointIndices());
@@ -161,8 +163,8 @@ namespace perception {
     }
   }
 
-  Segmenter::Segmenter(const ros::Publisher& surface_points_pub, const ros::Publisher& marker_pub, const ros::Publisher& above_surface_pub, const ros::Publisher& tray_crop_pub, const ObjectRecognizer& recognizer)
-    : surface_points_pub_(surface_points_pub), marker_pub_(marker_pub), above_surface_pub_(above_surface_pub), tray_crop_pub_(tray_crop_pub), recognizer_(recognizer) {}
+  Segmenter::Segmenter(const ros::Publisher& surface_points_pub, const ros::Publisher& marker_pub, const ObjectRecognizer& recognizer)
+    : surface_points_pub_(surface_points_pub), marker_pub_(marker_pub), recognizer_(recognizer) {}
 
   void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
     
@@ -196,6 +198,7 @@ namespace perception {
     // crop the cloud to the estimated tray area
     // PointCloudC::Ptr tray_cropped_cloud = CropTrayAndPublishMarker(cloud_transformed_cleaned);
 
+
     // Define the dimensions of the handle
     const double handle_x = 0.030;
     const double handle_y = 0.075;
@@ -211,6 +214,8 @@ namespace perception {
     const double y_hi = handle_y * (1.0 + y_thres);
     const double z_lo = handle_z * (1.0 - z_thres);
     const double z_hi = handle_z * (1.0 + z_thres);
+
+    SegmentTableAndPublishMarker(cloud);
 
     std::vector<Object> objects;
     SegmentTabletopScene(cloud, &objects);
@@ -291,7 +296,7 @@ namespace perception {
     // }
   }
 
-  int Segmenter::SegmentTableAndPublishMarker(PointCloudC::Ptr input_cloud, visualization_msgs::Marker::Ptr table_marker_ptr) {
+  int Segmenter::SegmentTableAndPublishMarker(PointCloudC::Ptr input_cloud) {
     pcl::PointIndices::Ptr table_inliers(new pcl::PointIndices());
     pcl::ModelCoefficients::Ptr coeff(new pcl::ModelCoefficients());
     SegmentSurface(input_cloud, table_inliers, coeff);
@@ -309,22 +314,23 @@ namespace perception {
     pcl::toROSMsg(*table_cloud, msg_out);
     surface_points_pub_.publish(msg_out);
 
-    table_marker_ptr->ns = "table";
-    table_marker_ptr->header.frame_id = "base_link";
-    table_marker_ptr->type = visualization_msgs::Marker::CUBE;
-
+    visualization_msgs::Marker table_marker;
+    table_marker.ns = "table";
+    table_marker.header.frame_id = "base_link";
+    table_marker.type = visualization_msgs::Marker::CUBE;
     shape_msgs::SolidPrimitive table_shape;
     PointCloudC::Ptr extract_out_table(new PointCloudC());
     geometry_msgs::Pose table_pose;
+
     // simple_grasping::extractShape(*table_cloud, coeff, *extract_out_table, table_shape, table_pose);
     FitBox(*table_cloud, coeff, *extract_out_table, table_shape, table_pose);
-    table_marker_ptr->pose = table_pose;
-    table_marker_ptr->scale.x = table_shape.dimensions[0];
-    table_marker_ptr->scale.y = table_shape.dimensions[1];
-    table_marker_ptr->scale.z = table_shape.dimensions[2];
-    table_marker_ptr->color.r = 0.5;
-    table_marker_ptr->color.a = 0.8;
-    marker_pub_.publish(*table_marker_ptr);
+    table_marker.pose = table_pose;
+    table_marker.scale.x = table_shape.dimensions[0];
+    table_marker.scale.y = table_shape.dimensions[1];
+    table_marker.scale.z = table_shape.dimensions[2];
+    table_marker.color.r = 0.5;
+    table_marker.color.a = 0.8;
+    marker_pub_.publish(table_marker);
     return 0;
   }
   

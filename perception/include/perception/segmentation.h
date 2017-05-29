@@ -47,11 +47,10 @@ void SegmentTabletopScene(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, std::vec
 
 class Segmenter {
  public:
-  Segmenter(const ros::Publisher& surface_points_pub, const ros::Publisher& marker_pub, 
-    const ros::Publisher& above_surface_pub, const ros::Publisher& tray_crop_pub, const ObjectRecognizer& recognizer);
+  Segmenter(const ros::Publisher& surface_points_pub, const ros::Publisher& marker_pub, const ObjectRecognizer& recognizer);
   void Callback(const sensor_msgs::PointCloud2& msg);
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr CropTrayAndPublishMarker(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud);
-  int SegmentTableAndPublishMarker(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud, visualization_msgs::Marker::Ptr table_marker_ptr);
+  int SegmentTableAndPublishMarker(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud);
 
  private:
   ros::Publisher surface_points_pub_;

@@ -39,18 +39,12 @@ int main(int argc, char** argv) {
   ros::Publisher marker_pub =
     nh.advertise<visualization_msgs::Marker>("visualization_marker", 1, true);
 
-  ros::Publisher above_pub =
-    nh.advertise<sensor_msgs::PointCloud2>("object_cloud", 1, true);
-
-  ros::Publisher tray_cloud_pub =
-    nh.advertise<sensor_msgs::PointCloud2>("tray_cloud", 1, true);
-
   // Create the object recognizer.
   std::vector<perception_msgs::ObjectFeatures> dataset;
   perception::LoadData(data_dir, &dataset);
   perception::ObjectRecognizer recognizer(dataset);
 
-  perception::Segmenter segmenter(table_pub, marker_pub, above_pub, tray_cloud_pub, recognizer);
+  perception::Segmenter segmenter(table_pub, marker_pub, recognizer);
   // ros::Subscriber segmenter_sub = nh.subscribe("downsampled_and_cropped_cloud", 1, &perception::Segmenter::Callback, &segmenter);
   ros::Subscriber segmenter_sub = nh.subscribe("cropped_cloud", 1, &perception::Segmenter::Callback, &segmenter);
 
