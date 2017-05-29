@@ -136,7 +136,9 @@ include_directories(
 add_library(perception_crop src/crop.cpp)
 add_library(perception_downsampler src/downsampler.cpp)
 add_library(perception_segmentation src/segmentation.cpp)
-#add_library(perception_box_fitter src/box_fitter.cpp)
+add_library(perception_box_fitter src/box_fitter.cpp)
+add_library(perception_feature_extraction src/feature_extraction.cpp)
+add_library(perception_object_recognizer src/object_recognizer.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -148,6 +150,7 @@ add_library(perception_segmentation src/segmentation.cpp)
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(perception_save_cloud_main src/save_cloud_main.cpp)
 add_executable(perception_point_cloud_demo src/point_cloud_demo.cpp)
+add_executable(perception_extract_features_main src/extract_features_main.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -155,6 +158,7 @@ add_executable(perception_point_cloud_demo src/point_cloud_demo.cpp)
 ## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
 set_target_properties(perception_save_cloud_main PROPERTIES OUTPUT_NAME save_cloud PREFIX "")
 set_target_properties(perception_point_cloud_demo PROPERTIES OUTPUT_NAME point_cloud_demo PREFIX "")
+set_target_properties(perception_extract_features_main PROPERTIES OUTPUT_NAME extract_features PREFIX "")
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -163,7 +167,9 @@ add_dependencies(perception_point_cloud_demo ${${PROJECT_NAME}_EXPORTED_TARGETS}
 add_dependencies(perception_crop ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(perception_downsampler ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(perception_segmentation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-#add_dependencies(perception_box_fitter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(perception_box_fitter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(perception_feature_extraction ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(perception_object_recognizer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
 ## Specify libraries to link a library or executable target against
@@ -176,19 +182,32 @@ target_link_libraries(perception_point_cloud_demo
     perception_segmentation
   ${catkin_LIBRARIES}
 )
+target_link_libraries(perception_extract_features_main
+    perception_feature_extraction
+    perception_segmentation
+  ${catkin_LIBRARIES}
+)
 target_link_libraries(perception_crop 
     ${catkin_LIBRARIES}
 )
 target_link_libraries(perception_downsampler
     ${catkin_LIBRARIES}
 )
-#target_link_libraries(perception_box_fitter
-#    ${catkin_LIBRARIES}
-#)
-#target_link_libraries(perception_segmentation
-#    perception_box_fitter
-#    ${catkin_LIBRARIES}
-#)
+target_link_libraries(perception_box_fitter
+    ${catkin_LIBRARIES}
+)
+target_link_libraries(perception_segmentation
+    perception_box_fitter
+    perception_object_recognizer
+    ${catkin_LIBRARIES}
+)
+target_link_libraries(perception_feature_extraction
+    ${catkin_LIBRARIES}
+)
+target_link_libraries(perception_object_recognizer 
+  perception_feature_extraction
+  ${catkin_LIBRARIES}
+)
 
 
 

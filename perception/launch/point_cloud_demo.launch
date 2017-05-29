@@ -1,0 +1,17 @@
+<launch>
+    <node pkg="rviz" type="rviz" name="$(anon rviz)" args="-d $(find perception)/config/perception.rviz"/>
+    <arg name="bag_file"/>
+    <arg name="data_dir"/>
+    <param name="ec_cluster_tolerance" value="0.01" />
+    <param name="ec_min_cluster_size" value="968" />
+    <param name="ec_max_cluster_size" value="1262" />
+    <param name="distance_above_plane" value="0.01" />
+    <param name="crop_min_x" value="-0.5" />
+    <param name="crop_max_z" value="1.5" />
+    <param name="crop_max_x" value="1.05" />
+    <param name="crop_min_z" value="0.7" />
+
+    <node name="$(anon latch_mock_cloud)" pkg="applications" type="pointcloud_demo.py" args="$(arg bag_file)"/>
+    <node name="$(anon perception_demo)" pkg="perception" type="point_cloud_demo" args="$(arg data_dir) cloud_in:=/mock_point_cloud" output="screen"/>
+</launch>
+
