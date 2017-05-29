@@ -16,6 +16,7 @@
 #include "simple_grasping/shape_extraction.h"
 #include "perception/box_fitter.h"
 #include "shape_msgs/SolidPrimitive.h"
+#include "perception/object_recognizer.h"
 
 #include "pcl_ros/transforms.h"
 #include "tf/transform_listener.h"
@@ -118,136 +119,6 @@ namespace perception {
              object_indices->size(), min_size, max_size);
   }
 
-  int Segmenter::SegmentTableAndPublishMarker(PointCloudC::Ptr input_cloud, visualization_msgs::Marker::Ptr table_marker_ptr) {
-    pcl::PointIndices::Ptr table_inliers(new pcl::PointIndices());
-    pcl::ModelCoefficients::Ptr coeff(new pcl::ModelCoefficients());
-    SegmentSurface(input_cloud, table_inliers, coeff);
-    if (table_inliers->indices.size() == 0) {
-      return 1;
-    }
-
-    PointCloudC::Ptr table_cloud(new PointCloudC);
-    pcl::ExtractIndices<PointC> extract;
-    extract.setInputCloud(input_cloud);
-    extract.setIndices(table_inliers);
-    extract.filter(*table_cloud);
-
-    sensor_msgs::PointCloud2 msg_out;
-    pcl::toROSMsg(*table_cloud, msg_out);
-    surface_points_pub_.publish(msg_out);
-
-    table_marker_ptr->ns = "table";
-    table_marker_ptr->header.frame_id = "base_link";
-    table_marker_ptr->type = visualization_msgs::Marker::CUBE;
-
-    shape_msgs::SolidPrimitive table_shape;
-    PointCloudC::Ptr extract_out_table(new PointCloudC());
-    geometry_msgs::Pose table_pose;
-    // simple_grasping::extractShape(*table_cloud, coeff, *extract_out_table, table_shape, table_pose);
-    FitBox(*table_cloud, coeff, *extract_out_table, table_shape, table_pose);
-    table_marker_ptr->pose = table_pose;
-    table_marker_ptr->scale.x = table_shape.dimensions[0];
-    table_marker_ptr->scale.y = table_shape.dimensions[1];
-    table_marker_ptr->scale.z = table_shape.dimensions[2];
-    table_marker_ptr->color.r = 0.5;
-    table_marker_ptr->color.a = 0.8;
-    marker_pub_.publish(*table_marker_ptr);
-    return 0;
-  }
-
-  int Segmenter::SegmentSurfaceObjectsAndPublishMarkers(PointCloudC::Ptr tray_cropped_cloud) {
-    // Segment the surface above the cropped tray area
-    pcl::PointIndices::Ptr tray_inliers(new pcl::PointIndices());
-    pcl::ModelCoefficients::Ptr tray_coeff(new pcl::ModelCoefficients());
-    SegmentSurface(tray_cropped_cloud, tray_inliers, tray_coeff);
-    if (tray_inliers->indices.size() == 0) {
-      return 1;
-    }
-
-    // extract objects above the tray cropped cloud and publish to above_surface
-    PointCloudC::Ptr above_surface_cloud(new PointCloudC);
-    pcl::ExtractIndices<PointC> extract;
-    extract.setInputCloud(tray_cropped_cloud);
-    extract.setIndices(tray_inliers);
-    extract.setNegative(true);
-    extract.filter(*above_surface_cloud);
-    sensor_msgs::PointCloud2 msg_out;
-    pcl::toROSMsg(*above_surface_cloud, msg_out);
-    above_surface_pub_.publish(msg_out);
-
-    // Segment the surface objects above the tray crop
-    std::vector<pcl::PointIndices> object_indices;
-    SegmentSurfaceObjects(tray_cropped_cloud, tray_inliers, &object_indices);
-
-    for (size_t i = 0; i < object_indices.size(); ++i) {
-      // Reify indices into a point cloud of the object.
-      pcl::PointIndices::Ptr indices(new pcl::PointIndices);
-      *indices = object_indices[i];
-      PointCloudC::Ptr object_cloud(new PointCloudC());
-      // fill in object_cloud using indices
-      pcl::ExtractIndices<PointC> extract_object_cloud;
-      extract_object_cloud.setInputCloud(tray_cropped_cloud);
-      extract_object_cloud.setIndices(indices);
-      extract_object_cloud.filter(*object_cloud);
-
-      // Publish a bounding box around it.
-      visualization_msgs::Marker object_marker;
-      object_marker.ns = "objects";
-      object_marker.id = 2*i;
-      object_marker.header.frame_id = "base_link";
-      object_marker.type = visualization_msgs::Marker::CUBE;
-
-      
-      // Get object marker pose and scale
-      PointCloudC::Ptr extract_out_object(new PointCloudC());
-      shape_msgs::SolidPrimitive object_shape;
-      geometry_msgs::Pose::Ptr object_pose(new geometry_msgs::Pose());
-      // simple_grasping::extractShape(*object_cloud, tray_coeff, *extract_out_object, object_shape, *object_pose);
-      FitBox(*object_cloud, tray_coeff, *extract_out_object, object_shape, *object_pose);
-
-      // Populate marker for bounding box
-      object_marker.pose = *object_pose;
-
-      // need to set object_marker.scale
-      object_marker.scale.x = object_shape.dimensions[0];
-      object_marker.scale.y = object_shape.dimensions[1];
-      object_marker.scale.z = object_shape.dimensions[2];
-      //std::cout << "object id: " << i << "x: " << object_marker.scale.x << "y: " << object_marker.scale.y << "z: " << object_marker.scale.z << std::endl;
-
-      // Publish a text view above it
-      visualization_msgs::Marker object_marker_text;
-      object_marker_text.ns = "text";
-      object_marker_text.id = 2*i + 1;
-      object_marker_text.header.frame_id = "base_link";
-      object_marker_text.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-
-      // Populate marker for text box
-      object_marker_text.pose = *object_pose;
-      object_marker_text.text = boost::to_string(2*i + 1);
-      // need to set object_marker.scale
-      object_marker_text.scale.x = object_shape.dimensions[0];
-      object_marker_text.scale.y = object_shape.dimensions[1];
-      object_marker_text.scale.z = object_shape.dimensions[2];
-
-      // Set the color for the bounding box
-      object_marker.color.r = 0;
-      object_marker.color.g = 1;
-      object_marker.color.b = 0;
-      object_marker.color.a = 0.3;
-
-      // Set the color for the text box
-      object_marker_text.color.r = 0;
-      object_marker_text.color.g = 1;
-      object_marker_text.color.b = 1;
-      object_marker_text.color.a = 1;
-
-      // Publish the bounding box and text box
-      marker_pub_.publish(object_marker);
-      marker_pub_.publish(object_marker_text);
-    }
-    return 0;
-  }
-
   void SegmentTabletopScene(PointCloudC::Ptr cloud, std::vector<Object>* objects) {
     pcl::ModelCoefficients::Ptr coeff(new pcl::ModelCoefficients());
     pcl::PointIndices::Ptr table_inliers(new pcl::PointIndices());
@@ -290,60 +161,8 @@ namespace perception {
     }
   }
 
-  /*  Using rosparams tray_{min,max}_{x,y,z}, crops the input point cloud
-   *  and sets a visual cube of the volume of the cropped cloud
-   *  Returns a pointer to the cropped cloud
-   */
-  PointCloudC::Ptr Segmenter::CropTrayAndPublishMarker(PointCloudC::Ptr input_cloud) {
-    string name_ = "tray";   
-    double min_x, min_y, min_z, max_x, max_y, max_z;
-    ros::param::param(name_ + "_min_x", min_x, 0.4);
-    ros::param::param(name_ + "_min_y", min_y, -0.2);
-    ros::param::param(name_ + "_min_z", min_z, 0.5);
-    ros::param::param(name_ + "_max_x", max_x, 0.9);
-    ros::param::param(name_ + "_max_y", max_y, 0.25);
-    ros::param::param(name_ + "_max_z", max_z, 1.5);
-
-    visualization_msgs::Marker tray_crop_marker;
-    tray_crop_marker.ns = "tray_crop";
-    tray_crop_marker.id = 69;
-    tray_crop_marker.header.frame_id = "base_link";
-    tray_crop_marker.type = visualization_msgs::Marker::CUBE;
-
-    tray_crop_marker.color.r = 0.2;
-    tray_crop_marker.color.g = 0.5;
-    tray_crop_marker.color.b = 0.5;
-
-    tray_crop_marker.pose.position.x = (min_x + max_x)/2;
-    tray_crop_marker.pose.position.y = (min_y + max_y)/2;
-    tray_crop_marker.pose.position.z = (min_z + max_z)/2;
-    tray_crop_marker.pose.orientation.w = 1;
-
-    tray_crop_marker.scale.x = (max_x - min_x);
-    tray_crop_marker.scale.y = (max_y - min_y);
-    tray_crop_marker.scale.z = (max_z - min_z);
-    tray_crop_marker.color.a = 0.3;
-    marker_pub_.publish(tray_crop_marker);
-
-    Eigen::Vector4f min_pt(min_x, min_y, min_z, 1);
-    Eigen::Vector4f max_pt(max_x, max_y, max_z, 1);
-    
-    PointCloudC::Ptr tray_cropped_cloud(new PointCloudC());
-
-    pcl::CropBox<PointC> crop;
-    crop.setInputCloud(input_cloud);
-    crop.setMin(min_pt);
-    crop.setMax(max_pt);
-    crop.filter(*tray_cropped_cloud);
-
-    sensor_msgs::PointCloud2 tray_msg_out;
-    pcl::toROSMsg(*tray_cropped_cloud, tray_msg_out);
-    tray_crop_pub_.publish(tray_msg_out);
-    return tray_cropped_cloud;
-  }
-
-  Segmenter::Segmenter(const ros::Publisher& surface_points_pub, const ros::Publisher& marker_pub, const ros::Publisher& above_surface_pub, const ros::Publisher& tray_crop_pub)
-      : surface_points_pub_(surface_points_pub), marker_pub_(marker_pub), above_surface_pub_(above_surface_pub), tray_crop_pub_(tray_crop_pub) {}
+  Segmenter::Segmenter(const ros::Publisher& surface_points_pub, const ros::Publisher& marker_pub, const ros::Publisher& above_surface_pub, const ros::Publisher& tray_crop_pub, const ObjectRecognizer& recognizer)
+    : surface_points_pub_(surface_points_pub), marker_pub_(marker_pub), above_surface_pub_(above_surface_pub), tray_crop_pub_(tray_crop_pub), recognizer_(recognizer) {}
 
   void Segmenter::Callback(const sensor_msgs::PointCloud2& msg) {
     
@@ -394,6 +213,34 @@ namespace perception {
       object_marker.color.g = 1;
       object_marker.color.a = 0.3;
       marker_pub_.publish(object_marker);
+
+      // Recongize the object
+      string name;
+      double confidence;
+      recognizer_.Recognize(object, &name, &confidence);
+      confidence = round(1000 * confidence) / 1000;
+
+      std::stringstream ss;
+      ss << name << " (" << confidence << ")";
+
+      // Publish the recognition result.
+      visualization_msgs::Marker name_marker;
+      name_marker.ns = "recognition";
+      name_marker.id = i;
+      name_marker.header.frame_id = "base_link";
+      name_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+      name_marker.pose.position = object.pose.position;
+      name_marker.pose.position.z += 0.1;
+      name_marker.pose.orientation.w = 1;
+      name_marker.scale.x = 0.025;
+      name_marker.scale.y = 0.025;
+      name_marker.scale.z = 0.025;
+      name_marker.color.r = 0;
+      name_marker.color.g = 0;
+      name_marker.color.b = 1.0;
+      name_marker.color.a = 1.0;
+      name_marker.text = ss.str();
+      marker_pub_.publish(name_marker);
     }
 
     return;
@@ -542,4 +389,188 @@ namespace perception {
     }
     */
   }
+
+  int Segmenter::SegmentTableAndPublishMarker(PointCloudC::Ptr input_cloud, visualization_msgs::Marker::Ptr table_marker_ptr) {
+    pcl::PointIndices::Ptr table_inliers(new pcl::PointIndices());
+    pcl::ModelCoefficients::Ptr coeff(new pcl::ModelCoefficients());
+    SegmentSurface(input_cloud, table_inliers, coeff);
+    if (table_inliers->indices.size() == 0) {
+      return 1;
+    }
+
+    PointCloudC::Ptr table_cloud(new PointCloudC);
+    pcl::ExtractIndices<PointC> extract;
+    extract.setInputCloud(input_cloud);
+    extract.setIndices(table_inliers);
+    extract.filter(*table_cloud);
+
+    sensor_msgs::PointCloud2 msg_out;
+    pcl::toROSMsg(*table_cloud, msg_out);
+    surface_points_pub_.publish(msg_out);
+
+    table_marker_ptr->ns = "table";
+    table_marker_ptr->header.frame_id = "base_link";
+    table_marker_ptr->type = visualization_msgs::Marker::CUBE;
+
+    shape_msgs::SolidPrimitive table_shape;
+    PointCloudC::Ptr extract_out_table(new PointCloudC());
+    geometry_msgs::Pose table_pose;
+    // simple_grasping::extractShape(*table_cloud, coeff, *extract_out_table, table_shape, table_pose);
+    FitBox(*table_cloud, coeff, *extract_out_table, table_shape, table_pose);
+    table_marker_ptr->pose = table_pose;
+    table_marker_ptr->scale.x = table_shape.dimensions[0];
+    table_marker_ptr->scale.y = table_shape.dimensions[1];
+    table_marker_ptr->scale.z = table_shape.dimensions[2];
+    table_marker_ptr->color.r = 0.5;
+    table_marker_ptr->color.a = 0.8;
+    marker_pub_.publish(*table_marker_ptr);
+    return 0;
+  }
+
+  int Segmenter::SegmentSurfaceObjectsAndPublishMarkers(PointCloudC::Ptr tray_cropped_cloud) {
+    // Segment the surface above the cropped tray area
+    pcl::PointIndices::Ptr tray_inliers(new pcl::PointIndices());
+    pcl::ModelCoefficients::Ptr tray_coeff(new pcl::ModelCoefficients());
+    SegmentSurface(tray_cropped_cloud, tray_inliers, tray_coeff);
+    if (tray_inliers->indices.size() == 0) {
+      return 1;
+    }
+
+    // extract objects above the tray cropped cloud and publish to above_surface
+    PointCloudC::Ptr above_surface_cloud(new PointCloudC);
+    pcl::ExtractIndices<PointC> extract;
+    extract.setInputCloud(tray_cropped_cloud);
+    extract.setIndices(tray_inliers);
+    extract.setNegative(true);
+    extract.filter(*above_surface_cloud);
+    sensor_msgs::PointCloud2 msg_out;
+    pcl::toROSMsg(*above_surface_cloud, msg_out);
+    above_surface_pub_.publish(msg_out);
+
+    // Segment the surface objects above the tray crop
+    std::vector<pcl::PointIndices> object_indices;
+    SegmentSurfaceObjects(tray_cropped_cloud, tray_inliers, &object_indices);
+
+    for (size_t i = 0; i < object_indices.size(); ++i) {
+      // Reify indices into a point cloud of the object.
+      pcl::PointIndices::Ptr indices(new pcl::PointIndices);
+      *indices = object_indices[i];
+      PointCloudC::Ptr object_cloud(new PointCloudC());
+      // fill in object_cloud using indices
+      pcl::ExtractIndices<PointC> extract_object_cloud;
+      extract_object_cloud.setInputCloud(tray_cropped_cloud);
+      extract_object_cloud.setIndices(indices);
+      extract_object_cloud.filter(*object_cloud);
+
+      // Publish a bounding box around it.
+      visualization_msgs::Marker object_marker;
+      object_marker.ns = "objects";
+      object_marker.id = 2*i;
+      object_marker.header.frame_id = "base_link";
+      object_marker.type = visualization_msgs::Marker::CUBE;
+
+      
+      // Get object marker pose and scale
+      PointCloudC::Ptr extract_out_object(new PointCloudC());
+      shape_msgs::SolidPrimitive object_shape;
+      geometry_msgs::Pose::Ptr object_pose(new geometry_msgs::Pose());
+      // simple_grasping::extractShape(*object_cloud, tray_coeff, *extract_out_object, object_shape, *object_pose);
+      FitBox(*object_cloud, tray_coeff, *extract_out_object, object_shape, *object_pose);
+
+      // Populate marker for bounding box
+      object_marker.pose = *object_pose;
+
+      // need to set object_marker.scale
+      object_marker.scale.x = object_shape.dimensions[0];
+      object_marker.scale.y = object_shape.dimensions[1];
+      object_marker.scale.z = object_shape.dimensions[2];
+      //std::cout << "object id: " << i << "x: " << object_marker.scale.x << "y: " << object_marker.scale.y << "z: " << object_marker.scale.z << std::endl;
+
+      // Publish a text view above it
+      visualization_msgs::Marker object_marker_text;
+      object_marker_text.ns = "text";
+      object_marker_text.id = 2*i + 1;
+      object_marker_text.header.frame_id = "base_link";
+      object_marker_text.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+
+      // Populate marker for text box
+      object_marker_text.pose = *object_pose;
+      object_marker_text.text = boost::to_string(2*i + 1);
+      // need to set object_marker.scale
+      object_marker_text.scale.x = object_shape.dimensions[0];
+      object_marker_text.scale.y = object_shape.dimensions[1];
+      object_marker_text.scale.z = object_shape.dimensions[2];
+
+      // Set the color for the bounding box
+      object_marker.color.r = 0;
+      object_marker.color.g = 1;
+      object_marker.color.b = 0;
+      object_marker.color.a = 0.3;
+
+      // Set the color for the text box
+      object_marker_text.color.r = 0;
+      object_marker_text.color.g = 1;
+      object_marker_text.color.b = 1;
+      object_marker_text.color.a = 1;
+
+      // Publish the bounding box and text box
+      marker_pub_.publish(object_marker);
+      marker_pub_.publish(object_marker_text);
+    }
+    return 0;
+  }
+
+
+  /*  Using rosparams tray_{min,max}_{x,y,z}, crops the input point cloud
+   *  and sets a visual cube of the volume of the cropped cloud
+   *  Returns a pointer to the cropped cloud
+   */
+  PointCloudC::Ptr Segmenter::CropTrayAndPublishMarker(PointCloudC::Ptr input_cloud) {
+    string name_ = "tray";   
+    double min_x, min_y, min_z, max_x, max_y, max_z;
+    ros::param::param(name_ + "_min_x", min_x, 0.4);
+    ros::param::param(name_ + "_min_y", min_y, -0.2);
+    ros::param::param(name_ + "_min_z", min_z, 0.5);
+    ros::param::param(name_ + "_max_x", max_x, 0.9);
+    ros::param::param(name_ + "_max_y", max_y, 0.25);
+    ros::param::param(name_ + "_max_z", max_z, 1.5);
+
+    visualization_msgs::Marker tray_crop_marker;
+    tray_crop_marker.ns = "tray_crop";
+    tray_crop_marker.id = 69;
+    tray_crop_marker.header.frame_id = "base_link";
+    tray_crop_marker.type = visualization_msgs::Marker::CUBE;
+
+    tray_crop_marker.color.r = 0.2;
+    tray_crop_marker.color.g = 0.5;
+    tray_crop_marker.color.b = 0.5;
+
+    tray_crop_marker.pose.position.x = (min_x + max_x)/2;
+    tray_crop_marker.pose.position.y = (min_y + max_y)/2;
+    tray_crop_marker.pose.position.z = (min_z + max_z)/2;
+    tray_crop_marker.pose.orientation.w = 1;
+
+    tray_crop_marker.scale.x = (max_x - min_x);
+    tray_crop_marker.scale.y = (max_y - min_y);
+    tray_crop_marker.scale.z = (max_z - min_z);
+    tray_crop_marker.color.a = 0.3;
+    marker_pub_.publish(tray_crop_marker);
+
+    Eigen::Vector4f min_pt(min_x, min_y, min_z, 1);
+    Eigen::Vector4f max_pt(max_x, max_y, max_z, 1);
+    
+    PointCloudC::Ptr tray_cropped_cloud(new PointCloudC());
+
+    pcl::CropBox<PointC> crop;
+    crop.setInputCloud(input_cloud);
+    crop.setMin(min_pt);
+    crop.setMax(max_pt);
+    crop.filter(*tray_cropped_cloud);
+
+    sensor_msgs::PointCloud2 tray_msg_out;
+    pcl::toROSMsg(*tray_cropped_cloud, tray_msg_out);
+    tray_crop_pub_.publish(tray_msg_out);
+    return tray_cropped_cloud;
+  }
+
 }  // namespace perception

@@ -138,6 +138,7 @@ add_library(perception_downsampler src/downsampler.cpp)
 add_library(perception_segmentation src/segmentation.cpp)
 add_library(perception_box_fitter src/box_fitter.cpp)
 add_library(perception_feature_extraction src/feature_extraction.cpp)
+add_library(perception_object_recognizer src/object_recognizer.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -168,6 +169,7 @@ add_dependencies(perception_downsampler ${${PROJECT_NAME}_EXPORTED_TARGETS} ${ca
 add_dependencies(perception_segmentation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(perception_box_fitter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(perception_feature_extraction ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(perception_object_recognizer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
 ## Specify libraries to link a library or executable target against
@@ -196,10 +198,15 @@ target_link_libraries(perception_box_fitter
 )
 target_link_libraries(perception_segmentation
     perception_box_fitter
+    perception_object_recognizer
     ${catkin_LIBRARIES}
 )
 target_link_libraries(perception_feature_extraction
     ${catkin_LIBRARIES}
+)
+target_link_libraries(perception_object_recognizer 
+  perception_feature_extraction
+  ${catkin_LIBRARIES}
 )
 
 
