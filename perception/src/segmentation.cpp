@@ -115,8 +115,8 @@ namespace perception {
       }
     }
 
-    ROS_INFO("Found %ld objects, min size: %ld, max size: %ld",
-             object_indices->size(), min_size, max_size);
+    /*ROS_INFO("Found %ld objects, min size: %ld, max size: %ld",
+             object_indices->size(), min_size, max_size); */
   }
 
 
