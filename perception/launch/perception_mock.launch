@@ -6,7 +6,7 @@
     <param name="ec_max_cluster_size" value="3000" />
     <param name="distance_above_plane" value="0.01" />
 
-    <node name="$(anon latch_mock_cloud)" pkg="applications" type="pointcloud_demo.py" args="$(arg bag_file)"/>
+    <node name="$(anon latch_mock_cloud)" pkg="applications" type="publish_saved_cloud.py" args="$(arg bag_file)"/>
     <node name="$(anon perception_demo)" pkg="perception" type="point_cloud_demo" args="cloud_in:=/mock_point_cloud"/>
     <node name="$(anon gripper_teleop)" pkg="applications" type="gripper_teleop.py"/>
 </launch>
