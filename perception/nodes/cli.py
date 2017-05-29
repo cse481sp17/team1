@@ -32,7 +32,7 @@ def prompt(program_ctrl):
 
     if command == "list":
         print str(program_ctrl)
-    elif command == rename and first_arg and second_arg:
+    elif command == "rename" and first_arg and second_arg:
         program_ctrl.rename(first_arg, second_arg)
     elif command == "close":
         program_ctrl.close()
