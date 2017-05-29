@@ -11,7 +11,7 @@
     <param name="crop_max_x" value="1.05" />
     <param name="crop_min_z" value="0.7" />
 
-    <node name="$(anon latch_mock_cloud)" pkg="applications" type="pointcloud_demo.py" args="$(arg bag_file)"/>
+    <node name="$(anon latch_mock_cloud)" pkg="applications" type="publish_saved_cloud.py" args="$(arg bag_file)"/>
     <node name="$(anon perception_demo)" pkg="perception" type="point_cloud_demo" args="$(arg data_dir) cloud_in:=/mock_point_cloud" output="screen"/>
 </launch>
 
