@@ -196,13 +196,29 @@ namespace perception {
     // crop the cloud to the estimated tray area
     // PointCloudC::Ptr tray_cropped_cloud = CropTrayAndPublishMarker(cloud_transformed_cleaned);
 
+    // Define the dimensions of the handle
+    const double handle_x = 0.030;
+    const double handle_y = 0.075;
+    const double handle_z = 0.037;
+
+    const double x_thres = 0.211;
+    const double y_thres = 0.176;
+    const double z_thres = 0.370;
+
+    const double x_lo = handle_x * (1.0 - x_thres);
+    const double x_hi = handle_x * (1.0 + x_thres);
+    const double y_lo = handle_y * (1.0 - y_thres);
+    const double y_hi = handle_y * (1.0 + y_thres);
+    const double z_lo = handle_z * (1.0 - z_thres);
+    const double z_hi = handle_z * (1.0 + z_thres);
+
     std::vector<Object> objects;
     SegmentTabletopScene(cloud, &objects);
 
     for (size_t i = 0; i < objects.size(); ++i) {
       const Object& object = objects[i];
 
-      // Publish a bounding box around it.
+      // Create a bounding box
       visualization_msgs::Marker object_marker;
       object_marker.ns = "objects";
       object_marker.id = i;
@@ -210,20 +226,38 @@ namespace perception {
       object_marker.type = visualization_msgs::Marker::CUBE;
       object_marker.pose = object.pose;
       object_marker.scale = object.dimensions;
+      object_marker.color.r = 0;
       object_marker.color.g = 1;
+      object_marker.color.b = 0;
       object_marker.color.a = 0.3;
-      marker_pub_.publish(object_marker);
 
       // Recongize the object
       string name;
-      double confidence;
+      double confidence, object_x, object_y;
       recognizer_.Recognize(object, &name, &confidence);
       confidence = round(1000 * confidence) / 1000;
+      object_x = std::min(object.dimensions.x, object.dimensions.y);
+      object_y = std::max(object.dimensions.x, object.dimensions.y);
 
       std::stringstream ss;
-      ss << name << " (" << confidence << ")";
+      ss << name << " (" << confidence << ")" << " " << "(" << object_x << ", "  << object_y << ", " << object.dimensions.z << ")";
 
-      // Publish the recognition result.
+      // If the object is the handle, update the marker and name
+      if (x_lo <= object_x && object_x <= x_hi &&
+          y_lo <= object_y && object_y <= y_hi &&
+          z_lo <= object.dimensions.z && object.dimensions.z <= z_hi)
+      {
+        // Identify 
+        object_marker.color.r = 0;
+        object_marker.color.g = 0;
+        object_marker.color.b = 1;
+        object_marker.ns = "tray handle";
+        ss.str(std::string());
+        ss << "handle" << " (" << confidence << ")" << " " << "(" << object_x << ", "  << object_y << ", " << object.dimensions.z << ")";
+        // std::cout << "handle pose: " << object_marker.pose << std::endl;
+      }
+
+      // Create a marker for the recognition result
       visualization_msgs::Marker name_marker;
       name_marker.ns = "recognition";
       name_marker.id = i;
@@ -240,154 +274,21 @@ namespace perception {
       name_marker.color.b = 1.0;
       name_marker.color.a = 1.0;
       name_marker.text = ss.str();
+
+      // Publish the markers
+      marker_pub_.publish(object_marker);
       marker_pub_.publish(name_marker);
     }
 
     return;
 
-    int ret;
+    // int ret;
 
-    // Visualize the table
-    /*
-    visualization_msgs::Marker::Ptr table_marker_ptr(new visualization_msgs::Marker());
-    ret = SegmentTableAndPublishMarker(cloud_transformed_cleaned, table_marker_ptr);
-    if (ret == 1) {
-      std::cerr << "Cannot segment table" << std::endl;
-      return;
-    }
-    */
-
-    ret = SegmentSurfaceObjectsAndPublishMarkers(cloud);
-    if (ret == 1) {
-      std::cerr << "Cannot segment table" << std::endl;
-      return;
-    }
-
-    /*
-    // Segment the surface above the cropped tray area
-    pcl::PointIndices::Ptr tray_inliers(new pcl::PointIndices());
-    pcl::ModelCoefficients::Ptr tray_coeff(new pcl::ModelCoefficients());
-    SegmentSurface(tray_cropped_cloud, tray_inliers, tray_coeff);
-    if (tray_inliers->indices.size() == 0) {
-      return;
-    }
-
-    // extract objects above the tray cropped cloud and publish to above_surface
-    PointCloudC::Ptr above_surface_cloud(new PointCloudC);
-    pcl::ExtractIndices<PointC> extract;
-    extract.setInputCloud(tray_cropped_cloud);
-    extract.setIndices(tray_inliers);
-    extract.setNegative(true);
-    extract.filter(*above_surface_cloud);
-    sensor_msgs::PointCloud2 msg_out;
-    pcl::toROSMsg(*above_surface_cloud, msg_out);
-    above_surface_pub_.publish(msg_out);
-
-    // Segment the surface objects above the tray crop
-    std::vector<pcl::PointIndices> object_indices;
-    SegmentSurfaceObjects(tray_cropped_cloud, tray_inliers, &object_indices, tray_coeff);
-
-    for (size_t i = 0; i < object_indices.size(); ++i) {
-      // Reify indices into a point cloud of the object.
-      pcl::PointIndices::Ptr indices(new pcl::PointIndices);
-      *indices = object_indices[i];
-      PointCloudC::Ptr object_cloud(new PointCloudC());
-      // fill in object_cloud using indices
-      pcl::ExtractIndices<PointC> extract_object_cloud;
-      extract_object_cloud.setInputCloud(tray_cropped_cloud);
-      extract_object_cloud.setIndices(indices);
-      extract_object_cloud.filter(*object_cloud);
-
-      // Publish a bounding box around it.
-      visualization_msgs::Marker object_marker;
-      object_marker.ns = "objects";
-      object_marker.id = 2*i;
-      object_marker.header.frame_id = "base_link";
-      object_marker.type = visualization_msgs::Marker::CUBE;
-
-      
-      // Get object marker pose and scale
-      PointCloudC::Ptr extract_out_object(new PointCloudC());
-      shape_msgs::SolidPrimitive object_shape;
-      geometry_msgs::Pose::Ptr object_pose(new geometry_msgs::Pose());
-      simple_grasping::extractShape(*object_cloud, tray_coeff, *extract_out_object, object_shape, *object_pose);
-
-      // Populate marker for bounding box
-      object_marker.pose = *object_pose;
-
-      // need to set object_marker.scale
-      object_marker.scale.x = object_shape.dimensions[0];
-      object_marker.scale.y = object_shape.dimensions[1];
-      object_marker.scale.z = object_shape.dimensions[2];
-      //std::cout << "object id: " << i << "x: " << object_marker.scale.x << "y: " << object_marker.scale.y << "z: " << object_marker.scale.z << std::endl;
-
-      // Publish a text view above it
-      visualization_msgs::Marker object_marker_text;
-      object_marker_text.ns = "text";
-      object_marker_text.id = 2*i + 1;
-      object_marker_text.header.frame_id = "base_link";
-      object_marker_text.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-
-      // Populate marker for text box
-      object_marker_text.pose = *object_pose;
-      object_marker_text.text = boost::to_string(2*i + 1);
-      // need to set object_marker.scale
-      object_marker_text.scale.x = object_shape.dimensions[0];
-      object_marker_text.scale.y = object_shape.dimensions[1];
-      object_marker_text.scale.z = object_shape.dimensions[2];
-
-
-     // std::cout << "object id: " << 2*i << "," << 2*i + 1 << " x: " << object_marker.scale.x << " y: " << object_marker.scale.y << " z: " << object_marker.scale.z << std::endl;
-
-      double x = 0.075;
-      double y = 0.030;
-      double z = 0.037;
-
-      double thres = 0.20;
-      double z_thres = 0.275;
-
-      double x_lo = x * (1.0 - thres);
-      double x_hi = x * (1.0 + thres);
-      double y_lo = y * (1.0 - thres);
-      double y_hi = y * (1.0 + thres);
-      double z_lo = z * (1.0 - z_thres);
-      double z_hi = z * (1.0 + z_thres);
-
-
-      // Set the color for the bounding box
-      if (x_lo <= object_marker.scale.x && object_marker.scale.x <= x_hi &&
-          y_lo <= object_marker.scale.y && object_marker.scale.y <= y_hi &&
-          z_lo <= object_marker.scale.z && object_marker.scale.z <= z_hi)
-      {
-        // Update object marker pose position to be exact z
-        object_marker.pose.position.z = table_marker_ptr->pose.position.z + (table_marker_ptr->scale.z / 2.0) + (z / 2.0);
-        object_marker.scale.z = z;
-        object_marker.color.r = 0;
-        object_marker.color.g = 0;
-        object_marker.color.b = 1;
-        object_marker.ns = "tray handle";
-        object_marker.id = 400;
-        std::cout << "handle pose: " << object_marker.pose << std::endl;
-
-      } else {
-        object_marker.color.r = 0;
-        object_marker.color.g = 1;
-        object_marker.color.b = 0;
-      }
-
-      object_marker.color.a = 0.3;
-
-      // Set the color for the text box
-
-      object_marker_text.color.r = 0;
-      object_marker_text.color.g = 1;
-      object_marker_text.color.b = 1;
-      object_marker_text.color.a = 1;
-
-      marker_pub_.publish(object_marker);
-      marker_pub_.publish(object_marker_text);
-    }
-    */
+    // ret = SegmentSurfaceObjectsAndPublishMarkers(cloud);
+    // if (ret == 1) {
+    //   std::cerr << "Cannot segment table" << std::endl;
+    //   return;
+    // }
   }
 
   int Segmenter::SegmentTableAndPublishMarker(PointCloudC::Ptr input_cloud, visualization_msgs::Marker::Ptr table_marker_ptr) {
@@ -426,101 +327,7 @@ namespace perception {
     marker_pub_.publish(*table_marker_ptr);
     return 0;
   }
-
-  int Segmenter::SegmentSurfaceObjectsAndPublishMarkers(PointCloudC::Ptr tray_cropped_cloud) {
-    // Segment the surface above the cropped tray area
-    pcl::PointIndices::Ptr tray_inliers(new pcl::PointIndices());
-    pcl::ModelCoefficients::Ptr tray_coeff(new pcl::ModelCoefficients());
-    SegmentSurface(tray_cropped_cloud, tray_inliers, tray_coeff);
-    if (tray_inliers->indices.size() == 0) {
-      return 1;
-    }
-
-    // extract objects above the tray cropped cloud and publish to above_surface
-    PointCloudC::Ptr above_surface_cloud(new PointCloudC);
-    pcl::ExtractIndices<PointC> extract;
-    extract.setInputCloud(tray_cropped_cloud);
-    extract.setIndices(tray_inliers);
-    extract.setNegative(true);
-    extract.filter(*above_surface_cloud);
-    sensor_msgs::PointCloud2 msg_out;
-    pcl::toROSMsg(*above_surface_cloud, msg_out);
-    above_surface_pub_.publish(msg_out);
-
-    // Segment the surface objects above the tray crop
-    std::vector<pcl::PointIndices> object_indices;
-    SegmentSurfaceObjects(tray_cropped_cloud, tray_inliers, &object_indices);
-
-    for (size_t i = 0; i < object_indices.size(); ++i) {
-      // Reify indices into a point cloud of the object.
-      pcl::PointIndices::Ptr indices(new pcl::PointIndices);
-      *indices = object_indices[i];
-      PointCloudC::Ptr object_cloud(new PointCloudC());
-      // fill in object_cloud using indices
-      pcl::ExtractIndices<PointC> extract_object_cloud;
-      extract_object_cloud.setInputCloud(tray_cropped_cloud);
-      extract_object_cloud.setIndices(indices);
-      extract_object_cloud.filter(*object_cloud);
-
-      // Publish a bounding box around it.
-      visualization_msgs::Marker object_marker;
-      object_marker.ns = "objects";
-      object_marker.id = 2*i;
-      object_marker.header.frame_id = "base_link";
-      object_marker.type = visualization_msgs::Marker::CUBE;
-
-      
-      // Get object marker pose and scale
-      PointCloudC::Ptr extract_out_object(new PointCloudC());
-      shape_msgs::SolidPrimitive object_shape;
-      geometry_msgs::Pose::Ptr object_pose(new geometry_msgs::Pose());
-      // simple_grasping::extractShape(*object_cloud, tray_coeff, *extract_out_object, object_shape, *object_pose);
-      FitBox(*object_cloud, tray_coeff, *extract_out_object, object_shape, *object_pose);
-
-      // Populate marker for bounding box
-      object_marker.pose = *object_pose;
-
-      // need to set object_marker.scale
-      object_marker.scale.x = object_shape.dimensions[0];
-      object_marker.scale.y = object_shape.dimensions[1];
-      object_marker.scale.z = object_shape.dimensions[2];
-      //std::cout << "object id: " << i << "x: " << object_marker.scale.x << "y: " << object_marker.scale.y << "z: " << object_marker.scale.z << std::endl;
-
-      // Publish a text view above it
-      visualization_msgs::Marker object_marker_text;
-      object_marker_text.ns = "text";
-      object_marker_text.id = 2*i + 1;
-      object_marker_text.header.frame_id = "base_link";
-      object_marker_text.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-
-      // Populate marker for text box
-      object_marker_text.pose = *object_pose;
-      object_marker_text.text = boost::to_string(2*i + 1);
-      // need to set object_marker.scale
-      object_marker_text.scale.x = object_shape.dimensions[0];
-      object_marker_text.scale.y = object_shape.dimensions[1];
-      object_marker_text.scale.z = object_shape.dimensions[2];
-
-      // Set the color for the bounding box
-      object_marker.color.r = 0;
-      object_marker.color.g = 1;
-      object_marker.color.b = 0;
-      object_marker.color.a = 0.3;
-
-      // Set the color for the text box
-      object_marker_text.color.r = 0;
-      object_marker_text.color.g = 1;
-      object_marker_text.color.b = 1;
-      object_marker_text.color.a = 1;
-
-      // Publish the bounding box and text box
-      marker_pub_.publish(object_marker);
-      marker_pub_.publish(object_marker_text);
-    }
-    return 0;
-  }
-
-
+  
   /*  Using rosparams tray_{min,max}_{x,y,z}, crops the input point cloud
    *  and sets a visual cube of the volume of the cropped cloud
    *  Returns a pointer to the cropped cloud
