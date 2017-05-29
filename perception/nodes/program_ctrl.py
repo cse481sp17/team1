@@ -27,6 +27,9 @@ class Program(object):
     def __repr__(self):
         return "\n\n".join(list(map(str, (self.steps))))
 
+    def __setstate__(self, d):
+        self.__dict__ = d
+        self.steps = copy.deepcopy(self.steps)
 
     def add_step(self, step, append=True):
         if append:
@@ -224,6 +227,13 @@ class ProgramController(object):
 
         self._programs[new_program_name] = self._programs[program_name]
         del self._programs[program_name]
+
+    def deque_step(self, program_name):
+        if program_name not in self._programs:
+            print '{} does not exist'.format(program_name)
+            return
+        self._programs[program_name].remove_step(len(self._programs[program_name].steps) - 1)
+        self._write_out_programs()
 
     def create_program(self, program_name):
         if program_name not in self._programs:
