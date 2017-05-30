@@ -260,28 +260,29 @@ namespace perception {
         ss.str(std::string());
         ss << "handle" << " (" << confidence << ")" << " " << "(" << object_x << ", "  << object_y << ", " << object.dimensions.z << ")";
         // std::cout << "handle pose: " << object_marker.pose << std::endl;
-        // Create a marker for the recognition result
-        visualization_msgs::Marker name_marker;
-        name_marker.ns = "recognition";
-        name_marker.id = i;
-        name_marker.header.frame_id = "base_link";
-        name_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-        name_marker.pose.position = object.pose.position;
-        name_marker.pose.position.z += 0.1;
-        name_marker.pose.orientation.w = 1;
-        name_marker.scale.x = 0.025;
-        name_marker.scale.y = 0.025;
-        name_marker.scale.z = 0.025;
-        name_marker.color.r = 0;
-        name_marker.color.g = 0;
-        name_marker.color.b = 1.0;
-        name_marker.color.a = 1.0;
-        name_marker.text = ss.str();
-
-        // Publish the markers
-        marker_pub_.publish(object_marker);
-        marker_pub_.publish(name_marker);
       }
+
+      // Create a marker for the recognition result
+      visualization_msgs::Marker name_marker;
+      name_marker.ns = "recognition";
+      name_marker.id = i;
+      name_marker.header.frame_id = "base_link";
+      name_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+      name_marker.pose.position = object.pose.position;
+      name_marker.pose.position.z += 0.1;
+      name_marker.pose.orientation.w = 1;
+      name_marker.scale.x = 0.025;
+      name_marker.scale.y = 0.025;
+      name_marker.scale.z = 0.025;
+      name_marker.color.r = 0;
+      name_marker.color.g = 0;
+      name_marker.color.b = 1.0;
+      name_marker.color.a = 1.0;
+      name_marker.text = ss.str();
+
+      // Publish the markers
+      marker_pub_.publish(object_marker);
+      marker_pub_.publish(name_marker);
     }
 
     return;
