@@ -10,8 +10,9 @@ from robot_controllers_msgs.msg import QueryControllerStatesAction, QueryControl
 import actionlib
 from visualization_msgs.msg import Marker
 import copy
+from JointStateReader import joint_state_reader
 
-PROGRAM_FILE = '/home/team1/catkin_ws/src/cse481c/perception/nodes/programs.p'
+PROGRAM_FILE = '$HOME/catkin_ws/src/cse481c/perception/nodes/programs.p'
 # TODO: we should sub to some other topic for the handle 
 # pose. going through visualization marker is janky
 SUB_NAME = '/visualization_marker'
@@ -111,6 +112,7 @@ class ProgramController(object):
         self._controller_client = actionlib.SimpleActionClient('/query_controller_states', QueryControllerStatesAction)
         self._program_file = program_file
         self._programs = self._read_in_programs()
+        self._joint_state_reader = JointStateReader()
 
     def __str__(self):
         if self._programs:
@@ -121,8 +123,12 @@ class ProgramController(object):
     def _read_in_programs(self):
         try:
             with open(self._program_file, 'rb') as file:
-                return pickle.load(file)
+                p = pickle.load(file)
+                print self._program_file
+                print p
+                return p
         except IOError:
+            print 'IOError on {}'.format(self._program_file)
             return {}
 
     def _write_out_programs(self):
