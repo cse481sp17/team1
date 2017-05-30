@@ -10,7 +10,7 @@ from robot_controllers_msgs.msg import QueryControllerStatesAction, QueryControl
 import actionlib
 from visualization_msgs.msg import Marker
 import copy
-
+from JointStateReader import joint_state_reader
 import tf.transformations as tft
 from moveit_msgs.msg import OrientationConstraint
 from moveit_python import PlanningSceneInterface
@@ -124,6 +124,7 @@ class ProgramController(object):
         self._controller_client = actionlib.SimpleActionClient('/query_controller_states', QueryControllerStatesAction)
         self._program_file = program_file
         self._programs = self._read_in_programs()
+        self._joint_state_reader = JointStateReader()
 
         mat = tft.identity_matrix()
         mat[:,0] = np.array([0,0,-1,0])
@@ -153,8 +154,12 @@ class ProgramController(object):
     def _read_in_programs(self):
         try:
             with open(self._program_file, 'rb') as file:
-                return pickle.load(file)
+                p = pickle.load(file)
+                print self._program_file
+                print p
+                return p
         except IOError:
+            print 'IOError on {}'.format(self._program_file)
             return {}
 
     def _write_out_programs(self):
