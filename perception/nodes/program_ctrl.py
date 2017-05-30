@@ -11,6 +11,11 @@ import actionlib
 from visualization_msgs.msg import Marker
 import copy
 
+import tf.transformations as tft
+from moveit_msgs.msg import OrientationConstraint
+from moveit_python import PlanningSceneInterface
+import numpy as np
+
 PROGRAM_FILE = '/home/team1/catkin_ws/src/cse481c/perception/nodes/programs.p'
 # TODO: we should sub to some other topic for the handle 
 # pose. going through visualization marker is janky
@@ -84,10 +89,15 @@ class Program(object):
 
 class ProgramStep(object):
     #TODO: could add a gripper state
-    def __init__(self, pose=None, gripper_state=fetch_api.Gripper.OPENED, torso_height=0.4):
+    def __init__(self, pose=None, gripper_state=fetch_api.Gripper.OPENED, torso_height=0.4, has_constrant=False):
         self.pose = pose
         self.gripper_state = gripper_state
         self.torso_height = torso_height
+        self.has_constraint = has_constraint
+
+    def __setstate__(self, d):
+        self.__dict__ = d
+        self.__dict__['has_constraint'] = False 
 
     def __repr__(self):
         if self.pose is None:
@@ -96,7 +106,7 @@ class ProgramStep(object):
         st_p = '({},{},{})'.format(p.x, p.y, p.z)
         o = self.pose.pose.orientation
         st_o = '({},{},{},{})'.format(o.x, o.y, o.z, o.w)
-        return "\t{}: {} {}, gripper {}, torso height {}".format(self.pose.header.frame_id, st_p, st_o, self.gripper_state, self.torso_height)
+        return "\t{}: {} {}, gripper {}, torso height {}, has constraint {}".format(self.pose.header.frame_id, st_p, st_o, self.gripper_state, self.torso_height, self.has_constraint)
 
 
 class ProgramController(object):
@@ -114,6 +124,25 @@ class ProgramController(object):
         self._controller_client = actionlib.SimpleActionClient('/query_controller_states', QueryControllerStatesAction)
         self._program_file = program_file
         self._programs = self._read_in_programs()
+
+        mat = tft.identity_matrix()
+        mat[:,0] = np.array([0,0,-1,0])
+        mat[:,2] = np.array([1,0,0,0])
+        o = tft.quaternion_from_matrix(mat)
+        print(mat)
+        self._constraint_pose = Pose(orientation=Quaternion(*o))
+        print(self._constraint_pose)
+
+        oc = OrientationConstraint()
+        oc.header.frame_id = 'base_link'
+        oc.link_name = 'gripper_link'
+        oc.orientation = self._constraint_pose.orientation
+        oc.weight = 1.0
+        oc.absolute_z_axis_tolerance = 0.1
+        oc.absolute_x_axis_tolerance = 0.1
+        oc.absolute_y_axis_tolerance = 0.1
+        self._constraint = oc
+        
 
     def __str__(self):
         if self._programs:
@@ -166,7 +195,7 @@ class ProgramController(object):
         self._gripper.open()
 
     # TODO: gripper status could be used here
-    def save_program(self, program_name, frame_id, append=True):
+    def save_program(self, program_name, frame_id, append=True, has_constraint=False):
         print "Saving next position for program {} in {}".format(program_name, frame_id)
         # need to grab the program as is
         curr_program = self._programs.get(program_name)
@@ -214,6 +243,7 @@ class ProgramController(object):
         step = ProgramStep(new_pose)
         step.gripper_state = self._gripper.state()
         step.torso_height = self._torso.state()
+        step.has_contraint = has_constraint
         curr_program.add_step(step, append)
         self._write_out_programs()
 
@@ -266,8 +296,11 @@ class ProgramController(object):
                     self._gripper.open()
                 else:
                     self._gripper.close()
-
-                error = self._arm.move_to_pose(pose, allowed_planning_time=15.0)
+                if self._programs[program_name].steps[i].has_constraint:
+                    error = self._arm.move_to_pose(pose, orientation_constraint=self._constraint, allowed_planning_time=15.0)
+                else:
+                    error = self._arm.move_to_pose(pose, allowed_planning_time=15.0)
+                
                 if error is not None:
                     print "{} failed to run at step #{}".format(program_name, i+1)
                     return False
