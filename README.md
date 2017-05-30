@@ -1,6 +1,5 @@
 # CSE 481C
-Starter code and samples for CSE 481C at the University of Washington, Spring 2017.
-Labs and other documentation are on the **[wiki](https://github.com/cse481sp17/cse481c/wiki)**.
+[View the Nectar team blog here](https://cse481team1.tumblr.com/)
 
 ## Maaja Nectar Website
 Dependencies:
@@ -18,11 +17,11 @@ python server.py
 npm install && npm update
 bower install && bower update
 
-# single-client: remember to be cd'ed into web_nectar!!
-gulp serve
+# single-client
+cd web_nectar && gulp serve
 
-# multi-client: remember to be cd'ed into web_nectar!!
-python -m SimpleHTTPServer 3000
+# multi-client
+cd web_nectar && python -m SimpleHTTPServer 3000
 ```
 
 ## Launching web interface:

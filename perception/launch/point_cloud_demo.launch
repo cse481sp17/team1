@@ -1,6 +1,7 @@
 <launch>
     <node pkg="rviz" type="rviz" name="$(anon rviz)" args="-d $(find perception)/config/perception.rviz"/>
     <arg name="bag_file"/>
+    <arg name="data_dir"/>
     <param name="ec_cluster_tolerance" value="0.01" />
     <param name="ec_min_cluster_size" value="968" />
     <param name="ec_max_cluster_size" value="1262" />
@@ -11,7 +12,6 @@
     <param name="crop_min_z" value="0.7" />
 
     <node name="$(anon latch_mock_cloud)" pkg="applications" type="publish_saved_cloud.py" args="$(arg bag_file)"/>
-    <node name="$(anon perception_demo)" pkg="perception" type="point_cloud_demo" args="/home/team1/data/labels cloud_in:=/mock_point_cloud"/>
-    <node name="$(anon gripper_teleop)" pkg="applications" type="gripper_teleop.py"/>
+    <node name="$(anon perception_demo)" pkg="perception" type="point_cloud_demo" args="$(arg data_dir) cloud_in:=/mock_point_cloud" output="screen"/>
 </launch>
 

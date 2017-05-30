@@ -62,7 +62,7 @@ namespace perception {
     PointC min_pcl;
     PointC max_pcl;
     pcl::getMinMax3D<PointC>(*cropped_cloud, min_pcl, max_pcl);
-    ROS_INFO("min: %f, max: %f", min_pcl.x, max_pcl.x);
+    //ROS_INFO("min: %f, max: %f", min_pcl.x, max_pcl.x);
 
     pub_.publish(msg_out);
   }

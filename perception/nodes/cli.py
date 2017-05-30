@@ -44,6 +44,10 @@ def prompt(program_ctrl):
         program_ctrl.create_program(first_arg)
     elif command == "save" and first_arg and second_arg:
         program_ctrl.save_program(first_arg, second_arg, True)
+    elif command == "deque" and first_arg:
+        program_ctrl.deque_step(first_arg)
+    elif command == "pop" and first_arg:
+        program_ctrl.remove_step(first_arg, 0)
     elif command == "prepend" and first_arg and second_arg:
         program_ctrl.save_program(first_arg, second_arg, False)
     elif command == "remove" and first_arg and second_arg:

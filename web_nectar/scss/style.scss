@@ -198,7 +198,9 @@ body {
         margin-bottom: 1em;
         font-family: 'Open Sans', arial, sans-serif;
         font-style: normal;
-        /*padding: 0;*/
+        padding: 0;
+        margin-left: 20px;
+        margin-right: 21px;
         list-style-type: none;
         overflow: hidden;
         /*background: darken($gray, 50%);*/
@@ -210,7 +212,7 @@ body {
             border-radius: 10px;
             float: left;
             line-height: 140px; /* This controls size of buttons */
-            width: 45%;
+            width: 48%;
             color: white;
             font-weight: lighter;
             font-size: 12pt;
@@ -253,6 +255,7 @@ body {
             padding: 2.5%;
             margin: 4%;
           }
+
         }
       }
 
