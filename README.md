@@ -17,11 +17,11 @@ python server.py
 npm install && npm update
 bower install && bower update
 
-# single-client: remember to be cd'ed into web_nectar!!
-gulp serve
+# single-client
+cd web_nectar && gulp serve
 
-# multi-client: remember to be cd'ed into web_nectar!!
-python -m SimpleHTTPServer 3000
+# multi-client
+cd web_nectar && python -m SimpleHTTPServer 3000
 ```
 
 ## Launching web interface:
