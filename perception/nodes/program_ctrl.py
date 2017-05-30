@@ -10,7 +10,7 @@ from robot_controllers_msgs.msg import QueryControllerStatesAction, QueryControl
 import actionlib
 from visualization_msgs.msg import Marker
 import copy
-from JointStateReader import joint_state_reader
+from joint_state_reader import JointStateReader
 import tf.transformations as tft
 from moveit_msgs.msg import OrientationConstraint
 from moveit_python import PlanningSceneInterface
@@ -301,6 +301,7 @@ class ProgramController(object):
                     self._gripper.open()
                 else:
                     self._gripper.close()
+                    
                 if self._programs[program_name].steps[i].has_constraint:
                     error = self._arm.move_to_pose(pose, orientation_constraint=self._constraint, allowed_planning_time=15.0)
                 else:
