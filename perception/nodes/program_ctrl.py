@@ -9,6 +9,7 @@ import fetch_api
 from robot_controllers_msgs.msg import QueryControllerStatesAction, QueryControllerStatesGoal, ControllerState
 import actionlib
 from visualization_msgs.msg import Marker
+import copy
 
 PROGRAM_FILE = '/home/team1/catkin_ws/src/cse481c/perception/nodes/programs.p'
 # TODO: we should sub to some other topic for the handle 
@@ -18,22 +19,17 @@ SUB_NAME = '/visualization_marker'
 ID_TO_TAGNAME = {'handle':400}
 
 class Program(object):
-    def __init__(self, steps=[]):
+    def __init__(self, steps=None):
+        if steps is None:
+            steps = []
         self.steps = steps
 
     def __repr__(self):
-        # ret = "["
-        # first = True
-        # for step in self.steps:
-        #     if first:
-        #         ret += step.__str__()
-        #         first = False
-        #     else:
-        #         ret += ", {}".format(step.__str__())
-        # ret += "]"
-        # return self.steps.__str__()
         return "\n\n".join(list(map(str, (self.steps))))
 
+    def __setstate__(self, d):
+        self.__dict__ = d
+        self.steps = copy.deepcopy(self.steps)
 
     def add_step(self, step, append=True):
         if append:
@@ -175,7 +171,7 @@ class ProgramController(object):
         # need to grab the program as is
         curr_program = self._programs.get(program_name)
         if curr_program is None:
-            rospy.logerr("This shouldn't happen if create has been called")
+            print("{} does not exist yet".format(program_name))
             return
 
         # TODO: Complete this
@@ -187,7 +183,7 @@ class ProgramController(object):
             marker_id = ID_TO_TAGNAME[frame_id]
             curr_marker = None
             if marker_id != self._curr_markers.id:
-                rospy.logerr('No marker found with frame_id {} and marker_id {} in program {}'.format(frame_id, marker_id, program_name))
+                print('No marker found with frame_id {} and marker_id {} in program {}'.format(frame_id, marker_id, program_name))
                 return
             else:
                 # now we have the marker (curr_marker) which has some pose and we can get the robots current position for its arm
@@ -221,10 +217,29 @@ class ProgramController(object):
         curr_program.add_step(step, append)
         self._write_out_programs()
 
+    def rename_program(self, program_name, new_program_name):
+        if program_name not in self._programs:
+            print '{} does not exist'.format(program_name)
+            return
+        if new_program_name in self._programs:
+            print '{} already exists'.format(new_program_name)
+            return
+
+        self._programs[new_program_name] = self._programs[program_name]
+        del self._programs[program_name]
+
+    def deque_step(self, program_name):
+        if program_name not in self._programs:
+            print '{} does not exist'.format(program_name)
+            return
+        self._programs[program_name].remove_step(len(self._programs[program_name].steps) - 1)
+        self._write_out_programs()
+
     def create_program(self, program_name):
         if program_name not in self._programs:
             self._programs[program_name] = Program()
             print "{} created".format(program_name)
+            print "the program is {}".format(self._programs[program_name])
         else:
             print "Trying to create program {} when it already exists".format(program_name)
         self._write_out_programs()
@@ -240,33 +255,23 @@ class ProgramController(object):
     def run_program(self, program_name):
         if program_name not in self._programs:
             print "{} does not exist".format(program_name)
+            return False
         else:      
-            # only move arm to pose if we aren't changing height
-            doPose = True
-            poses = self._programs[program_name].calc_poses(self._curr_markers)
+            poses = self._programs[program_name].calc_poses(copy.deepcopy(self._curr_markers))
             self.start_arm()
 
-            prevHeight = None
             for i, pose in enumerate(poses):
-                height = self._programs[program_name].steps[i].torso_height
-                self._torso.set_height(height)
-                if prevHeight != None and prevHeight != height:
-                    doPose = False
-                
-                prevHeight = height
 
                 if self._programs[program_name].steps[i].gripper_state == fetch_api.Gripper.OPENED:
                     self._gripper.open()
                 else:
                     self._gripper.close()
 
-                if doPose:
-                    error = self._arm.move_to_pose(pose, allowed_planning_time=15.0)
-                    if error is not None:
-                        print "{} failed to run at step #{}".format(program_name, i+1)
-                        return
-                rospy.sleep(1.5)
-
+                error = self._arm.move_to_pose(pose, allowed_planning_time=15.0)
+                if error is not None:
+                    print "{} failed to run at step #{}".format(program_name, i+1)
+                    return False
+        return True
 
     @property
     def programs(self):
