@@ -43,11 +43,6 @@ namespace perception {
     seg.setAxis(axis);
     seg.setEpsAngle(pcl::deg2rad(10.0));
 
-    if (indices_internal.indices.size() == 0) {
-      //ROS_ERROR("Unable to find surface.");
-      return;
-    }
-
     seg.segment(indices_internal, *coeff);
 
     double distance_above_plane;
@@ -120,8 +115,8 @@ namespace perception {
       }
     }
 
-    /*ROS_INFO("Found %ld objects, min size: %ld, max size: %ld",
-             object_indices->size(), min_size, max_size); */
+    ROS_INFO("Found %ld objects, min size: %ld, max size: %ld",
+             object_indices->size(), min_size, max_size);
   }
 
 
@@ -209,9 +204,9 @@ namespace perception {
     const double handle_y = 0.075;
     const double handle_z = 0.037;
 
-    const double x_thres = 0.211;
-    const double y_thres = 0.176;
-    const double z_thres = 0.370;
+    const double x_thres = 0.212;
+    const double y_thres = 0.092;
+    const double z_thres = 0.185;
 
     const double x_lo = handle_x * (1.0 - x_thres);
     const double x_hi = handle_x * (1.0 + x_thres);
@@ -265,29 +260,28 @@ namespace perception {
         ss.str(std::string());
         ss << "handle" << " (" << confidence << ")" << " " << "(" << object_x << ", "  << object_y << ", " << object.dimensions.z << ")";
         // std::cout << "handle pose: " << object_marker.pose << std::endl;
+        // Create a marker for the recognition result
+        visualization_msgs::Marker name_marker;
+        name_marker.ns = "recognition";
+        name_marker.id = i;
+        name_marker.header.frame_id = "base_link";
+        name_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+        name_marker.pose.position = object.pose.position;
+        name_marker.pose.position.z += 0.1;
+        name_marker.pose.orientation.w = 1;
+        name_marker.scale.x = 0.025;
+        name_marker.scale.y = 0.025;
+        name_marker.scale.z = 0.025;
+        name_marker.color.r = 0;
+        name_marker.color.g = 0;
+        name_marker.color.b = 1.0;
+        name_marker.color.a = 1.0;
+        name_marker.text = ss.str();
+
+        // Publish the markers
+        marker_pub_.publish(object_marker);
+        marker_pub_.publish(name_marker);
       }
-
-      // Create a marker for the recognition result
-      visualization_msgs::Marker name_marker;
-      name_marker.ns = "recognition";
-      name_marker.id = i;
-      name_marker.header.frame_id = "base_link";
-      name_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-      name_marker.pose.position = object.pose.position;
-      name_marker.pose.position.z += 0.1;
-      name_marker.pose.orientation.w = 1;
-      name_marker.scale.x = 0.025;
-      name_marker.scale.y = 0.025;
-      name_marker.scale.z = 0.025;
-      name_marker.color.r = 0;
-      name_marker.color.g = 0;
-      name_marker.color.b = 1.0;
-      name_marker.color.a = 1.0;
-      name_marker.text = ss.str();
-
-      // Publish the markers
-      marker_pub_.publish(object_marker);
-      marker_pub_.publish(name_marker);
     }
 
     return;
