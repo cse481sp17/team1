@@ -89,15 +89,11 @@ class Program(object):
 
 class ProgramStep(object):
     #TODO: could add a gripper state
-    def __init__(self, pose=None, gripper_state=fetch_api.Gripper.OPENED, torso_height=0.4, has_constrant=False):
+    def __init__(self, pose=None, gripper_state=fetch_api.Gripper.OPENED, torso_height=0.4, has_constraint=False):
         self.pose = pose
         self.gripper_state = gripper_state
         self.torso_height = torso_height
         self.has_constraint = has_constraint
-
-    def __setstate__(self, d):
-        self.__dict__ = d
-        self.__dict__['has_constraint'] = False 
 
     def __repr__(self):
         if self.pose is None:
@@ -248,7 +244,7 @@ class ProgramController(object):
         step = ProgramStep(new_pose)
         step.gripper_state = self._gripper.state()
         step.torso_height = self._torso.state()
-        step.has_contraint = has_constraint
+        step.has_constraint = has_constraint
         curr_program.add_step(step, append)
         self._write_out_programs()
 
@@ -296,6 +292,9 @@ class ProgramController(object):
             self.start_arm()
 
             for i, pose in enumerate(poses):
+                
+                if self._programs[program_name].steps[i].pose.header.frame_id == 'base_link':
+                    self._programs[program_name].steps[i].has_constraint = True
 
                 if self._programs[program_name].steps[i].gripper_state == fetch_api.Gripper.OPENED:
                     self._gripper.open()
