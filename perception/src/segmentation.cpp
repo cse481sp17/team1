@@ -43,11 +43,6 @@ namespace perception {
     seg.setAxis(axis);
     seg.setEpsAngle(pcl::deg2rad(10.0));
 
-    if (indices_internal.indices.size() == 0) {
-      //ROS_ERROR("Unable to find surface.");
-      return;
-    }
-
     seg.segment(indices_internal, *coeff);
 
     double distance_above_plane;
@@ -120,8 +115,8 @@ namespace perception {
       }
     }
 
-    /*ROS_INFO("Found %ld objects, min size: %ld, max size: %ld",
-             object_indices->size(), min_size, max_size); */
+    ROS_INFO("Found %ld objects, min size: %ld, max size: %ld",
+             object_indices->size(), min_size, max_size);
   }
 
 
@@ -209,9 +204,9 @@ namespace perception {
     const double handle_y = 0.075;
     const double handle_z = 0.037;
 
-    const double x_thres = 0.211;
-    const double y_thres = 0.176;
-    const double z_thres = 0.370;
+    const double x_thres = 0.212;
+    const double y_thres = 0.092;
+    const double z_thres = 0.185;
 
     const double x_lo = handle_x * (1.0 - x_thres);
     const double x_hi = handle_x * (1.0 + x_thres);

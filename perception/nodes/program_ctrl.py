@@ -289,11 +289,12 @@ class ProgramController(object):
             poses = self._programs[program_name].calc_poses(copy.deepcopy(self._curr_markers))
             self.start_arm()
 
-            for i, pose in enumerate(poses):
+            for i, pose in enumerate(poses):                
                 if self._programs[program_name].steps[i].gripper_state == fetch_api.Gripper.OPENED:
                     self._gripper.open()
                 else:
                     self._gripper.close()
+                    
                 if self._programs[program_name].steps[i].has_constraint:
                     error = self._arm.move_to_pose(pose, orientation_constraint=self._constraint, allowed_planning_time=15.0)
                 else:
