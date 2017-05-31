@@ -10,7 +10,6 @@ from robot_controllers_msgs.msg import QueryControllerStatesAction, QueryControl
 import actionlib
 from visualization_msgs.msg import Marker
 import copy
-from joint_state_reader import JointStateReader
 import tf.transformations as tft
 from moveit_msgs.msg import OrientationConstraint
 from moveit_python import PlanningSceneInterface
@@ -120,7 +119,6 @@ class ProgramController(object):
         self._controller_client = actionlib.SimpleActionClient('/query_controller_states', QueryControllerStatesAction)
         self._program_file = program_file
         self._programs = self._read_in_programs()
-        self._joint_state_reader = JointStateReader()
 
         mat = tft.identity_matrix()
         mat[:,0] = np.array([0,0,-1,0])
@@ -135,9 +133,9 @@ class ProgramController(object):
         oc.link_name = 'gripper_link'
         oc.orientation = self._constraint_pose.orientation
         oc.weight = 1.0
-        oc.absolute_z_axis_tolerance = 0.1
-        oc.absolute_x_axis_tolerance = 0.1
-        oc.absolute_y_axis_tolerance = 0.1
+        oc.absolute_z_axis_tolerance = 0.001
+        oc.absolute_x_axis_tolerance = 0.3
+        oc.absolute_y_axis_tolerance = 0.001
         self._constraint = oc
         
 
@@ -291,11 +289,7 @@ class ProgramController(object):
             poses = self._programs[program_name].calc_poses(copy.deepcopy(self._curr_markers))
             self.start_arm()
 
-            for i, pose in enumerate(poses):
-                
-                if self._programs[program_name].steps[i].pose.header.frame_id == 'base_link':
-                    self._programs[program_name].steps[i].has_constraint = True
-
+            for i, pose in enumerate(poses):                
                 if self._programs[program_name].steps[i].gripper_state == fetch_api.Gripper.OPENED:
                     self._gripper.open()
                 else:
