@@ -215,7 +215,8 @@ namespace perception {
     const double z_lo = handle_z * (1.0 - z_thres);
     const double z_hi = handle_z * (1.0 + z_thres);
 
-    SegmentTableAndPublishMarker(cloud);
+    visualization_msgs::Marker table_marker;
+    SegmentTableAndPublishMarker(cloud, table_marker);
 
     std::vector<Object> objects;
     SegmentTabletopScene(cloud, &objects);
@@ -265,6 +266,9 @@ namespace perception {
         // Adjust height of object marker
         object_marker.pose.position.z -= (object.dimensions.z - handle_z)/2.0;
         object_marker.scale.z = handle_z;
+
+        // Fix the table marker so that it does not consume the handle
+        table_marker.pose.position.z = object_marker.pose.position.z - (object_marker.scale.z / 2.0) - (table_marker.scale.z / 2.0);
       }
 
       // Create a marker for the recognition result
@@ -290,6 +294,7 @@ namespace perception {
       marker_pub_.publish(name_marker);
     }
 
+    marker_pub_.publish(table_marker);
     return;
 
     // int ret;
@@ -301,7 +306,7 @@ namespace perception {
     // }
   }
 
-  int Segmenter::SegmentTableAndPublishMarker(PointCloudC::Ptr input_cloud) {
+  int Segmenter::SegmentTableAndPublishMarker(PointCloudC::Ptr input_cloud, visualization_msgs::Marker& table_marker) {
     pcl::PointIndices::Ptr table_inliers(new pcl::PointIndices());
     pcl::ModelCoefficients::Ptr coeff(new pcl::ModelCoefficients());
     SegmentSurface(input_cloud, table_inliers, coeff);
@@ -319,7 +324,7 @@ namespace perception {
     pcl::toROSMsg(*table_cloud, msg_out);
     surface_points_pub_.publish(msg_out);
 
-    visualization_msgs::Marker table_marker;
+    // visualization_msgs::Marker table_marker;
     table_marker.ns = "table";
     table_marker.header.frame_id = "base_link";
     table_marker.type = visualization_msgs::Marker::CUBE;
@@ -335,7 +340,7 @@ namespace perception {
     table_marker.scale.z = table_shape.dimensions[2];
     table_marker.color.r = 0.5;
     table_marker.color.a = 0.8;
-    marker_pub_.publish(table_marker);
+    // marker_pub_.publish(table_marker);
     return 0;
   }
   
