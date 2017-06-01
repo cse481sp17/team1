@@ -93,7 +93,7 @@ class ProgramStep(object):
                 return None
             marker_id = ID_TO_TAGNAME[frame_id]
             print marker
-            if marker_id != marker.ns:
+            if marker is None or marker_id != marker.ns:
                 rospy.logerr("cannot find the {} with id {}".format(frame_id, marker_id))
                 return None
 
@@ -352,6 +352,8 @@ class ProgramController(object):
                         # don't move the arm if we move the gripper
                         continue
                     pose = cur_step.calc_pose(curr_marker)
+                    if pose is None:
+                        return False
                     if cur_step.has_constraint:
                         error = self._arm.move_to_pose(pose, orientation_constraint=self._constraint, allowed_planning_time=15.0)
                     else:
@@ -378,6 +380,7 @@ class ProgramController(object):
                 if cur_step.step_type == ProgramStep.MOVE_ALL_JOINTS:
                     arm_joints = fetch_api.ArmJoints.from_list(cur_step.all_joint_states)
                     self._arm.move_to_joints(arm_joints)
+            return True
 
 
 
