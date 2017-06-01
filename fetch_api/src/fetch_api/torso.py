@@ -45,9 +45,11 @@ class Torso(object):
         # TODO: Create a trajectory point
         # TODO: Set position of trajectory point
         # TODO: Set time of trajectory point
-        if not Torso.MIN_HEIGHT <= height <= Torso.MAX_HEIGHT:
-            return
-
+        if height > Torso.MAX_HEIGHT:
+            height = Torso.MAX_HEIGHT
+        if height < Torso.MIN_HEIGHT:
+            height = Torso.MIN_HEIGHT
+            
         point = JointTrajectoryPoint()
         point.positions.append(height)
         point.time_from_start = rospy.Duration(TIME_FROM_START)
