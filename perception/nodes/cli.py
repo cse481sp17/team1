@@ -55,6 +55,11 @@ def prompt(program_ctrl):
         program_ctrl.relax_arm()
     elif command == "create" and first_arg:
         program_ctrl.create_program(first_arg)
+    elif command == "prependjoint" and first_arg and second_arg:
+        if third_arg:
+            program_ctrl.save_joint(first_arg, second_arg, float(third_arg), append=False)
+        else:
+            program_ctrl.save_joint(first_arg, second_arg, append=False)
     elif command == "savejoint" and first_arg and second_arg:
         if third_arg:
             program_ctrl.save_joint(first_arg, second_arg, float(third_arg))

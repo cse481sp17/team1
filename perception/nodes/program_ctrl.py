@@ -217,7 +217,7 @@ class ProgramController(object):
         curr_program.add_step(step)
         self._write_out_programs()
 
-    def save_joint(self, program_name, joint_name, joint_value=None):
+    def save_joint(self, program_name, joint_name, joint_value=None, append=True):
         print "Saving next joint state for program {} with name {} and value {}".format(program_name, joint_name, joint_value)
         # need to grab the program as is
         curr_program = self._programs.get(program_name)
@@ -241,7 +241,7 @@ class ProgramController(object):
             return
 
         step.joint_value = joint_value
-        curr_program.add_step(step)
+        curr_program.add_step(step, append)
         self._write_out_programs()
 
     # TODO: gripper status could be used here
