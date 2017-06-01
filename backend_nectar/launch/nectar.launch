@@ -5,8 +5,8 @@
     <node name="nav_server" pkg="map_annotator" type="NavigationServerNode.py" respawn="true" output="screen"/>
     <node name="nectar" pkg="backend_nectar" type="backend.py" required="true" output="screen"/> 
     <param name="ec_cluster_tolerance" value="0.01" />
-    <param name="ec_min_cluster_size" value="968" />
-    <param name="ec_max_cluster_size" value="1262" />
+    <param name="ec_min_cluster_size" value="700" />
+    <param name="ec_max_cluster_size" value="1200" />
     <param name="distance_above_plane" value="0.01" />
     <param name="crop_min_x" value="-0.5" />
     <param name="crop_max_z" value="1.5" />
