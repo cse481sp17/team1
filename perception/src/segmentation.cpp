@@ -261,6 +261,10 @@ namespace perception {
         ss.str(std::string());
         ss << "handle" << " (" << confidence << ")" << " " << "(" << object_x << ", "  << object_y << ", " << object.dimensions.z << ")";
         // std::cout << "handle pose: " << object_marker.pose << std::endl;
+
+        // Adjust height of object marker
+        object_marker.pose.position.z -= (object.dimensions.z - handle_z)/2.0;
+        object_marker.scale.z = handle_z;
       }
 
       // Create a marker for the recognition result
