@@ -7,10 +7,11 @@ def help():
     print "Commands:"
     print "\tlist: List saved poses"
     print "\tcreate <name>: Create an empty program <name>"
-    print "\tsave <name> <frame_id>: Append the robot's current pose relative to <frame_id> to <name>"
-    print "\tsavejoint <name> <joint_name>: save the robot's current joint position for joint_name"
-    print "\tsavealljoints <name>: save the robot's current joint position"
-    print "\tsaveconstraint <name> <frame_id>: same as save but with a down constraint"
+    print "\tsave <name> <frame_id> (optional) <index>: Append the robot's current pose relative to <frame_id> to <name>"
+    print "\tsavejoint <name> <joint_name> (optional) <index>: save the robot's current joint position for joint_name"
+    print "\tsavealljoints <name> (optional) <index>: save the robot's current joint position"
+    print "\tsaveconstraint <name> <frame_id> (optional) <index>: same as save but with a down constraint"
+    print "\tsavetorso <name> (optional) <index>: save the robot's current torso height"
     print "\tprepend <name> <frame_id>: same as save, but put the move at the front"
     print "\tdelete <name>: Delete the program given by <name>"
     print "\tdeque <name>: Remove the last step added from <name>"
@@ -44,7 +45,13 @@ def prompt(program_ctrl):
         command, first_arg, second_arg, third_arg = command_args
 
     if command == "list":
-        print str(program_ctrl)
+        if first_arg:
+            if first_arg not in program_ctrl._programs:
+                print "{} does not exist yet".format(first_arg)
+            else:
+                print str(program_ctrl._programs[first_arg])
+        else:
+            print str(program_ctrl)
     elif command == "rename" and first_arg and second_arg:
         program_ctrl.rename(first_arg, second_arg)
     elif command == "close":
@@ -55,37 +62,38 @@ def prompt(program_ctrl):
         program_ctrl.relax_arm()
     elif command == "create" and first_arg:
         program_ctrl.create_program(first_arg)
-    elif command == "addtorso" and first_arg:
+    elif command == "savetorso" and first_arg:
         if second_arg:
-            program_ctrl.add_torso(first_arg, int(second_arg))
+            program_ctrl.add_torso(first_arg, index = int(second_arg))
         else:
             program_ctrl.add_torso(first_arg)
-
     elif command == "savejoint" and first_arg and second_arg:
         if third_arg:
-            program_ctrl.save_joint(first_arg, second_arg, int(third_arg))
+            program_ctrl.save_joint(first_arg, second_arg, index = int(third_arg))
         else:
             program_ctrl.save_joint(first_arg, second_arg)
+
     elif command == "savealljoints" and first_arg:
         if second_arg:
-            program_ctrl.save_all_joints(first_arg, int(second_arg))
+            program_ctrl.save_all_joints(first_arg, index = int(second_arg))
         else:
             program_ctrl.save_all_joints(first_arg)
-
     elif command == "save" and first_arg and second_arg:
         if third_arg:
-            program_ctrl.save_program(first_arg, second_arg, int(third_arg))
+            program_ctrl.save_program(first_arg, second_arg, index = int(third_arg))
         else:
             program_ctrl.save_program(first_arg, second_arg)
-
     elif command == "saveconstraint" and first_arg and second_arg:
-        program_ctrl.save_program(first_arg, second_arg, append=True, has_constraint=True)
+        if third_arg:
+            program_ctrl.save_program(first_arg, second_arg, index = int(third_arg), has_constraint = True)
+        else:
+            program_ctrl.save_program(first_arg, second_arg, has_constraint=True)        
     elif command == "deque" and first_arg:
         program_ctrl.deque_step(first_arg)
     elif command == "pop" and first_arg:
         program_ctrl.remove_step(first_arg, 0)
     elif command == "prepend" and first_arg and second_arg:
-        program_ctrl.save_program(first_arg, second_arg, append=False)
+        program_ctrl.save_program(first_arg, second_arg, index=0)
     elif command == "remove" and first_arg and second_arg:
         program_ctrl.remove_step(first_arg, int(second_arg))
     elif command == "delete" and first_arg:

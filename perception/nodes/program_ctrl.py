@@ -38,10 +38,11 @@ class Program(object):
         self.steps = copy.deepcopy(self.steps)
 
     def add_step(self, step, index=None):
+        print 'index is {}'.format(index)
         if index is None:
-            index = len(steps) - 1
-
-        self.steps.insert(index, step)
+            self.steps.append(step)
+        else:
+            self.steps.insert(index, step)
 
     def remove_step(self, index):
         del self.steps[index]
@@ -79,8 +80,8 @@ class ProgramStep(object):
             return "\ttype: {}, joint_name: {}, joint_value: {}".format(self.step_type, self.joint_name, self.joint_value)
         elif self.step_type == ProgramStep.MOVE_ALL_JOINTS:
             return "\ttype: {}, {}".format(self.step_type, dict(zip(fetch_api.ArmJoints.names(), self.all_joint_states)))
-        elif self.step_type == ProgramStep.MOVE_STEP:
-            return "\ttype: {}, {}".format(self.step_type, self.torso_height)
+        elif self.step_type == ProgramStep.MOVE_TORSO:
+            return "\ttype: {}, height: {}".format(self.step_type, self.torso_height)
         return "Not a valid step, {}".format(self.__dict__)
 
     def calc_pose(self, marker):
@@ -246,8 +247,8 @@ class ProgramController(object):
         curr_program.add_step(step, index)
         self._write_out_programs()
 
-    def add_torso(self, program_name, index):
-        print "Saving next joint state for program {} with name {} and value {}".format(program_name, joint_name, joint_value)
+    def add_torso(self, program_name, index=None):
+        print "Saving next torso state for program {}".format(program_name)
         # need to grab the program as is
         curr_program = self._programs.get(program_name)
         if curr_program is None:
@@ -258,7 +259,7 @@ class ProgramController(object):
         step.step_type = ProgramStep.MOVE_TORSO
         step.torso_height = self._torso.state()
         
-        curr_program.add_step(step, False, 0)
+        curr_program.add_step(step, index)
         self._write_out_programs()
 
 
@@ -402,7 +403,7 @@ class ProgramController(object):
 
                 # move torso
                 if cur_step.step_type == ProgramStep.MOVE_TORSO:
-                    self._torso.set_height(cur_step.height)
+                    self._torso.set_height(cur_step.torso_height)
 
             return True
 
