@@ -50,7 +50,7 @@ class Segmenter {
   Segmenter(const ros::Publisher& surface_points_pub, const ros::Publisher& marker_pub, const ObjectRecognizer& recognizer);
   void Callback(const sensor_msgs::PointCloud2& msg);
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr CropTrayAndPublishMarker(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud);
-  int SegmentTableAndPublishMarker(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud);
+  int SegmentTableAndPublishMarker(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud, visualization_msgs::Marker& table_marker);
 
  private:
   ros::Publisher surface_points_pub_;
