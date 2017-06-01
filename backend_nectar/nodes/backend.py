@@ -61,6 +61,10 @@ class NectarBackend:
             self.error("ERROR in placing tray", order_msg)
             return
 
+        # TODO: say order
+        # order_msg
+        # say("Here is your entree of {}".format(order_msg.foodItem))
+
         # go back to the chef table
         ret = self._navigator_server(NavigationRequest.CHEF_TABLE)
         if not ret.success:
