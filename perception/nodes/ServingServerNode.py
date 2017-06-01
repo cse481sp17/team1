@@ -2,20 +2,29 @@
 from perception_msgs.srv import Serving, ServingRequest
 import rospy
 from program_ctrl import ProgramController
+import fetch_api
 
 class Server:
-    PAN_ANGLE = 0.642
+    TILT_ANGLE = 0.79
     def __init__(self):
         self._program_ctrl = ProgramController()
+        self._head = fetch_api.Head()
 
     # TODO: program retreive and place
     # via the cli.py 
     def serve(self, req):
         print req
         if req.action == ServingRequest.RETREIVE:
-            return self.run_procedure('retreive')
+            return self.run_procedure('retrieve')
         elif req.action == ServingRequest.PLACE:
             return self.run_procedure('place')
+        elif req.action == ServingRequest.START:
+            count = 0
+            finish = False
+            while count < 5 and not finish:
+                finish = self.run_procedure('start')
+                count += 1
+            return finish
         return False
 
     def run_procedure(self, name):
@@ -23,7 +32,7 @@ class Server:
             print("{} program does not exist".format(name))
             return False
 
-        self._head.pan_tilt(0, PAN_ANGLE)
+        self._head.pan_tilt(0, Server.TILT_ANGLE)
 
         return self._program_ctrl.run_program(name)
 
