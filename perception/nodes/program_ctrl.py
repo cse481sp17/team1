@@ -37,11 +37,11 @@ class Program(object):
         self.__dict__ = d
         self.steps = copy.deepcopy(self.steps)
 
-    def add_step(self, step, append=True):
-        if append:
-            self.steps.append(step)
-        else:
-            self.steps.insert(0, step)
+    def add_step(self, step, index=None):
+        if index is None:
+            index = len(steps) - 1
+
+        self.steps.insert(index, step)
 
     def remove_step(self, index):
         del self.steps[index]
@@ -51,6 +51,7 @@ class ProgramStep(object):
     MOVE_ARM = "move_arm"
     MOVE_JOINT = "move_joint"
     MOVE_ALL_JOINTS = "move_all_joints"
+    MOVE_TORSO = "move_torso"
     #TODO: could add a gripper state
     def __init__(self, name = MOVE_ARM, pose=None, gripper_state=fetch_api.Gripper.OPENED, torso_height=0.4, has_constraint=False):
         self.step_type = name
@@ -78,6 +79,8 @@ class ProgramStep(object):
             return "\ttype: {}, joint_name: {}, joint_value: {}".format(self.step_type, self.joint_name, self.joint_value)
         elif self.step_type == ProgramStep.MOVE_ALL_JOINTS:
             return "\ttype: {}, {}".format(self.step_type, dict(zip(fetch_api.ArmJoints.names(), self.all_joint_states)))
+        elif self.step_type == ProgramStep.MOVE_STEP:
+            return "\ttype: {}, {}".format(self.step_type, self.torso_height)
         return "Not a valid step, {}".format(self.__dict__)
 
     def calc_pose(self, marker):
@@ -203,7 +206,7 @@ class ProgramController(object):
     def open(self):
         self._gripper.open()
 
-    def save_all_joints(self, program_name):
+    def save_all_joints(self, program_name, index=None):
         print "Saving all joints state as a program step"
         # need to grab the program as is
         curr_program = self._programs.get(program_name)
@@ -214,11 +217,11 @@ class ProgramController(object):
         step = ProgramStep()
         step.step_type = ProgramStep.MOVE_ALL_JOINTS
         step.all_joint_states = self._joint_reader.get_joints(fetch_api.ArmJoints.names())
-        curr_program.add_step(step)
+        curr_program.add_step(step, index)
         self._write_out_programs()
 
-    def save_joint(self, program_name, joint_name, joint_value=None, append=True):
-        print "Saving next joint state for program {} with name {} and value {}".format(program_name, joint_name, joint_value)
+    def save_joint(self, program_name, joint_name, index=None):
+        print "Saving next joint state for program {} with name {}".format(program_name, joint_name)
         # need to grab the program as is
         curr_program = self._programs.get(program_name)
         if curr_program is None:
@@ -230,22 +233,37 @@ class ProgramController(object):
         step.joint_name = joint_name
 
         # get current joint state value for joint name, if it exists
-        if joint_value is None:
-            joint_state = self._joint_reader.get_joints(fetch_api.ArmJoints.names())
-            for i, name in enumerate(fetch_api.ArmJoints.names()):
-                if step.joint_name == name:
-                    joint_value = joint_state[i]
+        joint_state = self._joint_reader.get_joints(fetch_api.ArmJoints.names())
+        for i, name in enumerate(fetch_api.ArmJoints.names()):
+            if step.joint_name == name:
+                joint_value = joint_state[i]
 
         if joint_value is None:
             print "{} is not a value joint name. Try any of these {}".format(joint_name, fetch_api.ArmJoints.names())
             return
 
         step.joint_value = joint_value
-        curr_program.add_step(step, append)
+        curr_program.add_step(step, index)
         self._write_out_programs()
 
+    def add_torso(self, program_name, index):
+        print "Saving next joint state for program {} with name {} and value {}".format(program_name, joint_name, joint_value)
+        # need to grab the program as is
+        curr_program = self._programs.get(program_name)
+        if curr_program is None:
+            print("{} does not exist yet".format(program_name))
+            return
+
+        step = ProgramStep()
+        step.step_type = ProgramStep.MOVE_TORSO
+        step.torso_height = self._torso.state()
+        
+        curr_program.add_step(step, False, 0)
+        self._write_out_programs()
+
+
     # TODO: gripper status could be used here
-    def save_program(self, program_name, frame_id, append=True, has_constraint=False):
+    def save_program(self, program_name, frame_id, index=None, has_constraint=False):
         print "Saving next position for program {} in {}".format(program_name, frame_id)
         # need to grab the program as is
         curr_program = self._programs.get(program_name)
@@ -297,7 +315,7 @@ class ProgramController(object):
         step.gripper_state = self._gripper.state()
         step.torso_height = self._torso.state()
         step.has_constraint = has_constraint
-        curr_program.add_step(step, append)
+        curr_program.add_step(step, index)
         self._write_out_programs()
 
     def rename_program(self, program_name, new_program_name):
@@ -380,6 +398,12 @@ class ProgramController(object):
                 if cur_step.step_type == ProgramStep.MOVE_ALL_JOINTS:
                     arm_joints = fetch_api.ArmJoints.from_list(cur_step.all_joint_states)
                     self._arm.move_to_joints(arm_joints)
+
+
+                # move torso
+                if cur_step.step_type == ProgramStep.MOVE_TORSO:
+                    self._torso.set_height(cur_step.height)
+
             return True
 
 

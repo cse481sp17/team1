@@ -55,20 +55,29 @@ def prompt(program_ctrl):
         program_ctrl.relax_arm()
     elif command == "create" and first_arg:
         program_ctrl.create_program(first_arg)
-    elif command == "prependjoint" and first_arg and second_arg:
-        if third_arg:
-            program_ctrl.save_joint(first_arg, second_arg, float(third_arg), append=False)
+    elif command == "addtorso" and first_arg:
+        if second_arg:
+            program_ctrl.add_torso(first_arg, int(second_arg))
         else:
-            program_ctrl.save_joint(first_arg, second_arg, append=False)
+            program_ctrl.add_torso(first_arg)
+
     elif command == "savejoint" and first_arg and second_arg:
         if third_arg:
-            program_ctrl.save_joint(first_arg, second_arg, float(third_arg))
+            program_ctrl.save_joint(first_arg, second_arg, int(third_arg))
         else:
             program_ctrl.save_joint(first_arg, second_arg)
     elif command == "savealljoints" and first_arg:
-        program_ctrl.save_all_joints(first_arg)
+        if second_arg:
+            program_ctrl.save_all_joints(first_arg, int(second_arg))
+        else:
+            program_ctrl.save_all_joints(first_arg)
+
     elif command == "save" and first_arg and second_arg:
-        program_ctrl.save_program(first_arg, second_arg, append=True)
+        if third_arg:
+            program_ctrl.save_program(first_arg, second_arg, int(third_arg))
+        else:
+            program_ctrl.save_program(first_arg, second_arg)
+
     elif command == "saveconstraint" and first_arg and second_arg:
         program_ctrl.save_program(first_arg, second_arg, append=True, has_constraint=True)
     elif command == "deque" and first_arg:
