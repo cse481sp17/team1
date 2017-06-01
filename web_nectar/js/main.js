@@ -34,7 +34,7 @@ $(function() {
     var pageToggleContainer = $('#pageToggleContainer');
 
     // Helpers
-    var HOSTNAME = "unimate.cs.washington.edu"
+    var HOSTNAME = window.location.hostname
 
     var chefUpdateInterval = 10000;
     var chefTimeout;
