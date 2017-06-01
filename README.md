@@ -23,6 +23,10 @@ cd web_nectar && gulp serve
 # multi-client
 cd web_nectar && python -m SimpleHTTPServer 3000
 ```
+## Nectar Backend
+1. ssh into the robot
+2. `roslaunch backend_nectar nectar.launch`
+3. If you want rviz, then open rviz on your computer with some config
 
 ## Launching web interface:
 1. `roscore`

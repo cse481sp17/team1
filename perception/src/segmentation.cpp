@@ -256,6 +256,7 @@ namespace perception {
         object_marker.color.r = 0;
         object_marker.color.g = 0;
         object_marker.color.b = 1;
+        object_marker.id = 400;
         object_marker.ns = "tray handle";
         ss.str(std::string());
         ss << "handle" << " (" << confidence << ")" << " " << "(" << object_x << ", "  << object_y << ", " << object.dimensions.z << ")";
