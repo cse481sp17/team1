@@ -36,6 +36,9 @@ class ArmJoints(object):
         self.wrist_flex = 0
         self.wrist_roll = 0
 
+    def __repr__(self):
+        return ",".join(list(map(str, self.__dict__.values())))
+
     @staticmethod
     def from_list(vals):
         if len(vals) != 7:
