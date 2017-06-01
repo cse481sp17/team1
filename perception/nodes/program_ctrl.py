@@ -345,7 +345,7 @@ class ProgramController(object):
             for cur_step in self._programs[program_name].steps:
                 if cur_step.step_type == ProgramStep.MOVE_ARM:
                     if cur_step.gripper_state != self._gripper.state():
-                        if cur_step.gripper_state == Gripper.OPENED:
+                        if cur_step.gripper_state == fetch_api.Gripper.OPENED:
                             self._gripper.open()
                         else:
                             self._gripper.close()
@@ -377,7 +377,7 @@ class ProgramController(object):
                 # moving all joints
                 if cur_step.step_type == ProgramStep.MOVE_ALL_JOINTS:
                     arm_joints = fetch_api.ArmJoints.from_list(cur_step.all_joint_states)
-                    self._arm.move_to_joints(all_joint_states)
+                    self._arm.move_to_joints(arm_joints)
 
 
 
