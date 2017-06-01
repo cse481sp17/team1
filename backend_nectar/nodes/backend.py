@@ -37,6 +37,12 @@ class NectarBackend:
         self.run_order(cur_order)
 
     def run_order(self, order_msg):
+        # run the start pose
+        ret = self._serving_server(ServingRequest.START)
+        if not ret.success:
+            self.error("ERROR in achieving start pose")
+            return
+
         # go to the chef table
         ret = self._navigator_server(NavigationRequest.CHEF_TABLE)
         if not ret.success:
