@@ -14,13 +14,15 @@ import tf.transformations as tft
 from moveit_msgs.msg import OrientationConstraint
 from moveit_python import PlanningSceneInterface
 import numpy as np
+from joint_state_reader import JointStateReader
+from os.path import expanduser
 
-PROGRAM_FILE = '/home/team1/catkin_ws/src/cse481c/perception/nodes/programs.p'
+PROGRAM_FILE = '{}/catkin_ws/src/cse481c/perception/nodes/programs.p'.format(expanduser('~'))
 # TODO: we should sub to some other topic for the handle 
 # pose. going through visualization marker is janky
 SUB_NAME = '/visualization_marker'
 
-ID_TO_TAGNAME = {'handle':400}
+ID_TO_TAGNAME = {'handle':'tray handle'}
 
 class Program(object):
     def __init__(self, steps=None):
@@ -44,21 +46,45 @@ class Program(object):
     def remove_step(self, index):
         del self.steps[index]
 
-    def calc_poses(self, markers):
-        ret = []
-        for step in self.steps:
-            pose = self._find_pose(step, markers)
-            if pose is None:
-                print 'cannot run program that uses markers when there are no markers'
-                return []
-            ret.append(pose)
-        return ret
 
-    def _find_pose(self, step, markers):
-        frame_id = step.pose.header.frame_id
+class ProgramStep(object):
+    MOVE_ARM = "move_arm"
+    MOVE_JOINT = "move_joint"
+    MOVE_ALL_JOINTS = "move_all_joints"
+    #TODO: could add a gripper state
+    def __init__(self, name = MOVE_ARM, pose=None, gripper_state=fetch_api.Gripper.OPENED, torso_height=0.4, has_constraint=False):
+        self.step_type = name
+        self.pose = pose
+        self.gripper_state = gripper_state
+        self.torso_height = torso_height
+        self.has_constraint = has_constraint
+        self.joint_name = ""
+        self.joint_value = 0
+        self.all_joint_states = []
+
+    def __setstate__(self, d):
+        if 'step_type' not in d:
+            d['step_type'] = ProgramStep.MOVE_ARM
+        self.__dict__ = d
+
+    def __repr__(self):
+        if self.step_type == ProgramStep.MOVE_ARM:
+            p = self.pose.pose.position
+            st_p = '({},{},{})'.format(p.x, p.y, p.z)
+            o = self.pose.pose.orientation
+            st_o = '({},{},{},{})'.format(o.x, o.y, o.z, o.w)
+            return "\ttype: {}, {}: {} {}, gripper {}, torso height {}, has constraint {}".format(self.step_type, self.pose.header.frame_id, st_p, st_o, self.gripper_state, self.torso_height, self.has_constraint)
+        elif self.step_type == ProgramStep.MOVE_JOINT:
+            return "\ttype: {}, joint_name: {}, joint_value: {}".format(self.step_type, self.joint_name, self.joint_value)
+        elif self.step_type == ProgramStep.MOVE_ALL_JOINTS:
+            return "\ttype: {}, {}".format(self.step_type, dict(zip(fetch_api.ArmJoints.names(), self.all_joint_states)))
+        return "Not a valid step, {}".format(self.__dict__)
+
+    def calc_pose(self, marker):
+        frame_id = self.pose.header.frame_id
         if frame_id == "base_link":
             gripper_T_wrist = Pose(Point(-0.166, 0,0), Quaternion(0,0,0,1))
-            new_pose = PoseStamped(pose=fetch_api.transform(step.pose.pose, gripper_T_wrist))
+            new_pose = PoseStamped(pose=fetch_api.transform(self.pose.pose, gripper_T_wrist))
             new_pose.header.frame_id = 'base_link'
             return new_pose
         else:
@@ -66,17 +92,17 @@ class Program(object):
                 rospy.logerr("finding pose for a frame_id that isn't in ID_TO_TAGNAME")
                 return None
             marker_id = ID_TO_TAGNAME[frame_id]
-
-            if marker_id != markers.id:
+            print marker
+            if marker_id != marker.ns:
                 rospy.logerr("cannot find the {} with id {}".format(frame_id, marker_id))
                 return None
 
             # we have to do some transformation magic
             # we have the base_link_T_tag frame from marker_match.pose
-            # we have the tag_T_gripper from step.pose
-            tag_T_gripper = copy.deepcopy(step.pose)
+            # we have the tag_T_gripper from self.pose
+            tag_T_gripper = copy.deepcopy(self.pose)
             #tag_T_wrist.pose.position.x -= 0.166
-            base_link_T_tag = copy.deepcopy(markers)
+            base_link_T_tag = copy.deepcopy(marker)
             gripper_T_wrist = Pose(Point(-0.166, 0,0), Quaternion(0,0,0,1))
             base_link_T_gripper = fetch_api.transform(base_link_T_tag.pose, tag_T_gripper.pose)
             base_link_T_wrist = fetch_api.transform(base_link_T_gripper, gripper_T_wrist)
@@ -85,24 +111,6 @@ class Program(object):
             return new_pose
 
         return None 
-
-class ProgramStep(object):
-    #TODO: could add a gripper state
-    def __init__(self, pose=None, gripper_state=fetch_api.Gripper.OPENED, torso_height=0.4, has_constraint=False):
-        self.pose = pose
-        self.gripper_state = gripper_state
-        self.torso_height = torso_height
-        self.has_constraint = has_constraint
-
-    def __repr__(self):
-        if self.pose is None:
-            return "Empty"
-        p = self.pose.pose.position
-        st_p = '({},{},{})'.format(p.x, p.y, p.z)
-        o = self.pose.pose.orientation
-        st_o = '({},{},{},{})'.format(o.x, o.y, o.z, o.w)
-        return "\t{}: {} {}, gripper {}, torso height {}, has constraint {}".format(self.pose.header.frame_id, st_p, st_o, self.gripper_state, self.torso_height, self.has_constraint)
-
 
 class ProgramController(object):
     def __init__(self, program_file=PROGRAM_FILE):
@@ -119,6 +127,8 @@ class ProgramController(object):
         self._controller_client = actionlib.SimpleActionClient('/query_controller_states', QueryControllerStatesAction)
         self._program_file = program_file
         self._programs = self._read_in_programs()
+
+        self._joint_reader = JointStateReader()
 
         mat = tft.identity_matrix()
         mat[:,0] = np.array([0,0,-1,0])
@@ -141,7 +151,7 @@ class ProgramController(object):
 
     def __str__(self):
         if self._programs:
-            return "Programs:\n" "\n".join(["{}:\n{}".format(name, program) for name, program in self._programs.items()])
+            return "Programs:\n" + "\n".join(["{}:\n{}".format(name, program) for name, program in self._programs.items()])
         else:
             return "No programs"
 
@@ -193,6 +203,47 @@ class ProgramController(object):
     def open(self):
         self._gripper.open()
 
+    def save_all_joints(self, program_name):
+        print "Saving all joints state as a program step"
+        # need to grab the program as is
+        curr_program = self._programs.get(program_name)
+        if curr_program is None:
+            print("{} does not exist yet".format(program_name))
+            return
+
+        step = ProgramStep()
+        step.step_type = ProgramStep.MOVE_ALL_JOINTS
+        step.all_joint_states = self._joint_reader.get_joints(fetch_api.ArmJoints.names())
+        curr_program.add_step(step)
+        self._write_out_programs()
+
+    def save_joint(self, program_name, joint_name, joint_value=None):
+        print "Saving next joint state for program {} with name {} and value {}".format(program_name, joint_name, joint_value)
+        # need to grab the program as is
+        curr_program = self._programs.get(program_name)
+        if curr_program is None:
+            print("{} does not exist yet".format(program_name))
+            return
+
+        step = ProgramStep()
+        step.step_type = ProgramStep.MOVE_JOINT
+        step.joint_name = joint_name
+
+        # get current joint state value for joint name, if it exists
+        if joint_value is None:
+            joint_state = self._joint_reader.get_joints(fetch_api.ArmJoints.names())
+            for i, name in enumerate(fetch_api.ArmJoints.names()):
+                if step.joint_name == name:
+                    joint_value = joint_state[i]
+
+        if joint_value is None:
+            print "{} is not a value joint name. Try any of these {}".format(joint_name, fetch_api.ArmJoints.names())
+            return
+
+        step.joint_value = joint_value
+        curr_program.add_step(step)
+        self._write_out_programs()
+
     # TODO: gripper status could be used here
     def save_program(self, program_name, frame_id, append=True, has_constraint=False):
         print "Saving next position for program {} in {}".format(program_name, frame_id)
@@ -210,7 +261,7 @@ class ProgramController(object):
             # need to grab the marker from self._curr_markers that matches frame_id
             marker_id = ID_TO_TAGNAME[frame_id]
             curr_marker = None
-            if marker_id != self._curr_markers.id:
+            if marker_id != self._curr_markers.ns:
                 print('No marker found with frame_id {} and marker_id {} in program {}'.format(frame_id, marker_id, program_name))
                 return
             else:
@@ -239,7 +290,10 @@ class ProgramController(object):
             else:
                 print 'Please use base_link'
                 return
-        step = ProgramStep(new_pose)
+        print new_pose
+        step = ProgramStep()
+        step.pose = new_pose
+        print step
         step.gripper_state = self._gripper.state()
         step.torso_height = self._torso.state()
         step.has_constraint = has_constraint
@@ -285,25 +339,48 @@ class ProgramController(object):
         if program_name not in self._programs:
             print "{} does not exist".format(program_name)
             return False
-        else:      
-            poses = self._programs[program_name].calc_poses(copy.deepcopy(self._curr_markers))
+        else:
             self.start_arm()
-
-            for i, pose in enumerate(poses):                
-                if self._programs[program_name].steps[i].gripper_state == fetch_api.Gripper.OPENED:
-                    self._gripper.open()
-                else:
-                    self._gripper.close()
+            curr_marker = copy.deepcopy(self._curr_markers)
+            for cur_step in self._programs[program_name].steps:
+                if cur_step.step_type == ProgramStep.MOVE_ARM:
+                    if cur_step.gripper_state != self._gripper.state():
+                        if cur_step.gripper_state == Gripper.OPENED:
+                            self._gripper.open()
+                        else:
+                            self._gripper.close()
+                        # don't move the arm if we move the gripper
+                        continue
+                    pose = cur_step.calc_pose(curr_marker)
+                    if cur_step.has_constraint:
+                        error = self._arm.move_to_pose(pose, orientation_constraint=self._constraint, allowed_planning_time=15.0)
+                    else:
+                        error = self._arm.move_to_pose(pose, allowed_planning_time=15.0)
                     
-                if self._programs[program_name].steps[i].has_constraint:
-                    error = self._arm.move_to_pose(pose, orientation_constraint=self._constraint, allowed_planning_time=15.0)
-                else:
-                    error = self._arm.move_to_pose(pose, allowed_planning_time=15.0)
-                
-                if error is not None:
-                    print "{} failed to run at step #{}".format(program_name, i+1)
-                    return False
-        return True
+                    if error is not None:
+                        print "{} failed to run at step #{}".format(program_name, i+1)
+                        return False
+
+                # moving a joint
+                if cur_step.step_type == ProgramStep.MOVE_JOINT:
+                    # grab the current joint state and update the value from
+                    # this program step
+                    joint_state = self._joint_reader.get_joints(fetch_api.ArmJoints.names())
+                    for i, name in enumerate(fetch_api.ArmJoints.names()):
+                        if cur_step.joint_name == name:
+                            joint_state[i] = cur_step.joint_value
+
+                    # grab an arm joint object from this list of joint positions
+                    arm_joints = fetch_api.ArmJoints.from_list(joint_state)
+                    self._arm.move_to_joints(arm_joints)
+
+                # moving all joints
+                if cur_step.step_type == ProgramStep.MOVE_ALL_JOINTS:
+                    arm_joints = fetch_api.ArmJoints.from_list(cur_step.all_joint_states)
+                    self._arm.move_to_joints(all_joint_states)
+
+
+
 
     @property
     def programs(self):

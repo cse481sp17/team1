@@ -62,13 +62,16 @@ class Arm(object):
         goal = FollowJointTrajectoryGoal()
         for joint_name in arm_joints.names():
 	        goal.trajectory.joint_names.append(joint_name)
+
         goal.trajectory.points.append(point)
 
         # TODO: Send goal
         # TODO: Wait for result
         self.arm_client.send_goal(goal)
         self.arm_client.wait_for_result()
-        # print(self.arm_client.get_result())
+       # print(self.arm_client.get_result())
+
+        #TODO return result
 
 
     def moveit_error_string(self, val):
