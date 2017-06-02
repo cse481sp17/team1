@@ -377,9 +377,9 @@ class ProgramController(object):
                     if pose is None:
                         return False
                     if cur_step.has_constraint:
-                        error = self._arm.move_to_pose(pose, orientation_constraint=self._constraint, allowed_planning_time=15.0)
+                        error = self._arm.move_to_pose(pose, orientation_constraint=self._constraint, allowed_planning_time=15.0, num_planning_attempts=5)
                     else:
-                        error = self._arm.move_to_pose(pose, allowed_planning_time=15.0)
+                        error = self._arm.move_to_pose(pose, allowed_planning_time=15.0, num_planning_attempts=5)
                     
                     if error is not None:
                         print "move arm failed with error {}".format(error)
