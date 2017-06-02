@@ -97,7 +97,6 @@ class ProgramStep(object):
                 rospy.logerr("finding pose for a frame_id that isn't in ID_TO_TAGNAME")
                 return None
             marker_id = ID_TO_TAGNAME[frame_id]
-            print marker
             if marker is None or marker_id != marker.ns:
                 rospy.logerr("cannot find the {} with id {}".format(frame_id, marker_id))
                 return None
@@ -139,9 +138,7 @@ class ProgramController(object):
         mat[:,0] = np.array([0,0,-1,0])
         mat[:,2] = np.array([1,0,0,0])
         o = tft.quaternion_from_matrix(mat)
-        print(mat)
         self._constraint_pose = Pose(orientation=Quaternion(*o))
-        print(self._constraint_pose)
 
         oc = OrientationConstraint()
         oc.header.frame_id = 'base_link'
@@ -164,8 +161,6 @@ class ProgramController(object):
         try:
             with open(self._program_file, 'rb') as file:
                 p = pickle.load(file)
-                print self._program_file
-                print p
                 return p
         except IOError:
             print 'IOError on {}'.format(self._program_file)
@@ -310,10 +305,8 @@ class ProgramController(object):
             else:
                 print 'Please use base_link'
                 return
-        print new_pose
         step = ProgramStep()
         step.pose = new_pose
-        print step
         step.gripper_state = self._gripper.state()
         step.torso_height = self._torso.state()
         step.has_constraint = has_constraint
@@ -366,9 +359,9 @@ class ProgramController(object):
                 if cur_step.step_type == ProgramStep.MOVE_ARM:
                     if cur_step.gripper_state != self._gripper.state():
                         if cur_step.gripper_state == fetch_api.Gripper.OPENED:
-                            self._gripper.open(effort=0.7)
+                            self._gripper.open(max_effort=0.7)
                         else:
-                            self._gripper.close(effort=0.7)
+                            self._gripper.close(max_effort=0.7)
                         # don't move the arm if we move the gripper
                         print 'adjust gripper successful'
                         continue
@@ -377,9 +370,9 @@ class ProgramController(object):
                     if pose is None:
                         return False
                     if cur_step.has_constraint:
-                        error = self._arm.move_to_pose(pose, orientation_constraint=self._constraint, allowed_planning_time=15.0, num_planning_attempts=5)
+                        error = self._arm.move_to_pose(pose, orientation_constraint=self._constraint, allowed_planning_time=25.0, num_planning_attempts=3, replan=True)
                     else:
-                        error = self._arm.move_to_pose(pose, allowed_planning_time=15.0, num_planning_attempts=5)
+                        error = self._arm.move_to_pose(pose, allowed_planning_time=25.0, num_planning_attempts=3, replan=True)
                     
                     if error is not None:
                         print "move arm failed with error {}".format(error)
