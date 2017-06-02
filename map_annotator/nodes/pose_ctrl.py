@@ -12,6 +12,7 @@ PUB_NAME = 'move_base_simple/goal'
 
 class PoseController(object):
     def __init__(self, pose_file=POSE_FILE):
+        self._curr_pose = None
         print 'making pose controller'
         self._pose_sub = rospy.Subscriber(SUB_NAME,
                                           PoseWithCovarianceStamped, 
@@ -25,7 +26,7 @@ class PoseController(object):
 
         self._pose_file = pose_file
         self._poses = self._read_in_poses()
-        self._curr_pose = None
+        
         self._marker_publisher = rospy.Publisher('visualization_marker', Marker, latch=True, queue_size=10)
         rospy.sleep(0.5)
         self._publish_location_markers()
@@ -41,6 +42,7 @@ class PoseController(object):
         box_marker.pose = pose.pose.pose
         box_marker.ns = "nav"
         box_marker.header.frame_id = pose.header.frame_id
+        box_marker.lifetime = rospy.Duration()
         box_marker.scale.x = 0.45
         box_marker.scale.y = 0.45
         box_marker.scale.z = 0.45
@@ -48,7 +50,6 @@ class PoseController(object):
         box_marker.color.g = 0.5
         box_marker.color.b = 0.5
         box_marker.color.a = 1.0
-        print box_marker
         return box_marker
 
     def _make_text_marker(self, name, pose):
@@ -64,8 +65,6 @@ class PoseController(object):
         text_marker.color.b = 0.5
         text_marker.color.a = 1.0
         text_marker.text = name
-        print 'text_marker'
-        print text_marker
         return text_marker
 
     def _publish_location_markers(self):
@@ -86,11 +85,11 @@ class PoseController(object):
             pickle.dump(self._poses, file)
         self._publish_location_markers()
 
-    def _pose_callback(self, msg):
+    def _pose_callback(self, msg): 
         self._curr_pose = msg
 
     def save_pose(self, pose_name):
-        if not self._curr_pose:
+        if self._curr_pose is None:
             print "No pose available"
             return
         print "Saving pose {} as current position".format(pose_name)
