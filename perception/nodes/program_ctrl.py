@@ -366,9 +366,9 @@ class ProgramController(object):
                 if cur_step.step_type == ProgramStep.MOVE_ARM:
                     if cur_step.gripper_state != self._gripper.state():
                         if cur_step.gripper_state == fetch_api.Gripper.OPENED:
-                            self._gripper.open()
+                            self._gripper.open(effort=0.7)
                         else:
-                            self._gripper.close()
+                            self._gripper.close(effort=0.7)
                         # don't move the arm if we move the gripper
                         print 'adjust gripper successful'
                         continue

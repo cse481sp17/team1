@@ -31,7 +31,7 @@ class Gripper(object):
         if L_NAME in msg.name:
             self.l_finger_position = msg.position[msg.name.index(L_NAME)]
 
-    def open(self):
+    def open(self, max_effort=MAX_EFFORT):
         """Opens the gripper.
         """
         # TODO: Create goal
@@ -39,7 +39,7 @@ class Gripper(object):
         # TODO: Wait for result
         goal = control_msgs.msg.GripperCommandGoal()
         goal.command.position = OPENED_POS
-        goal.command.max_effort = Gripper.MAX_EFFORT
+        goal.command.max_effort = max_effort
         self.client.send_goal(goal)
         self.client.wait_for_result()
 
