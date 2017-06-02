@@ -33,7 +33,7 @@ class Server:
             return False
 
         self._head.pan_tilt(0, Server.TILT_ANGLE)
-        rospy.Sleep(2)
+        rospy.sleep(2)
 
         return self._program_ctrl.run_program(name)
 

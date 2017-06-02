@@ -274,6 +274,7 @@ class ProgramController(object):
         step.step_type = ProgramStep.MOVE_GRIPPER
         step.gripper_state = self._gripper.state()
         curr_program.add_step(step, index)
+        self._write_out_programs()
 
     # TODO: gripper status could be used here
     def save_program(self, program_name, frame_id, index=None, has_constraint=False):
@@ -440,10 +441,10 @@ class ProgramController(object):
 
                 if cur_step.step_type == ProgramStep.MOVE_GRIPPER:
                     if cur_step.gripper_state == fetch_api.Gripper.OPENED:
-                        self._gripper.open(max_effort=0.7)
+                        self._gripper.open(max_effort=40)
                     else:
-                        self._gripper.close(max_effort=0.7)
-
+                        self._gripper.close(max_effort=40)
+                    print 'gripper adjustment successful'
 
             return True
 

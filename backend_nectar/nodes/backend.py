@@ -40,7 +40,7 @@ class NectarBackend:
         # run the start pose
         ret = self._serving_server(ServingRequest.START)
         if not ret.success:
-            self.error("ERROR in achieving start pose")
+            self.error("ERROR in achieving start pose", order_msg)
             return
 
         # go to the chef table
