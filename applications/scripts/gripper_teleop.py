@@ -49,19 +49,20 @@ class GripperTeleopDown(GripperTeleop):
     def __init__(self, arm, gripper, im_server):
         super(GripperTeleopDown, self).__init__(arm, gripper, im_server)
         # subscribes to the visualization marker for the table coming from perception
-        self._table_sub = rospy.Subscriber('/visualization_marker', Marker, self.table_callback)
         self._planning_scene = PlanningSceneInterface('base_link')
+        self._table_sub = rospy.Subscriber('/visualization_marker', Marker, self.table_callback)
 
     def table_callback(self, msg):
+        
         if msg.ns == 'table':
             self._planning_scene.removeCollisionObject('table')
             # TODO: use the msg.pose.orientation to conver the scale directly 
             # instead of manually swapping x and y
             x = min(msg.scale.y, msg.scale.x)
             y = max(msg.scale.y, msg.scale.x)
-            self._planning_scene.addBox('table', x, y, msg.scale.z, msg.pose.position.x, msg.pose.position.y, msg.pose.position.z)
+            #self._planning_scene.addBox('table', x, y, msg.scale.z, msg.pose.position.x, msg.pose.position.y, msg.pose.position.z)
+        
         if msg.ns == 'tray handle':
-            print(msg.pose)
             #handle_im = create_handle_interactive_marker(create_pose_stamped(msg.pose).pose, msg.scale)
             pose = create_pose_stamped(msg.pose).pose
             pose.orientation = self._constraint_pose.orientation
@@ -75,9 +76,7 @@ class GripperTeleopDown(GripperTeleop):
         mat[:,0] = np.array([0,0,-1,0])
         mat[:,2] = np.array([1,0,0,0])
         o = tft.quaternion_from_matrix(mat)
-        print(mat)
         self._constraint_pose = Pose(orientation=Quaternion(*o))
-        print(self._constraint_pose)
         gripper_im = create_gripper_interactive_marker(self._constraint_pose, pregrasp=False, rotation_enabled=False)
 
         self._im_server.insert(gripper_im, feedback_cb=self.handle_feedback)

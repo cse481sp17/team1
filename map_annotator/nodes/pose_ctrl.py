@@ -4,6 +4,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from actionlib_msgs.msg import GoalStatus
+from visualization_msgs.msg import Marker
 
 POSE_FILE = '/home/team1/catkin_ws/src/cse481c/map_annotator/nodes/poses'
 SUB_NAME = 'amcl_pose'
@@ -25,12 +26,53 @@ class PoseController(object):
         self._pose_file = pose_file
         self._poses = self._read_in_poses()
         self._curr_pose = None
+        self._marker_publisher = rospy.Publisher('visualization_marker', Marker, latch=True, queue_size=10)
+        rospy.sleep(0.5)
+        self._publish_location_markers()
 
     def __str__(self):
         if self._poses:
             return "Poses:\n" "\n".join(["{}:\n{}".format(name, pose) for name, pose in self._poses.items()])
         else:
             return "No poses"
+
+    def _make_location_marker(self, pose):
+        box_marker = Marker(type = Marker.CUBE)
+        box_marker.pose = pose.pose.pose
+        box_marker.ns = "nav"
+        box_marker.header.frame_id = pose.header.frame_id
+        box_marker.scale.x = 0.45
+        box_marker.scale.y = 0.45
+        box_marker.scale.z = 0.45
+        box_marker.color.r = 0.0
+        box_marker.color.g = 0.5
+        box_marker.color.b = 0.5
+        box_marker.color.a = 1.0
+        print box_marker
+        return box_marker
+
+    def _make_text_marker(self, name, pose):
+        text_marker = Marker(type = Marker.TEXT_VIEW_FACING)
+        text_marker.pose = pose.pose.pose
+        text_marker.ns = "nav"
+        text_marker.header.frame_id = pose.header.frame_id
+        text_marker.scale.x = 0.45
+        text_marker.scale.y = 0.45
+        text_marker.scale.z = 0.45
+        text_marker.color.r = 0.0
+        text_marker.color.g = 0.5
+        text_marker.color.b = 0.5
+        text_marker.color.a = 1.0
+        text_marker.text = name
+        print 'text_marker'
+        print text_marker
+        return text_marker
+
+    def _publish_location_markers(self):
+        for k, v in self._poses.items():
+            self._marker_publisher.publish(self._make_location_marker(v))
+            self._marker_publisher.publish(self._make_text_marker(k, v))
+
 
     def _read_in_poses(self):
         try:
@@ -42,6 +84,7 @@ class PoseController(object):
     def _write_out_poses(self):
         with open(self._pose_file, 'wb') as file:
             pickle.dump(self._poses, file)
+        self._publish_location_markers()
 
     def _pose_callback(self, msg):
         self._curr_pose = msg
