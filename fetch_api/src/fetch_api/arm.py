@@ -4,8 +4,7 @@ import rospy
 import actionlib
 from .arm_joints import ArmJoints
 from trajectory_msgs.msg import JointTrajectoryPoint
-from control_msgs.msg import FollowJointTrajectoryAction
-from control_msgs.msg import FollowJointTrajectoryGoal
+from control_msgs.msg import FollowJointTrajectoryGoal, FollowJointTrajectoryAction
 from .moveit_goal_builder import MoveItGoalBuilder
 from moveit_msgs.msg import MoveItErrorCodes, MoveGroupAction   
 from geometry_msgs.msg import Pose
@@ -69,9 +68,8 @@ class Arm(object):
         # TODO: Wait for result
         self.arm_client.send_goal(goal)
         self.arm_client.wait_for_result()
-       # print(self.arm_client.get_result())
-
-        #TODO return result
+        
+        return self.arm_client.get_result()
 
 
     def moveit_error_string(self, val):

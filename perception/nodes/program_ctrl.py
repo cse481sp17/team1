@@ -16,6 +16,7 @@ from moveit_python import PlanningSceneInterface
 import numpy as np
 from joint_state_reader import JointStateReader
 from os.path import expanduser
+from control_msgs.msg import FollowJointTrajectoryResult
 
 PROGRAM_FILE = '{}/catkin_ws/src/cse481c/perception/nodes/programs.p'.format(expanduser('~'))
 # TODO: we should sub to some other topic for the handle 
@@ -361,7 +362,7 @@ class ProgramController(object):
         else:
             self.start_arm()
             curr_marker = copy.deepcopy(self._curr_markers)
-            for cur_step in self._programs[program_name].steps:
+            for i, cur_step in enumerate(self._programs[program_name].steps):
                 if cur_step.step_type == ProgramStep.MOVE_ARM:
                     if cur_step.gripper_state != self._gripper.state():
                         if cur_step.gripper_state == fetch_api.Gripper.OPENED:
@@ -369,7 +370,9 @@ class ProgramController(object):
                         else:
                             self._gripper.close()
                         # don't move the arm if we move the gripper
+                        print 'adjust gripper successful'
                         continue
+
                     pose = cur_step.calc_pose(curr_marker)
                     if pose is None:
                         return False
@@ -379,8 +382,11 @@ class ProgramController(object):
                         error = self._arm.move_to_pose(pose, allowed_planning_time=15.0)
                     
                     if error is not None:
+                        print "move arm failed with error {}".format(error)
                         print "{} failed to run at step #{}".format(program_name, i+1)
                         return False
+                    else:
+                        print 'move arm successful'
 
                 # moving a joint
                 if cur_step.step_type == ProgramStep.MOVE_JOINT:
@@ -393,17 +399,35 @@ class ProgramController(object):
 
                     # grab an arm joint object from this list of joint positions
                     arm_joints = fetch_api.ArmJoints.from_list(joint_state)
-                    self._arm.move_to_joints(arm_joints)
+                    res = self._arm.move_to_joints(arm_joints)
+                    if res.error_code != FollowJointTrajectoryResult.SUCCESSFUL:
+                        print 'joint adjustment failed with error code {} and error string {}'.format(res.error_code, res.error_string)
+                        print "{} failed to run at step #{}".format(program_name, i+1)
+                        return False
+                    else:
+                        print 'joint adjustment successful'
 
                 # moving all joints
                 if cur_step.step_type == ProgramStep.MOVE_ALL_JOINTS:
                     arm_joints = fetch_api.ArmJoints.from_list(cur_step.all_joint_states)
-                    self._arm.move_to_joints(arm_joints)
+                    res = self._arm.move_to_joints(arm_joints)
+                    if res.error_code != FollowJointTrajectoryResult.SUCCESSFUL:
+                        print 'all joints adjustment failed with error code {} and error string {}'.format(res.error_code, res.error_string)
+                        print "{} failed to run at step #{}".format(program_name, i+1)
+                        return False
+                    else:
+                        print 'all joints adjustment successful'
 
 
                 # move torso
                 if cur_step.step_type == ProgramStep.MOVE_TORSO:
-                    self._torso.set_height(cur_step.torso_height)
+                    res = self._torso.set_height(cur_step.torso_height)
+                    if res.error_code != FollowJointTrajectoryResult.SUCCESSFUL:
+                        print 'torso adjustment failed with error code {} and error string {}'.format(res.error_code, res.error_string)
+                        print "{} failed to run at step #{}".format(program_name, i+1)
+                        return False
+                    else:
+                        print 'torso adjustment successful'
 
             return True
 
