@@ -187,15 +187,15 @@ class Arm(object):
         self.move_group_client.send_goal(goal)
 
         # Set a timeout and wait for result
-        self.move_group_client.wait_for_result(rospy.Duration(execution_timeout))
+        success = self.move_group_client.wait_for_result(rospy.Duration(execution_timeout))
+
+        if not success:
+            return self.moveit_error_string(MoveItErrorCodes.TIMED_OUT)
 
         result = self.move_group_client.get_result()
-        if result:
-            if result.error_code.val == MoveItErrorCodes.SUCCESS:
-                return None
-            return self.moveit_error_string(result.error_code.val)
-        else:   
-            return "MoveIt! failure no result returned"
+        if result.error_code.val == MoveItErrorCodes.SUCCESS:
+            return None
+        return self.moveit_error_string(result.error_code.val)
     
     def compute_ik(self, pose_stamped, timeout=rospy.Duration(5)):
         """Computes inverse kinematics for the given pose.
