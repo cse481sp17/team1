@@ -54,6 +54,7 @@ class ProgramStep(object):
     MOVE_JOINT = "move_joint"
     MOVE_ALL_JOINTS = "move_all_joints"
     MOVE_TORSO = "move_torso"
+    MOVE_GRIPPER = "move_gripper"
     #TODO: could add a gripper state
     def __init__(self, name = MOVE_ARM, pose=None, gripper_state=fetch_api.Gripper.OPENED, torso_height=0.4, has_constraint=False):
         self.step_type = name
@@ -83,6 +84,8 @@ class ProgramStep(object):
             return "\ttype: {}, {}".format(self.step_type, dict(zip(fetch_api.ArmJoints.names(), self.all_joint_states)))
         elif self.step_type == ProgramStep.MOVE_TORSO:
             return "\ttype: {}, height: {}".format(self.step_type, self.torso_height)
+        elif self.step_type == ProgramStep.MOVE_GRIPPER:
+            return "\ttype: {}, gripper: {}".format(self.step_type, self.gripper_state)
         return "Not a valid step, {}".format(self.__dict__)
 
     def calc_pose(self, marker):
@@ -259,6 +262,19 @@ class ProgramController(object):
         self._write_out_programs()
 
 
+    def save_gripper(self, program_name, index=None):
+        print "Saving gripper state for program {}".format(program_name)
+        # need to grab the program as is
+        curr_program = self._programs.get(program_name)
+        if curr_program is None:
+            print("{} does not exist yet".format(program_name))
+            return
+
+        step = ProgramStep()
+        step.step_type = ProgramStep.MOVE_GRIPPER
+        step.gripper_state = self._gripper.state()
+        curr_program.add_step(step, index)
+
     # TODO: gripper status could be used here
     def save_program(self, program_name, frame_id, index=None, has_constraint=False):
         print "Saving next position for program {} in {}".format(program_name, frame_id)
@@ -357,14 +373,14 @@ class ProgramController(object):
             curr_marker = copy.deepcopy(self._curr_markers)
             for i, cur_step in enumerate(self._programs[program_name].steps):
                 if cur_step.step_type == ProgramStep.MOVE_ARM:
-                    if cur_step.gripper_state != self._gripper.state():
-                        if cur_step.gripper_state == fetch_api.Gripper.OPENED:
-                            self._gripper.open(max_effort=0.7)
-                        else:
-                            self._gripper.close(max_effort=0.7)
-                        # don't move the arm if we move the gripper
-                        print 'adjust gripper successful'
-                        continue
+                    # if cur_step.gripper_state != self._gripper.state():
+                    #     if cur_step.gripper_state == fetch_api.Gripper.OPENED:
+                    #         self._gripper.open(max_effort=0.7)
+                    #     else:
+                    #         self._gripper.close(max_effort=0.7)
+                    #     # don't move the arm if we move the gripper
+                    #     print 'adjust gripper successful'
+                    #     continue
 
                     pose = cur_step.calc_pose(curr_marker)
                     if pose is None:
@@ -421,6 +437,13 @@ class ProgramController(object):
                         return False
                     else:
                         print 'torso adjustment successful'
+
+                if cur_step.step_type == ProgramStep.MOVE_GRIPPER:
+                    if cur_step.gripper_state == fetch_api.Gripper.OPENED:
+                        self._gripper.open(max_effort=0.7)
+                    else:
+                        self._gripper.close(max_effort=0.7)
+
 
             return True
 

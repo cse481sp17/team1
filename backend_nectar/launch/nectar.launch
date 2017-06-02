@@ -12,6 +12,6 @@
     <param name="crop_max_z" value="1.5" />
     <param name="crop_max_x" value="1.05" />
     <param name="crop_min_z" value="0.7" />
-    <node name="$(anon perception_demo)" pkg="perception" type="point_cloud_demo" args="/home/team1/data/labels cloud_in:=/head_camera/depth_registered/points"/>
+    <node name="$(anon perception_demo)" pkg="perception" type="point_cloud_demo" args="/home/team1/data/handle/labels cloud_in:=/head_camera/depth_registered/points"/>
     <node name="$(anon gripper_teleop)" pkg="applications" type="gripper_teleop.py"/>
 </launch>

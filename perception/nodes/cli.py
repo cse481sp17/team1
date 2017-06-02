@@ -62,6 +62,11 @@ def prompt(program_ctrl):
         program_ctrl.relax_arm()
     elif command == "create" and first_arg:
         program_ctrl.create_program(first_arg)
+    elif command == "savegripper" and first_arg:
+        if second_arg:
+            program_ctrl.save_gripper(first_arg, index =  int(second_arg))
+        else:
+            program_ctrl.save_gripper(first_arg)
     elif command == "savetorso" and first_arg:
         if second_arg:
             program_ctrl.add_torso(first_arg, index = int(second_arg))
