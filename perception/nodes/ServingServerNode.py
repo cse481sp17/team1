@@ -8,13 +8,16 @@ class Server:
     TILT_ANGLE = 0.79
     def __init__(self):
         self._program_ctrl = ProgramController()
-        self._head = fetch_api.Head()
 
     # TODO: program retreive and place
     # via the cli.py 
     def serve(self, req):
         print req
         if req.action == ServingRequest.RETREIVE:
+            # TODO check for pan_tilt angle
+            # and apply it if not close enough
+            #self._head.pan_tilt(0, Server.TILT_ANGLE)
+            #rospy.sleep(3)
             return self.run_procedure('retrieve')
         elif req.action == ServingRequest.PLACE:
             return self.run_procedure('place')
@@ -31,10 +34,6 @@ class Server:
         if name not in self._program_ctrl._programs:
             print("{} program does not exist".format(name))
             return False
-
-        self._head.pan_tilt(0, Server.TILT_ANGLE)
-        rospy.sleep(2)
-
         return self._program_ctrl.run_program(name)
 
 

@@ -148,10 +148,10 @@ class ProgramController(object):
         oc.link_name = 'gripper_link'
         oc.orientation = self._constraint_pose.orientation
         oc.weight = 1.0
-        oc.absolute_z_axis_tolerance = 3.14
+        oc.absolute_z_axis_tolerance = 1.0
         oc.absolute_x_axis_tolerance = 0.1
-        oc.absolute_y_axis_tolerance = 0.1
-        self._constraint = oc
+        oc.absolute_y_axis_tolerance = 1.0
+        self._constraint = None
         
 
     def __str__(self):
@@ -219,6 +219,15 @@ class ProgramController(object):
         step.all_joint_states = self._joint_reader.get_joints(fetch_api.ArmJoints.names())
         curr_program.add_step(step, index)
         self._write_out_programs()
+    
+    def add_constraint(self, program_name, index):
+        print "adding constraint to step at index {} for program {}".format(index, program_name)
+        curr_program = self._programs.get(program_name)
+        if curr_program is None:
+            print("{} does not exist yet".format(program_name))
+            return
+
+        curr_program.steps[index].has_constraint = True
 
     def save_joint(self, program_name, joint_name, index=None):
         print "Saving next joint state for program {} with name {}".format(program_name, joint_name)
@@ -372,6 +381,8 @@ class ProgramController(object):
         else:
             self.start_arm()
             curr_marker = copy.deepcopy(self._curr_markers)
+            print 'PRINTING CURR MARKER'
+            print curr_marker
             for i, cur_step in enumerate(self._programs[program_name].steps):
                 if cur_step.step_type == ProgramStep.MOVE_ARM:
                     # if cur_step.gripper_state != self._gripper.state():

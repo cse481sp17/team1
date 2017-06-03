@@ -43,7 +43,9 @@ def prompt(program_ctrl):
         command, first_arg, second_arg = command_args
     if len(command_args) == 4:
         command, first_arg, second_arg, third_arg = command_args
-
+    
+    if command == "setconstraint" and first_arg and second_arg:
+        program_ctrl.add_constraint(first_arg, int(second_arg))
     if command == "list":
         if first_arg:
             if first_arg not in program_ctrl._programs:

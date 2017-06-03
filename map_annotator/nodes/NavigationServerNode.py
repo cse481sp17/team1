@@ -12,8 +12,11 @@ class Navigator:
     # TODO: program the navigation with cli.py
     def navigate(self, req):
         print req
-        return self.run_procedure(req.location)
-
+        ret = self.run_procedure(req.location)
+        if req.location == NavigationRequest.CHEF_TABLE:
+            self._head.pan_tilt(0, 0.79)
+        rospy.sleep(8)
+        return ret
     def run_procedure(self, name):
         if name not in self._pose_ctrl._poses:
             print("{} program does not exist".format(name))
@@ -21,7 +24,7 @@ class Navigator:
 
         # set the head to the ceiling
         self._head.pan_tilt(0, fetch_api.Head.MIN_TILT)
-
+        rospy.sleep(1)
         return self._pose_ctrl.move_to_pose(name)
 
 

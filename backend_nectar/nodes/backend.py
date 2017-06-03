@@ -4,6 +4,9 @@ from collections import deque
 from perception_msgs.srv import Serving, ServingResponse, ServingRequest
 from navigator_msg.srv import Navigation, NavigationRequest, NavigationResponse
 from order_msgs.msg import Order
+from sound_play.msg import SoundRequest
+from sound_play.libsoundplay import SoundClient
+
 
 OrderLocationToNavigationLocation = {Order.COUNTER_AREA_1: NavigationRequest.COUNTER_AREA_1, Order.COUNTER_AREA_2: NavigationRequest.COUNTER_AREA_2}
 
@@ -25,6 +28,10 @@ class NectarBackend:
 
         # make a publisher to the frontend to send errors
         self._frontend_error_pub = rospy.Publisher('/order_failure', Order, queue_size=10)
+
+        self._soundhandle = SoundClient()
+        rospy.sleep(1)
+        self._soundhandle.stopAll()
 
     def _order_callback(self, msg):
         self._order_queue.append(msg)
@@ -48,7 +55,7 @@ class NectarBackend:
         if not ret.success:
             self.error("ERROR on navigation to chef table", order_msg)
             return
-
+ 
         # retreive the tray
         ret = self._serving_server(ServingRequest.RETREIVE)
         if not ret.success:
@@ -69,12 +76,17 @@ class NectarBackend:
 
         # TODO: say order
         # order_msg
-        # say("Here is your entree of {}".format(order_msg.foodItem))
+        self._soundhandle.say("Here is your entree of {}".format(order_msg.foodItem))
 
         # go back to the chef table
         ret = self._navigator_server(NavigationRequest.CHEF_TABLE)
         if not ret.success:
             self.error("ERROR on navigation to chef table", order_msg)
+            return
+
+        ret = self._serving_server(ServingRequest.START)
+        if not ret.success:
+            self.error("ERROR in achieving start pose", order_msg)
             return
 
         return 
