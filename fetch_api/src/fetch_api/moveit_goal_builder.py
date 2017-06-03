@@ -55,7 +55,7 @@ class MoveItGoalBuilder(object):
         self.planning_scene_diff.robot_state.is_diff = True
         self.look_around = False
         self.max_acceleration_scaling_factor = 0
-        self.max_velocity_scaling_factor = 0
+        self.max_velocity_scaling_factor = 0.15
         self.num_planning_attempts = 1
         self.plan_only = False
         self.planner_id = 'RRTConnectkConfigDefault'
