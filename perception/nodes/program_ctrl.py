@@ -452,7 +452,7 @@ class ProgramController(object):
 
                 if cur_step.step_type == ProgramStep.MOVE_GRIPPER:
                     if cur_step.gripper_state == fetch_api.Gripper.OPENED:
-                        self._gripper.open(max_effort=75)
+                        self._gripper.open(max_effort=75, fetch_api.Gripper.HALF_CLOSED)
                     else:
                         self._gripper.close(max_effort=75)
                     print 'gripper adjustment successful'
