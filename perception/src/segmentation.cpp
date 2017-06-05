@@ -27,6 +27,7 @@
 #include "pcl/common/common.h"
 
 #include "perception/typedefs.h"
+#include <tf/transform_datatypes.h>
 
 using namespace std;
 namespace perception {
@@ -260,8 +261,45 @@ namespace perception {
         object_marker.id = 400;
         object_marker.ns = "tray handle";
         ss.str(std::string());
+        std::cout << "x: " << object.dimensions.x << "y: " << object.dimensions.y << "z: " << object.dimensions.z << std::endl;
         ss << "handle" << " (" << confidence << ")" << " " << "(" << object_x << ", "  << object_y << ", " << object.dimensions.z << ")";
-        // std::cout << "handle pose: " << object_marker.pose << std::endl;
+        std:cout << ss.str() << std::endl;
+        std::cout << "handle pose: " << object_marker.pose << std::endl;
+
+        // Get roll, pitch, yaw and print to stdout
+        double x, y, z, w;
+        double roll, pitch, yaw;
+        double angle, angleshortestpath;
+        tf::Vector3 vector;
+
+        const double pi = boost::math::constants::pi<double>();
+        x = object_marker.pose.orientation.x;
+        y = object_marker.pose.orientation.y;
+        z = object_marker.pose.orientation.z;
+        w = object_marker.pose.orientation.w;
+        tf::Quaternion q(x, y, z, w);
+        tf::Matrix3x3 m(q);
+        m.getRPY(roll, pitch, yaw);
+        angle = q.getAngle();
+        angleshortestpath = q.getAngleShortestPath();
+        vector = q.getAxis();
+        q.setRPY(roll, pitch, yaw);
+        object_marker.pose.orientation.x = q.x();
+        object_marker.pose.orientation.y = q.y();
+        object_marker.pose.orientation.z = q.z();
+        object_marker.pose.orientation.w = q.w();
+        std::cout << "Roll: " << roll << ", Pitch: " << pitch << ", Yaw: " << yaw << std::endl;
+        std::cout << "angle: " << angle << ", angleshortestpath: " << angleshortestpath << ", vector: " << vector.getX() << ", " << vector.getY() << ", " << vector.getZ() << std::endl;
+
+        // Verify it is update to expected Roll, Pitch, Yaw
+        x = object_marker.pose.orientation.x;
+        y = object_marker.pose.orientation.y;
+        z = object_marker.pose.orientation.z;
+        w = object_marker.pose.orientation.w;
+        tf::Quaternion q2(x, y, z, w);
+        tf::Matrix3x3 m2(q);
+        m2.getRPY(roll, pitch, yaw);
+        std::cout << "Roll: " << roll << ", Pitch: " << pitch << ", Yaw: " << yaw << std::endl;
 
         // Adjust height of object marker
         object_marker.pose.position.z -= (object.dimensions.z - handle_z)/2.0;
