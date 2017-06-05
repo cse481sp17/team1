@@ -152,7 +152,7 @@ class ProgramController(object):
         oc.orientation = self._constraint_pose.orientation
         oc.weight = 1.0
         oc.absolute_z_axis_tolerance = 1.0
-        oc.absolute_x_axis_tolerance = 0.1
+        oc.absolute_x_axis_tolerance = 1.0
         oc.absolute_y_axis_tolerance = 1.0
         self._constraint = None
         
@@ -455,7 +455,7 @@ class ProgramController(object):
 
                 if cur_step.step_type == ProgramStep.MOVE_GRIPPER:
                     if cur_step.gripper_state == fetch_api.Gripper.OPENED:
-                        self._gripper.open(max_effort=75, distance=fetch_api.Gripper.HALF_CLOSED)
+                        self._gripper.open(max_effort=75, position=0.08)
                     else:
                         self._gripper.close(max_effort=75)
                     print 'gripper adjustment successful'
