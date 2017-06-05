@@ -293,6 +293,14 @@ namespace perception {
         } else if (!yawIsNegative and yaw < 0) {
           yaw += pi;
         }
+        if (object_x == object.dimensions.y) {
+        std::cout << "flipped x and y" << std::endl;
+          if (yawIsNegative) {
+            yaw += pi/2;
+          } else {
+            yaw -= pi/2
+          }
+        }
         q.setRPY(roll, pitch, yaw);
         object_marker.pose.orientation.x = q.x();
         object_marker.pose.orientation.y = q.y();
