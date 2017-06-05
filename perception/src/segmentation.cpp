@@ -298,7 +298,7 @@ namespace perception {
           if (yawIsNegative) {
             yaw += pi/2;
           } else {
-            yaw -= pi/2
+            yaw -= pi/2;
           }
         }
         q.setRPY(roll, pitch, yaw);
