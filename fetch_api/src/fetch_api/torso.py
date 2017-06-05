@@ -8,7 +8,7 @@ from sensor_msgs.msg import JointState
 
 ACTION_NAME = 'torso_controller/follow_joint_trajectory'
 JOINT_NAME = 'torso_lift_joint'
-TIME_FROM_START = 5 # How many seconds it should take to set the torso height.
+TIME_FROM_START = 10 # How many seconds it should take to set the torso height.
 
 class Torso(object):
     """Torso controls the robot's torso height.
@@ -23,8 +23,10 @@ class Torso(object):
         self.client.wait_for_server()
 
         msg = rospy.wait_for_message('/joint_states', JointState, timeout=5)
-        self.torso_height = msg.position[msg.name.index(JOINT_NAME)]
+        while JOINT_NAME not in msg.name:
+            msg = rospy.wait_for_message('/joint_states', JointState, timeout=5)
 
+        self.torso_height = msg.position[msg.name.index(JOINT_NAME)]
         self._joint_sub = rospy.Subscriber('/joint_states', JointState, self._callback)
 
     def _callback(self, msg):
