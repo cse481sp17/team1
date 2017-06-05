@@ -32,7 +32,10 @@ class Program(object):
         self.steps = steps
 
     def __repr__(self):
-        return "\n\n".join(list(map(str, (self.steps))))
+        l = []
+        for i, step in enumerate(self.steps):
+            l.append("{} {}".format(i, str(step)))
+        return "\n\n".join(l)
 
     def __setstate__(self, d):
         self.__dict__ = d
@@ -220,14 +223,14 @@ class ProgramController(object):
         curr_program.add_step(step, index)
         self._write_out_programs()
     
-    def add_constraint(self, program_name, index):
-        print "adding constraint to step at index {} for program {}".format(index, program_name)
+    def set_constraint(self, program_name, index, has_constraint):
+        print "setting has_constraint to {} for step at index {} for program {}".format(has_constraint, index, program_name)
         curr_program = self._programs.get(program_name)
         if curr_program is None:
             print("{} does not exist yet".format(program_name))
             return
 
-        curr_program.steps[index].has_constraint = True
+        curr_program.steps[index].has_constraint = has_constraint
 
     def save_joint(self, program_name, joint_name, index=None):
         print "Saving next joint state for program {} with name {}".format(program_name, joint_name)
@@ -452,7 +455,7 @@ class ProgramController(object):
 
                 if cur_step.step_type == ProgramStep.MOVE_GRIPPER:
                     if cur_step.gripper_state == fetch_api.Gripper.OPENED:
-                        self._gripper.open(max_effort=75)
+                        self._gripper.open(max_effort=75, distance=fetch_api.Gripper.HALF_CLOSED)
                     else:
                         self._gripper.close(max_effort=75)
                     print 'gripper adjustment successful'

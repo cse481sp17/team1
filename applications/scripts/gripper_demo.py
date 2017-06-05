@@ -25,11 +25,12 @@ def main():
 
     gripper = fetch_api.Gripper()
     effort = gripper.MAX_EFFORT
-    if command == 'close' and len(argv) > 2:
-        effort = float(argv[2])
+    distance = gripper.OPENED_POS
+    if command == 'open' and len(argv) > 2:
+        distance = float(argv[2])
 
     if command == 'open':
-        gripper.open()
+        gripper.open(effort, distance)
     elif command == 'close':
         print "gripper closing"
         gripper.close(effort)

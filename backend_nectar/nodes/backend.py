@@ -80,13 +80,15 @@ class NectarBackend:
 
         # go back to the chef table
         ret = self._navigator_server(NavigationRequest.CHEF_TABLE)
-        if not ret.success:
-            self.error("ERROR on navigation to chef table", order_msg)
-            return
+        count = 0
+        while not ret.success and count < 5:
+            print "ERROR on navigation to chef table, trying again"
+            ret = self._navigator_server(NavigationRequest.CHEF_TABLE)
+            count += 1
 
         ret = self._serving_server(ServingRequest.START)
         if not ret.success:
-            self.error("ERROR in achieving start pose", order_msg)
+            print "ERROR in achieving start pose"
             return
 
         return 

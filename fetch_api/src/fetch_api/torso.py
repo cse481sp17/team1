@@ -4,7 +4,7 @@ import actionlib
 from trajectory_msgs.msg import JointTrajectoryPoint
 from control_msgs.msg import FollowJointTrajectoryGoal, FollowJointTrajectoryAction, FollowJointTrajectoryResult
 import rospy
-from sensor_msgs.msg import JointState
+from sensor_msgs.msg import JointState 
 
 ACTION_NAME = 'torso_controller/follow_joint_trajectory'
 JOINT_NAME = 'torso_lift_joint'
@@ -14,14 +14,17 @@ class Torso(object):
     """Torso controls the robot's torso height.
     """
     MIN_HEIGHT = 0.0
-    MAX_HEIGHT = 0.38
+    MAX_HEIGHT = 0.40
 
     def __init__(self):
         # TODO: Create actionlib client
         # TODO: Wait for server
         self.client = actionlib.SimpleActionClient(ACTION_NAME, FollowJointTrajectoryAction)
         self.client.wait_for_server()
-        self.torso_height = None
+
+        msg = rospy.wait_for_message('/joint_states', JointState, timeout=5)
+        self.torso_height = msg.position[msg.name.index(JOINT_NAME)]
+
         self._joint_sub = rospy.Subscriber('/joint_states', JointState, self._callback)
 
     def _callback(self, msg):
@@ -51,7 +54,9 @@ class Torso(object):
             
         point = JointTrajectoryPoint()
         point.positions.append(height)
-        point.time_from_start = rospy.Duration(TIME_FROM_START)
+        time = (abs(height - self.state()) / 0.40) * TIME_FROM_START
+        print("Time is {} because target height is {}, and current height is {}".format(time, height, self.state()))
+        point.time_from_start = rospy.Duration(time)
 
         # TODO: Create goal
         # TODO: Add joint name to list
