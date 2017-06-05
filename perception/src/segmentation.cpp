@@ -216,6 +216,9 @@ namespace perception {
     const double z_lo = handle_z * (1.0 - z_thres);
     const double z_hi = handle_z * (1.0 + z_thres);
 
+    // Define if correct yaw is negative (true means yaw should be negative)
+    const bool yawIsNegative = true;
+
     visualization_msgs::Marker table_marker;
     SegmentTableAndPublishMarker(cloud, table_marker);
 
@@ -283,6 +286,13 @@ namespace perception {
         angle = q.getAngle();
         angleshortestpath = q.getAngleShortestPath();
         vector = q.getAxis();
+
+        // Fix yaw to prevent 180 degree rotation
+        if (yawIsNegative and yaw > 0) {
+          yaw -= pi;
+        } else if (!yawIsNegative and yaw < 0) {
+          yaw += pi;
+        }
         q.setRPY(roll, pitch, yaw);
         object_marker.pose.orientation.x = q.x();
         object_marker.pose.orientation.y = q.y();
