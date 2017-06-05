@@ -11,6 +11,7 @@ def help():
     print "\tsavejoint <name> <joint_name> (optional) <index>: save the robot's current joint position for joint_name"
     print "\tsavealljoints <name> (optional) <index>: save the robot's current joint position"
     print "\tsaveconstraint <name> <frame_id> (optional) <index>: same as save but with a down constraint"
+    print "\tsetconstraint <name> <index> <True or False>"
     print "\tsavetorso <name> (optional) <index>: save the robot's current torso height"
     print "\tprepend <name> <frame_id>: same as save, but put the move at the front"
     print "\tdelete <name>: Delete the program given by <name>"
@@ -44,8 +45,6 @@ def prompt(program_ctrl):
     if len(command_args) == 4:
         command, first_arg, second_arg, third_arg = command_args
     
-    if command == "setconstraint" and first_arg and second_arg:
-        program_ctrl.add_constraint(first_arg, int(second_arg))
     if command == "list":
         if first_arg:
             if first_arg not in program_ctrl._programs:
@@ -54,6 +53,8 @@ def prompt(program_ctrl):
                 print str(program_ctrl._programs[first_arg])
         else:
             print str(program_ctrl)
+    elif command == "setconstraint" and first_arg and second_arg and third_arg:
+        program_ctrl.set_constraint(first_arg, int(second_arg), third_arg=='True')
     elif command == "rename" and first_arg and second_arg:
         program_ctrl.rename_program(first_arg, second_arg)
     elif command == "close":
