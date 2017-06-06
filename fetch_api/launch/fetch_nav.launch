@@ -8,7 +8,7 @@
   <arg name="use_keepout" default="false" />
 
   <!-- Navigation parameter files -->
-  <arg name="move_base_include" default="$(find fetch_navigation)/launch/include/move_base.launch.xml" />
+  <arg name="move_base_include" default="$(find fetch_api)/launch/move_base.launch.xml" />
   <arg name="amcl_include" default="$(find fetch_navigation)/launch/include/amcl.launch.xml" />
 
   <!-- serve up a map -->
@@ -32,6 +32,5 @@
   </include>
 
   <!-- tilt the head -->
-  <node pkg="fetch_navigation" type="tilt_head.py" name="tilt_head_node" />
 
 </launch>
