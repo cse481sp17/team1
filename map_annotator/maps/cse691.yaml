@@ -1,0 +1,6 @@
+image: /home/team1/catkin_ws/src/cse481c/map_annotator/cse691.pgm
+resolution: 0.050000
+origin: [-13.868143, -9.928620, 0.000000]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196

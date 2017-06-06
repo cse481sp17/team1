@@ -1,7 +1,7 @@
 <launch>
 	<include file="$(find fetch_api)/launch/fetch_nav.launch" >
-		<arg name="map_file" value="$(find map_annotator)/maps/real_robot_take_1.yaml" />
-		<arg name="map_keepout_file" value="$(find map_annotator)/maps/obstacles_small_room.yaml" />
+		<arg name="map_file" value="$(find map_annotator)/maps/cse691.yaml" />
+		<arg name="map_keepout_file" value="$(find map_annotator)/maps/cse691.yaml" />
 		<arg name="use_keepout" value="false" />	
 	</include>
 </launch>
