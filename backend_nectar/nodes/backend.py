@@ -6,9 +6,47 @@ from navigator_msg.srv import Navigation, NavigationRequest, NavigationResponse
 from order_msgs.msg import Order
 from sound_play.msg import SoundRequest
 from sound_play.libsoundplay import SoundClient
-
+import random
 
 OrderLocationToNavigationLocation = {Order.COUNTER_AREA_1: NavigationRequest.COUNTER_AREA_1, Order.COUNTER_AREA_2: NavigationRequest.COUNTER_AREA_2}
+
+# {0} - entree
+# {1} - side item
+# {2} - dessert
+# {3} - drink
+responsesEntree = [
+    "Enjoy your steamy {0}",
+    "Wow, that {0} has a lot of carbs",
+    "{0} is my favorite food. Good job.",
+    "Here is your omelette du fromage. I mean {0}"
+]
+
+responsesSideItem = [
+    "{1} as a side item? Interesting choice.",
+    "Our {1} is of the greatest quality.",
+    "I am jealous of your {1}. They don't feed me."
+]
+
+responsesDessert = [
+    "That is a lot of sugar from {2}",
+    "Can I have your {2} if you don't eat it?",
+    "{2} would be better with some hot fudge syrup"
+    "I can tell you are sweet from your choice of {2}. Here is my ip address 10.42.41.1"
+]
+
+responsesDrink = [
+    "{3} for humans. Nectar for me.",
+    "I am so thirsty. Can I have some of your {3}?",
+    "Refills for {3} are free."
+]
+
+responsesNone = [
+    "Stop wasting my time",
+    "Hey, I have feelings too",
+    "Empty plates have to be cleaned",
+    "That will be five thousand dollars please",
+    "You eat like a robot, want my ip address? 10.42.42.1",
+]
 
 class NectarBackend:
     def __init__(self):
@@ -86,7 +124,27 @@ class NectarBackend:
 
         # TODO: say order
         # order_msg
-        self._soundhandle.say("Here is your entree of {}".format(order_msg.foodItem))
+        choices = []
+        if order_msg.foodItem != "None":
+            choices.append(responsesEntree)
+
+        if order_msg.sideItem != "None":
+            choices.append(responsesSideItem)
+
+        if order_msg.drinkItem != "None":
+            choices.append(drinkItem)
+
+        if order_msg.dessertItem != "None":
+            choices.append(dessertItem)
+
+        if len(choices) == 0:
+            choices.append(responsesNone)
+
+        randomList = choices[random.randint(0, len(choices) - 1)]
+
+        randomPhrase = randomList[random.randint(0, len(randList) - 1)]
+
+        self._soundhandle.say(randomPhrase.format(order_msg.foodItem, order_msg.sideItem, order_msg.dessertItem, order_msg.drinkItem))
 
         # go back to the chef table
         ret = self._navigator_server(NavigationRequest.CHEF_TABLE)
