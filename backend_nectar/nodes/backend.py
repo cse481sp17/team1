@@ -51,10 +51,15 @@ class NectarBackend:
             return
 
         # go to the chef table
+        count = 0
         ret = self._navigator_server(NavigationRequest.CHEF_TABLE)
-        if not ret.success:
-            self.error("ERROR on navigation to chef table", order_msg)
-            return
+        while not ret.success:
+            if count == 5:
+                self.error("ERROR on navigation to chef table, order failed!", order_msg)
+                return
+            print 'ERROR on navigation to chef table, trying again'
+            ret = self._navigator_server(NavigationRequest.CHEF_TABLE)
+            count += 1
  
         # retreive the tray
         ret = self._serving_server(ServingRequest.RETREIVE)
@@ -64,9 +69,14 @@ class NectarBackend:
 
         # move to the customer
         ret = self._navigator_server(OrderLocationToNavigationLocation[order_msg.location])
-        if not ret.success:
-            self.error("ERROR in navigation to customer", order_msg)
-            return
+        count = 0
+        while not ret.success:
+            if count == 5:
+                self.error("ERROR in navigation to customer, order failed!", order_msg)
+                return
+            print 'ERROR on navigation to customer, trying again'
+            ret = self._navigator_server(OrderLocationToNavigationLocation[order_msg.location])
+            count += 1
 
         # place the tray
         ret = self._serving_server(ServingRequest.PLACE)
@@ -81,8 +91,10 @@ class NectarBackend:
         # go back to the chef table
         ret = self._navigator_server(NavigationRequest.CHEF_TABLE)
         count = 0
-        while not ret.success and count < 5:
+        while not ret.success:
             print "ERROR on navigation to chef table, trying again"
+            if count == 5:
+                return
             ret = self._navigator_server(NavigationRequest.CHEF_TABLE)
             count += 1
 
