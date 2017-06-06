@@ -18,7 +18,7 @@ responsesEntree = [
     "Enjoy your steamy {0}",
     "Wow, that {0} has a lot of carbs",
     "{0} is my favorite food. Good job.",
-    "Here is your omelette du fromage. I mean {0}"
+    "Here is your omelette du fro ma ge. I mean {0}"
 ]
 
 responsesSideItem = [
@@ -30,8 +30,8 @@ responsesSideItem = [
 responsesDessert = [
     "That is a lot of sugar from {2}",
     "Can I have your {2} if you don't eat it?",
-    "{2} would be better with some hot fudge syrup"
-    "I can tell you are sweet from your choice of {2}. Here is my ip address 10.42.41.1"
+    "{2} would be better with some hot fudge syrup",
+    "I can tell you are sweet from your choice of {2}. Do you want my I Pee address? You should ping me."
 ]
 
 responsesDrink = [
@@ -42,10 +42,10 @@ responsesDrink = [
 
 responsesNone = [
     "Stop wasting my time",
-    "Hey, I have feelings too",
+    "Robots have feelings too",
     "Empty plates have to be cleaned",
     "That will be five thousand dollars please",
-    "You eat like a robot, want my ip address? 10.42.42.1",
+    "You eat like a robot, want my I Pee address? ping me some time",
 ]
 
 class NectarBackend:
@@ -121,7 +121,6 @@ class NectarBackend:
         if not ret.success:
             self.error("ERROR in placing tray", order_msg)
             return
-
         # TODO: say order
         # order_msg
         choices = []
@@ -132,20 +131,20 @@ class NectarBackend:
             choices.append(responsesSideItem)
 
         if order_msg.drinkItem != "None":
-            choices.append(drinkItem)
+            choices.append(responsesDrink)
 
         if order_msg.dessertItem != "None":
-            choices.append(dessertItem)
+            choices.append(responsesDessert)
 
         if len(choices) == 0:
             choices.append(responsesNone)
 
         randomList = choices[random.randint(0, len(choices) - 1)]
 
-        randomPhrase = randomList[random.randint(0, len(randList) - 1)]
+        randomPhrase = randomList[random.randint(0, len(randomList) - 1)]
 
         self._soundhandle.say(randomPhrase.format(order_msg.foodItem, order_msg.sideItem, order_msg.dessertItem, order_msg.drinkItem))
-
+        rospy.sleep(3)
         # go back to the chef table
         ret = self._navigator_server(NavigationRequest.CHEF_TABLE)
         count = 0
@@ -160,7 +159,6 @@ class NectarBackend:
         if not ret.success:
             print "ERROR in achieving start pose"
             return
-
         return 
 
     def error(self, error_message, order_msg):
