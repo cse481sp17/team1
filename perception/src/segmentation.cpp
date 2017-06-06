@@ -287,20 +287,22 @@ namespace perception {
         angleshortestpath = q.getAngleShortestPath();
         vector = q.getAxis();
 
-        // Fix yaw to prevent 180 degree rotation
-        if (yawIsNegative and yaw > 0) {
-          yaw -= pi;
-        } else if (!yawIsNegative and yaw < 0) {
-          yaw += pi;
+	bool flipped = (object_x == object.dimensions.y);
+	if (flipped) {
+	  std::cout << "flipped!!!" << std::endl;
+	  std::cout << "roll: " << roll << ", pitch: " << pitch << ", yaw: " << yaw << std::endl;
+	}
+        // Fix yaw to prevent 90/180 degree rotation bugs
+        if (yawIsNegative) {
+	  roll = 0.0;
+	  pitch = 0.0;
+          yaw = -pi;
+        } else if (!yawIsNegative) {
+	  roll = 0.0;
+	  pitch = 0.0;
+          yaw = pi;
         }
-        if (object_x == object.dimensions.y) {
-        std::cout << "flipped x and y" << std::endl;
-          if (yawIsNegative) {
-            yaw += pi/2;
-          } else {
-            yaw -= pi/2;
-          }
-        }
+
         q.setRPY(roll, pitch, yaw);
         object_marker.pose.orientation.x = q.x();
         object_marker.pose.orientation.y = q.y();

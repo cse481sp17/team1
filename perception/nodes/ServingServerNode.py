@@ -27,6 +27,7 @@ class Server:
             while count < 5 and not finish:
                 finish = self.run_procedure('start')
                 count += 1
+            rospy.sleep(3)
             return finish
         return False
 

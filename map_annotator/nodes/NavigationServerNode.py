@@ -15,7 +15,7 @@ class Navigator:
         ret = self.run_procedure(req.location)
         if req.location == NavigationRequest.CHEF_TABLE:
             self._head.pan_tilt(0, 0.79)
-        rospy.sleep(8)
+        rospy.sleep(10)
         return ret
     def run_procedure(self, name):
         if name not in self._pose_ctrl._poses:

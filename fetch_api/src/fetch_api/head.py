@@ -13,7 +13,7 @@ LOOK_AT_ACTION_NAME = 'head_controller/point_head'  # TODO: Get the name of the 
 PAN_TILT_ACTION_NAME = 'head_controller/follow_joint_trajectory'  # TODO: Get the name of the pan/tilt action
 PAN_JOINT = 'head_pan_joint'  # TODO: Get the name of the head pan joint
 TILT_JOINT = 'head_tilt_joint'  # TODO: Get the name of the head tilt joint
-PAN_TILT_TIME = 5  # How many seconds it should take to move the head.
+PAN_TILT_TIME = 0.6  # How many seconds it should take to move the head.
 
 
 class Head(object):
