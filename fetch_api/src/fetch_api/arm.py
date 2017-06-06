@@ -12,7 +12,7 @@ from moveit_msgs.srv import GetPositionIK, GetPositionIKRequest
 
 ACTION_NAME_ARM_CONTROL = 'arm_controller/follow_joint_trajectory'
 ACTION_NAME_MOVE_GROUP = 'move_group'
-TIME_FROM_START = 5
+TIME_FROM_START = 1.5
 
 class Arm(object):
     """Arm controls the robot's arm.
